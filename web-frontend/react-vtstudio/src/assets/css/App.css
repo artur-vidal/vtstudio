@@ -1,3 +1,5 @@
+/*Import de fontes da página*/
+
 @import url('https://fonts.googleapis.com/css2?family=Fondamento:ital@0;1&family=Outfit:wght@100..900&display=swap');
 
 :root {
@@ -8,6 +10,7 @@
     --Vermelho-D-Escurecido : #9C1C2E;
     --Vermelho-Sombra : #771724;
     --Vermelho-Contraste : #EAB2B3;
+    --Vermelho-Contraste-Escuro : #cc9c9d;
     --Dourado-D : #D5BF86;
     --Dourado-D-Escurecido : #CDBB8D;
     --Dourado-Sombra : #978A67;
@@ -15,6 +18,8 @@
     --Preto : #020202;
     --Branco : #FCFCFF;
 }
+
+/*Reset de formatação*/
 
 * {
     margin: 0;
@@ -28,6 +33,15 @@ body {
     min-height: 100vh;
     color: var(--Branco);
 }
+
+
+/*Estilização de texto*/
+h1 {font-size: 2.25rem;}
+h2 {font-size: 1.875rem;}
+h3 {font-size: 1.5rem;}
+h3.Negrito {font-weight: bold;}
+p {font-size: 1.25rem;}
+
 
 /*Navbar*/
 header {
@@ -62,4 +76,68 @@ a img {
     width: 3.85rem;
     height: 3.5rem;
     margin: -15px;
+}
+
+/*Mensagem inicial*/
+
+section.Mensagem {
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
+    align-items: center;
+    text-align: center;
+    padding: 2rem;
+    padding-bottom: 4rem;
+}
+
+section a.Download {
+    text-decoration: none;
+    color: var(--Branco);
+    background-color: var(--Vermelho-D);
+    border-bottom: var(--Vermelho-Sombra) 0.25rem solid;
+    border-radius: 0.25rem;
+    min-width: 16rem;
+    text-align: center;
+    font-weight: bold;
+    padding: 0.25rem;
+    transition:  background-color 0.5s ease;
+    margin: 1rem;
+}
+
+section a.Download:hover {
+    background-color: var(--Vermelho-D-Escurecido);
+}
+
+/*Card*/
+section.card {
+    display: flex;
+    flex-direction: row;
+    text-align: right;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    width: fit-content;
+    padding: 2rem;
+}
+
+section.card img {
+    width: 350px;
+    height: 300px;
+    object-fit: cover;
+    object-position: left;
+    border-left: var(--Vermelho-D-Escurecido) solid 2rem;
+    border-radius: 1rem;
+    transition: border-color 0.5s ease;
+}
+
+section.card img:hover {
+    border-color: var(--Vermelho-Sombra);
+}
+
+.descubra {
+    position: relative;
+    left: 1.565rem;
+    writing-mode: sideways-lr;
+    font-weight: bold;
+    color: var(--Vermelho-Contraste);
 }
