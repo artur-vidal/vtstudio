@@ -1,3 +1,5 @@
+import logo from '../assets/imgs/vtstudiologo.png'
+
 function Navbar() {
     return(
         <header>
@@ -5,7 +7,7 @@ function Navbar() {
                 <ul>
                     <li><a href="">Download</a></li>
                     <li><a href="">VTStudio</a></li>
-                    <li><a href=""><img src="../../src/assets/imgs/vtstudiologo.png" alt=""/></a></li>
+                    <li><a href=""><img src={logo} alt=""/></a></li>
                     <li><a href="">GitHub</a></li>
                     <li><a href="">Sobre Nós</a></li>
             </ul>
