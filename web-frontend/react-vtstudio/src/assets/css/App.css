@@ -1,0 +1,65 @@
+@import url('https://fonts.googleapis.com/css2?family=Fondamento:ital@0;1&family=Outfit:wght@100..900&display=swap');
+
+:root {
+    --Marrom-P : #3F0D12;
+    --Cinza-Escuro : #202020;
+    --Cinza-S : #747578;
+    --Vermelho-D : #A71D31;
+    --Vermelho-D-Escurecido : #9C1C2E;
+    --Vermelho-Sombra : #771724;
+    --Vermelho-Contraste : #EAB2B3;
+    --Dourado-D : #D5BF86;
+    --Dourado-D-Escurecido : #CDBB8D;
+    --Dourado-Sombra : #978A67;
+    --Amarelo-D : #F1F0CC;
+    --Preto : #020202;
+    --Branco : #FCFCFF;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Outfit;
+    background: linear-gradient(to bottom, #9C1C2E 10%,#020202 30%, #9C1C2E 175%);
+    min-height: 100vh;
+    color: var(--Branco);
+}
+
+/*Navbar*/
+header {
+    color: var(--Branco);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: center;
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+nav ul {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    list-style: none;
+    gap: 20px;
+    padding: 1rem;
+}
+
+nav a{
+    text-decoration: none;
+    color: var(--Branco);
+    font-size: 0.875rem;
+    margin: 2rem;
+}
+
+a img {
+    width: 3.85rem;
+    height: 3.5rem;
+    margin: -15px;
+}
