@@ -9,7 +9,7 @@ function Download() {
                     <h2>
                         AFLORE SUA <br />
                         IMAGINAÇÃO E INSTALE <br />
-                        O EDITOR PERFETIO <br />
+                        O EDITOR PERFEITO <br />
                         PARA VOCÊ
                     </h2>
                     <p>
