@@ -176,3 +176,37 @@ section.download a.Download {
     min-width: 23.75rem;
     display: inline-block;
 }
+
+/*Card vtstudio*/
+section.Vtstudio {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    align-items: flex-start;
+    justify-content: center;
+    margin: 0 auto;
+    width: fit-content;
+    padding: 2rem;
+}
+
+section.Vtstudio img {
+    width: 34.375rem;
+    height: 18.75rem;
+    object-fit: cover;
+    object-position: center;
+    border-bottom: var(--Vermelho-D-Escurecido) solid 2rem;
+    border-radius: 1rem;
+    transition: border-color 0.5s ease;
+    margin: 2rem;
+    align-self: center;
+}
+
+section.Vtstudio img:hover {
+    border-color: var(--Vermelho-Sombra);
+}
+
+section.Vtstudio h2, 
+section.Vtstudio p{
+    text-align: left;
+    padding-left: 2rem;
+}
