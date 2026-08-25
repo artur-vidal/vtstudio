@@ -29,7 +29,7 @@
 
 body {
     font-family: Outfit;
-    background: linear-gradient(to bottom, #9C1C2E 10%,#020202 30%, #9C1C2E 175%);
+    background: linear-gradient(to bottom, #9C1C2E 10%,#020202 30%);
     min-height: 100vh;
     color: var(--Branco);
 }
@@ -283,3 +283,16 @@ section.Sobre .Sobre-Texto {
 .Sobre-Indicadores span.ativo {
     background: var(--Branco);
 }
+
+/*Footer*/
+footer {
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
+    align-items: center;
+    padding: 3rem;
+    background: linear-gradient(to top, #9C1C2E 50%, #020202 100%);
+}
+
+footer p {margin-top: 3rem;}
+footer a {color: var(--Branco);}
