@@ -210,3 +210,76 @@ section.Vtstudio p{
     text-align: left;
     padding-left: 2rem;
 }
+
+/*Card sobre nós*/
+section.Sobre {
+    display: flex;
+    flex-direction: row;
+    text-align: justify;
+    align-items: flex-start;
+    justify-content: center;
+    margin: 0 auto;
+    width: fit-content;
+    padding: 2rem;
+}
+
+section.Sobre .Sobre-Texto {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    padding-top: 2rem;
+}
+
+.Sobre-Texto p {
+    white-space: pre-line;
+}
+
+.Sobre-Carrossel {
+    position: relative;
+}
+
+.Sobre-Carrossel button {
+    background: var(--Vermelho-D);
+    color: var(--Branco);
+    border: none;
+    border-radius: 50%;
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.Sobre-Carrossel img {
+    width: 20rem;
+    height: 20rem;
+    object-fit: cover;
+    object-position: center;
+    border-bottom: var(--Vermelho-D-Escurecido) solid 2rem;
+    border-radius: 1rem;
+    transition: border-color 0.5s ease;
+    align-self: center;
+}
+
+.Sobre-Indicadores {
+    position: absolute;
+    left: 50%;
+    bottom: 12px;
+
+    translate: -50% 0;
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.Sobre-Indicadores span {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+    background: var(--Cinza-S);
+    cursor: pointer;
+    
+}
+
+.Sobre-Indicadores span.ativo {
+    background: var(--Branco);
+}
