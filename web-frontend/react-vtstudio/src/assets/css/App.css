@@ -108,7 +108,7 @@ section a.Download:hover {
     background-color: var(--Vermelho-D-Escurecido);
 }
 
-/*Card*/
+/*Card descubra mais*/
 section.card {
     display: flex;
     flex-direction: row;
@@ -140,4 +140,39 @@ section.card img:hover {
     writing-mode: sideways-lr;
     font-weight: bold;
     color: var(--Vermelho-Contraste);
+}
+
+/*Card Download*/
+section.download {
+    display: flex;
+    flex-direction: row;
+    text-align: left;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    width: fit-content;
+    padding: 2rem;
+}
+
+section.download img {
+    width: 350px;
+    height: 300px;
+    object-fit: cover;
+    object-position: left;
+    border-right: var(--Vermelho-D-Escurecido) solid 2rem;
+    border-radius: 1rem;
+    transition: border-color 0.5s ease;
+    margin: 2rem;
+}
+
+section.download img:hover {
+    border-color: var(--Vermelho-Sombra);
+}
+
+section.download h2{padding: 1rem;}
+section.download p {padding-left: 1rem;}
+
+section.download a.Download {
+    min-width: 23.75rem;
+    display: inline-block;
 }
