@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://1jrmtml7pxx1"]
+
+[sub_resource type="GDScript" id="GDScript_y32ns"]
+script/source = "extends Node
+
+var bodies = []
+
+func _ready() -> void:
+	request()
+
+func request() -> void:
+	var res = await ApiClient.request(HTTPClient.METHOD_POST, '/auth/login', JSON.stringify({
+		
+	}), [\"Content-Type: application/json\"])
+	bodies.append(res)
+	
+	print(JSON.stringify(res, \"\\t\"))
+"
+
+[node name="Node" type="Node" unique_id=1298886748]
+script = SubResource("GDScript_y32ns")
