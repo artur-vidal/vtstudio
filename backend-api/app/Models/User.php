@@ -8,5 +8,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, Notifiable;
+    use Notifiable, HasApiTokens;
+
+    protected $guarded = ['id', 'created_at', 'updated_at'];
 }

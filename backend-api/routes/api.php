@@ -1,8 +1,18 @@
 <?php
 
+use App\Http\Controllers\GoogleAuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/user', function (Request $request) {
+Route::controller(GoogleAuthController::class)
+    ->prefix('auth/google')
+    ->group(function() {
+
+        Route::get('/redirect', 'redirect');
+        Route::get('/callback', 'callback');
+
+    });
+
+Route::get('/me', function(Request $request) {
     return $request->user();
-})->middleware('auth:sanctum');
+})->middleware('api-token');
