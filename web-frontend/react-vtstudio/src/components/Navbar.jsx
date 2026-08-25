@@ -1,15 +1,16 @@
 import logo from '../assets/imgs/vtstudiologo.png'
+import { Link } from 'react-router-dom'
 
 function Navbar() {
     return(
         <header>
             <nav>
                 <ul>
-                    <li><a href="">Download</a></li>
-                    <li><a href="">VTStudio</a></li>
-                    <li><a href=""><img src={logo} alt=""/></a></li>
-                    <li><a href="">GitHub</a></li>
-                    <li><a href="">Sobre Nós</a></li>
+                    <li><Link to="/download">Download</Link></li>
+                    <li><Link to="/vtstudio">VTstudio</Link></li>
+                    <li><Link to="/"><img src={logo} alt=""/></Link></li>
+                    <li><a href="https://github.com">GitHub</a></li>
+                    <li><Link to="/sobre">Sobre Nós</Link></li>
             </ul>
             </nav>
         </header>
