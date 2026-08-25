@@ -1,13 +1,11 @@
 import stockImage from '../assets/imgs/stockImage-PessoasRPG.jpg'
+import Download from './Download'
+import Sobre from './Sobre'
+import Vtstudio from './VTStudio'
 
 function Home() {
     return (
         <>
-            <section className="Mensagem" id="home">
-                    <h1>VTSTUDIO <br /> O EDITOR PERFEITO <br /> PARA SEUS MAPAS DE RPG</h1>
-                    <a href="#" className="Download">Download</a>
-            </section>
-
             <section className="card" id="home">
                 <div className='card-overlay'>
                     <p>
@@ -20,6 +18,10 @@ function Home() {
                 <span className='descubra'>descubra mais</span>
                 <img src={stockImage} alt="jogadores de RPG" />
             </section>
+
+            <Download />
+            <Vtstudio />
+            <Sobre />
         </>
     )
 }
