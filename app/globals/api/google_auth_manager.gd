@@ -4,13 +4,19 @@ signal server_stopped(success: bool)
 
 var server := TCPServer.new()
 var port := Config.GOOGLE_AUTH_SERVER_PORT
+
 var running := false
+var expired := false
 var state: String = ""
 var on_complete: Callable;
 
-var timeout_timer: Timer
-var redirect_url := Config.API_HOST + Config.API_DIR + Config.GOOGLE_LOGIN_PATH;
-var login_url := redirect_url + "?client_redirect=http://127.0.0.1:" + str(port) + "/callback&state=%s"
+var expire_timer: Timer
+var expire_seconds := 120
+var server_timer: Timer
+var server_ttl := 300
+
+@onready var redirect_url := Config.get_api_url() + Config.GOOGLE_LOGIN_PATH
+@onready var login_url := redirect_url + "?client_redirect=http://127.0.0.1:" + str(port) + "/callback&state=%s"
 
 func _process(_delta: float) -> void:
 	if server.is_listening() and server.is_connection_available():
@@ -19,6 +25,8 @@ func _process(_delta: float) -> void:
 		
 		var available = connection.get_available_bytes()
 		if available > 0:
+			var authenticated = false
+			
 			var raw: String = connection.get_utf8_string(available)
 			if(raw.begins_with('GET /callback')):
 				# parsing da resposta
@@ -35,14 +43,21 @@ func _process(_delta: float) -> void:
 				if params_dict.state == state:
 					# pego o código e faço uma requisição pro aplicativo
 					var code: String = params_dict['code']
-					await _exchange_credentials(code)
-					_stop_server(true)
-				else:
-					_stop_server(false)
-				
+					authenticated = await _exchange_credentials(code)
 			
-			var response := "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n"
-			response += "<html><body><h1>Você pode já pode fechar esta aba e voltar para o app.</h1></body></html>"
+			_stop_server(authenticated)
+			
+			var response = ""
+			if(expired):
+				response += "HTTP/1.1 400 Bad Request\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n"
+				response += "<html><body><h1>Autenticação expirou. Volte para o app e tente novamente.</h1></body></html>"
+			if(authenticated):
+				response += "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n"
+				response += "<html><body><h1>Você pode já pode fechar esta aba e voltar para o app.</h1></body></html>"
+			else:
+				response += "HTTP/1.1 401 Unauthorized\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n"
+				response += "<html><body><h1>Algo deu errado. Volte para o app e tente novamente.</h1></body></html>"
+			
 			connection.put_data(response.to_utf8_buffer())
 			connection.disconnect_from_host()
 	
@@ -53,29 +68,57 @@ func begin_authentication(callback: Callable = func(): return null) -> void:
 	if(running):
 		return
 	
-	running = true
-	server.listen(port)
-	state = Crypto.new().generate_random_bytes(32).hex_encode()
-	on_complete = callback
-	OS.shell_open(login_url % [state])
+	var err = server.listen(port)
+	if(err == OK):
+		print('Auth Server open.')
+		
+		running = true
+		state = Crypto.new().generate_random_bytes(32).hex_encode()
+		on_complete = callback
+		OS.shell_open(login_url % [state])
+		_start_timers()
+	else:
+		print('Auth Server couldn\'t be open. Status: %d' % err)
+
+func _expired() -> void:
+	expired = true
+	print('Auth Server time expired.')
 
 func _stop_server(success: bool) -> void:
 	running = false
 	server.stop()
 	state = ""
 	on_complete = func(): return null
+	if(server_timer):
+		server_timer.queue_free()
 	
 	server_stopped.emit(success)
+	print('Auth Server stopped.')
 
-func _start_timer() -> void:
-	timeout_timer = Timer.new()
-	timeout_timer.wait_time = 120 # dois minutes
-	timeout_timer.one_shot = true
-	timeout_timer.timeout.connect(_stop_server)
-	add_child(timeout_timer)
-	timeout_timer.start()
+func _start_timers() -> void:
+	# timer de expiração
+	if(expire_timer):
+		expire_timer.queue_free()
+	expire_timer = Timer.new()
+	expire_timer.wait_time = expire_seconds
+	expire_timer.one_shot = true
+	expire_timer.timeout.connect(_expired)
+	add_child(expire_timer)
+	
+	# timer do servidor
+	if(server_timer):
+		server_timer.queue_free()
+	server_timer = Timer.new()
+	server_timer.wait_time = server_ttl
+	server_timer.one_shot = true
+	server_timer.timeout.connect(_stop_server.bind(false))
+	add_child(server_timer)
+	
+	# iniciando ambos juntos
+	expire_timer.start()
+	server_timer.start()
 
-func _exchange_credentials(code: String):
+func _exchange_credentials(code: String) -> bool:
 	var response = await ApiClient.request(
 		HTTPClient.METHOD_POST,
 		Config.GOOGLE_EXCHANGE_PATH,
@@ -84,8 +127,12 @@ func _exchange_credentials(code: String):
 		})
 	)
 	
+	if(!response.ok):
+		return false
+	
 	# salvando credenciais
 	_write_credentials(response.data.accessToken, response.data.refreshToken)
+	return true
 
 func _write_credentials(access_token: String, refresh_token: String) -> void:
 	State.access_token = access_token
