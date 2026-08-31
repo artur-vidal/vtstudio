@@ -11,12 +11,13 @@ var state: String = ""
 var on_complete: Callable;
 
 var expire_timer: Timer
-var expire_seconds := 120
 var server_timer: Timer
-var server_ttl := 300
+
+var expire_seconds := Config.GOOGLE_AUTH_SERVER_EXPIRE_TIME
+var server_ttl := Config.GOOGLE_AUTH_SERVER_TIME_TO_LIVE
 
 @onready var redirect_url := Config.get_api_url() + Config.GOOGLE_LOGIN_PATH
-@onready var login_url := redirect_url + "?client_redirect=http://127.0.0.1:" + str(port) + "/callback&state=%s"
+@onready var login_url := redirect_url + "?client_redirect=http://127.0.0.1:" + str(port) + "/callback?state=%s"
 
 func _process(_delta: float) -> void:
 	if server.is_listening() and server.is_connection_available():
@@ -31,7 +32,7 @@ func _process(_delta: float) -> void:
 			if(raw.begins_with('GET /callback')):
 				# parsing da resposta
 				var url = raw.split(" ")[1]
-				var query = url.split("?")[1]
+				var query = url.split("?")[1] if url.split("?").size() > 1 else ''
 				var params = query.split("&")
 				var params_dict: Dictionary = {}
 				
@@ -42,21 +43,22 @@ func _process(_delta: float) -> void:
 				# validação
 				if params_dict.state == state:
 					# pego o código e faço uma requisição pro aplicativo
-					var code: String = params_dict['code']
-					authenticated = await _exchange_credentials(code)
+					var code = params_dict.get('code')
+					if(code):
+						authenticated = await _exchange_credentials(code)
 			
 			_stop_server(authenticated)
 			
 			var response = ""
 			if(expired):
 				response += "HTTP/1.1 400 Bad Request\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n"
-				response += "<html><body><h1>Autenticação expirou. Volte para o app e tente novamente.</h1></body></html>"
-			if(authenticated):
+				response += FileAccess.get_file_as_string('res://globals/api/auth_pages/expired.html')
+			elif(authenticated):
 				response += "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n"
-				response += "<html><body><h1>Você pode já pode fechar esta aba e voltar para o app.</h1></body></html>"
+				FileAccess.get_file_as_string('res://globals/api/auth_pages/success.html')
 			else:
 				response += "HTTP/1.1 401 Unauthorized\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n"
-				response += "<html><body><h1>Algo deu errado. Volte para o app e tente novamente.</h1></body></html>"
+				response += FileAccess.get_file_as_string('res://globals/api/auth_pages/generic-error.html')
 			
 			connection.put_data(response.to_utf8_buffer())
 			connection.disconnect_from_host()
