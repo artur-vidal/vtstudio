@@ -28,14 +28,21 @@ const participantes = [
     }
 ]
 
-const TEMPO_TROCA = 5000; 
+const TEMPO_TROCA = 5000;
 
 function Sobre() {
     const [indiceAtual, setIndiceAtual] = useState(0);
+    const [trocando, setTrocando] = useState(false);
 
     useEffect(() => {
         const intervalo = setInterval(() => {
-            setIndiceAtual((prev) => (prev + 1) % participantes.length);
+            setTrocando(true);
+
+            setTimeout(() => {
+                setIndiceAtual((prev) => (prev + 1) % participantes.length);
+                setTrocando(false);
+            }, 1500);
+
         }, TEMPO_TROCA);
 
         return () => clearInterval(intervalo);
@@ -46,7 +53,7 @@ function Sobre() {
     return (
         <>
             <section className='Sobre'>
-                <div className='Sobre-Texto'>
+                <div className={`Sobre-Texto ${trocando ? 'trocando' : ''}`}>
                     <h2>
                         ENTENDA MAIS SOBRE NÓS <br />
                         {atual.nome}
@@ -55,16 +62,20 @@ function Sobre() {
                 </div>
 
                 <div className='Sobre-Carrossel'>
-                    <img src={atual.imagem} alt={atual.nome} />
+                    <img
+                        src={atual.imagem}
+                        alt={atual.nome}
+                        className={trocando ? 'trocando' : ''}
+                    />
                     <div className='Sobre-Indicadores'>
-                    {participantes.map((_, i) => (
-                        <span
-                            key={i}
-                            className={i === indiceAtual ? "ativo" : ""}
-                            onClick={() => setIndiceAtual(i)}
-                        ></span>
-                    ))}
-                </div>
+                        {participantes.map((_, i) => (
+                            <span
+                                key={i}
+                                className={i === indiceAtual ? "ativo" : ""}
+                                onClick={() => setIndiceAtual(i)}
+                            ></span>
+                        ))}
+                    </div>
                 </div>
             </section>
         </>

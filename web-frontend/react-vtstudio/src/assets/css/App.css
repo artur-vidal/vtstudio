@@ -34,6 +34,42 @@ body {
     color: var(--Branco);
 }
 
+.app-wrapper {
+    position: relative;
+    min-height: 100vh;
+}
+
+.dado-fundo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.dado-fundo img {
+    position: absolute;
+    width: 31.25rem;
+}
+
+img.primeiro{
+    rotate: 80deg;
+    right: 85%;
+    top: 15%;
+}
+img.segundo{
+    rotate: 45deg;
+    left: 85%;
+    top: 50%;
+}
+img.terceiro{
+    rotate: 270deg;
+    right: 85%;
+    top:80%;
+}
 
 /*Estilização de texto*/
 h1 {font-size: 2.25rem;}
@@ -221,6 +257,7 @@ section.Sobre {
     margin: 0 auto;
     width: fit-content;
     padding: 2rem;
+    gap: 2rem;
 }
 
 section.Sobre .Sobre-Texto {
@@ -228,6 +265,15 @@ section.Sobre .Sobre-Texto {
     flex-direction: column;
     text-align: center;
     padding-top: 2rem;
+}
+
+.Sobre-Texto {
+    transition: opacity 1.5s ease;
+    opacity: 1;
+}
+
+.Sobre-Texto.trocando {
+    opacity: 0;
 }
 
 .Sobre-Texto p {
@@ -256,8 +302,13 @@ section.Sobre .Sobre-Texto {
     object-position: center;
     border-bottom: var(--Vermelho-D-Escurecido) solid 2rem;
     border-radius: 1rem;
-    transition: border-color 0.5s ease;
+    transition: opacity 1.5s ease;
     align-self: center;
+    opacity: 1;
+}
+
+.Sobre-Carrossel img.trocando{
+    opacity: 0;
 }
 
 .Sobre-Indicadores {
