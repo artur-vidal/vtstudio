@@ -8,21 +8,29 @@ import Home from './pages/Home.jsx'
 import Download from './pages/Download.jsx'
 import Sobre from './pages/Sobre.jsx'
 import Vtstudio from './pages/VTStudio.jsx'
+import Dado from './assets/imgs/dado.png'
 
 function App() {
     return (
         <>
-            <Navbar />
-            <Mensagem />
-            <main>
-                <Routes>
-                    <Route path='/' element={<Home />} />
-                    <Route path='/download' element={<Download />} />
-                    <Route path='/sobre' element={<Sobre />}/> 
-                    <Route path='/vtstudio' element={<Vtstudio />}/> 
-                </Routes>
-            </main>
-            <Footer />
+            <div className='app-wrapper'>
+                <Navbar />
+                <Mensagem />
+                <div className='dado-fundo'>
+                    <img src={Dado} alt="dado de fundo de tela" className='primeiro'/>
+                    <img src={Dado} alt="dado de fundo de tela" className='segundo'/>
+                    <img src={Dado} alt="dado de fundo de tela" className='terceiro'/>
+                </div>
+                <main>
+                    <Routes>
+                        <Route path='/' element={<Home />} />
+                        <Route path='/download' element={<Download />} />
+                        <Route path='/sobre' element={<Sobre />}/> 
+                        <Route path='/vtstudio' element={<Vtstudio />}/> 
+                    </Routes>
+                </main>
+                <Footer />
+            </div>
         </>
     );
 }
