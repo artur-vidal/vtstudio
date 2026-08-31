@@ -55,7 +55,7 @@ func _process(_delta: float) -> void:
 				response += FileAccess.get_file_as_string('res://globals/api/auth_pages/expired.html')
 			elif(authenticated):
 				response += "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n"
-				FileAccess.get_file_as_string('res://globals/api/auth_pages/success.html')
+				response += FileAccess.get_file_as_string('res://globals/api/auth_pages/success.html')
 			else:
 				response += "HTTP/1.1 401 Unauthorized\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n"
 				response += FileAccess.get_file_as_string('res://globals/api/auth_pages/generic-error.html')
