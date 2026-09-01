@@ -213,6 +213,46 @@ section.download a.Download {
     display: inline-block;
 }
 
+/*Sessão de download extra*/
+
+section.instalacao{
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    width: fit-content;
+    padding: 2rem;
+}
+
+section.instalacao img {
+    width: 720px;
+    height: 300px;
+    object-fit: cover;
+    object-position: left;
+    border-bottom: var(--Vermelho-D-Escurecido) solid 2rem;
+    border-radius: 1rem;
+    transition: border-color 0.5s ease;
+    margin: 1rem;
+}
+
+div.texto-cima {text-align: left;}
+div.texto-baixo {text-align: center;}
+
+div.texto-baixo a {
+    display: inline-block;
+    text-decoration: none;
+    color: var(--Branco);
+    font-weight: bold;
+    background-color: var(--Vermelho-D);
+    border-bottom: solid var(--Vermelho-D-Escurecido);
+    border-radius: 4px;
+    width: 380px;
+    padding: 0.5rem;
+    margin: 1rem;
+}
+
 /*Card vtstudio*/
 section.Vtstudio {
     display: flex;
