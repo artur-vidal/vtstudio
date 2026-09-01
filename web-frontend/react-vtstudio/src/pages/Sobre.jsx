@@ -67,7 +67,7 @@ function Sobre() {
                         alt={atual.nome}
                         className={trocando ? 'trocando' : ''}
                     />
-                    <div className='Sobre-Indicadores'>
+                    <div className={`Sobre-Indicadores ${trocando ? 'trocando' : ''}`}>
                         {participantes.map((_, i) => (
                             <span
                                 key={i}

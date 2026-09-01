@@ -315,11 +315,16 @@ section.Sobre .Sobre-Texto {
     position: absolute;
     left: 50%;
     bottom: 12px;
-
+    transition: opacity 1.2s ease;
+    opacity: 1;
     translate: -50% 0;
     display: flex;
     justify-content: center;
     gap: 0.5rem;
+}
+
+.Sobre-Indicadores.trocando{
+    opacity: 0;
 }
 
 .Sobre-Indicadores span {
@@ -328,7 +333,6 @@ section.Sobre .Sobre-Texto {
     border-radius: 50%;
     background: var(--Cinza-S);
     cursor: pointer;
-    
 }
 
 .Sobre-Indicadores span.ativo {
