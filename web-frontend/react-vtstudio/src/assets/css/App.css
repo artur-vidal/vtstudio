@@ -67,17 +67,17 @@ body {
 img.primeiro{
     rotate: 80deg;
     right: 85%;
-    top: 15%;
+    top: 5rem;
 }
 img.segundo{
     rotate: 45deg;
     left: 85%;
-    top: 50%;
+    top: 40rem;
 }
 img.terceiro{
     rotate: 270deg;
     right: 85%;
-    top:80%;
+    top: 80rem;
 }
 
 .fade-pagina {
