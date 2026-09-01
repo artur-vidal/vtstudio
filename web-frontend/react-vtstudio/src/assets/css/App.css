@@ -237,6 +237,10 @@ section.instalacao img {
     margin: 1rem;
 }
 
+section.instalacao img:hover{
+    border-color: var(--Vermelho-Sombra);
+}
+
 div.texto-cima {text-align: left;}
 div.texto-baixo {text-align: center;}
 
@@ -251,6 +255,12 @@ div.texto-baixo a {
     width: 380px;
     padding: 0.5rem;
     margin: 1rem;
+    transition: background-color 0.5s ease, border-color 0.5s ease;
+}
+
+div.texto-baixo a:hover {
+    background-color: var(--Vermelho-D-Escurecido);
+    border-color: var(--Vermelho-Sombra);
 }
 
 /*Card vtstudio*/
