@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\RefreshToken;
 use App\Models\User;
 use App\Services\JwtService;
+use App\Services\TokenService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
@@ -11,10 +13,14 @@ use Illuminate\Validation\Rules\Password;
 class ApiAuthController extends Controller
 {
     public function __construct(
-        public JwtService $jwt
+        public TokenService $tokenator
     )
     {
-        $this->jwt = new JwtService;
+        $this->tokenator = new TokenService;
+    }
+
+    public function me(Request $request) {
+        return $request->user()->toResource();
     }
 
     public function register(Request $request) {
@@ -30,11 +36,9 @@ class ApiAuthController extends Controller
         $user = User::create($data);
 
         return response()->json([
-            'data' => [
-                'accessToken' => $this->jwt->createAccess($user),
-                'refreshToken' => $this->jwt->createRefresh($user),
-                'user' => $user->toResource()
-            ],
+            'accessToken' => $this->tokenator->createAccess($user),
+            'refreshToken' => $this->tokenator->createRefresh($user),
+            'data' => $user->toResource()
         ]);
     }
 
@@ -52,8 +56,45 @@ class ApiAuthController extends Controller
         }
 
         return response()->json([
-            'accessToken' => $this->jwt->createAccess($user),
-            'refreshToken' => $this->jwt->createRefresh($user)
+            'accessToken' => $this->tokenator->createAccess($user),
+            'refreshToken' => $this->tokenator->createRefresh($user)
         ], 200);
+    }
+
+    public function refresh(Request $request) {
+        $data = $request->validate([
+            'token' => ['required', 'string']
+        ]);
+
+        $hash = hash('sha256', $data['token']);
+        $stored = RefreshToken::firstWhere('token_hash', $hash);
+
+        // se o token usado já existir mas foi revogado, sinal de que alguém pegou o token. então, revogamos todos.
+        if ($stored && $stored->revoked_at) {
+            RefreshToken::where('family_id', $stored->family_id)->update(['revoked_at' => now()]);
+            return response()->json([
+                'message' => 'Sessão comprometida. Faça login novamente.'
+            ], 401);
+        }
+
+        if (!$stored || $stored->revoked_at || $stored->expires_at->isPast()) {
+            return response()->json([
+                'message' => 'Token inválido.'
+            ], 401);
+        }
+
+        $stored->update(['revoked_at' => now()]);
+        $user = $stored->user;
+
+        return response()->json([
+            'accessToken' => $this->tokenator->createAccess($user),
+            'refreshToken' => $this->tokenator->createRefresh($user, $stored->family_id)
+        ]);
+    }
+
+    public function logout(Request $request) {
+        $hash = hash('sha256', $request->input('refreshToken'));
+        RefreshToken::where('token_hash', $hash)->update(['revoked_at' => now()]);
+        return response()->json(['message' => 'Deslogado com sucesso.']);
     }
 }

@@ -3,11 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Services\JwtService;
+use App\Services\TokenService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 use Laravel\Socialite\Socialite;
 
 class GoogleAuthController extends Controller
@@ -68,10 +66,10 @@ class GoogleAuthController extends Controller
 
         $user = User::find($data['user']);
 
-        $jwt = new JwtService;
+        $tokenator = new TokenService;
 
-        $access_token = $jwt->createAccess($user);
-        $refresh_token = $jwt->createRefresh($user);
+        $access_token = $tokenator->createAccess($user);
+        $refresh_token = $tokenator->createRefresh($user);
 
         return response()->json([
             'accessToken' => $access_token,

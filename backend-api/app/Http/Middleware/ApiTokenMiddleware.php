@@ -3,8 +3,10 @@
 namespace App\Http\Middleware;
 
 use App\Models\User;
-use App\Services\JwtService;
+use App\Services\TokenService;
 use Closure;
+use Firebase\JWT\ExpiredException;
+use Firebase\JWT\JWT;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,15 +27,17 @@ class ApiTokenMiddleware
             ], 401);
         }
 
-        $token_data = (new JwtService)->decode($token);
-        if(time() > $token_data->exp) {
+        try {
+            $token_data = (new TokenService)->decode($token);
+        } catch(ExpiredException $e) {
             return response()->json([
-                'message' => 'Sessão expirada.'
+                'message' => 'Token expirado.'
             ], 401);
+        } catch(\Exception $e) {
+            $token_data = null;
         }
-
-        $user = User::find($token_data->sub);
-        if(!$user) {
+        
+        if(!$token_data || !($user = User::find($token_data->sub))) {
             return response()->json([
                 'message' => 'Token inválido.'
             ], 401);

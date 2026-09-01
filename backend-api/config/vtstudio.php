@@ -15,4 +15,9 @@ return [
         'redirect' => env('GODOT_REDIRECT_SERVER', 'http://localhost:11060'),
         'ttl' => env('GODOT_TTL', 120),
     ],
+
+    'tokens' => [
+        'access_lifetime' => (float) env('ACCESS_LIFETIME', 10),
+        'refresh_lifetime' => (float) env('REFRESH_LIFETIME', 30)
+    ]
 ];
