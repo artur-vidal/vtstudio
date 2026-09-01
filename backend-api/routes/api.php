@@ -14,7 +14,10 @@ Route::controller(ApiAuthController::class)
     ->name('auth.')
     ->group(function() {
 
-        Route::post('/register', 'register')->name('register');
-        Route::post('/login', 'login')->name('login');
+        Route::post('/register', 'register')->name('register')
+            ->middleware('throttle:5,1');
+
+        Route::post('/login', 'login')->name('login')
+            ->middleware('throttle:login');
 
     });
