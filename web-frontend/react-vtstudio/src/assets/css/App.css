@@ -97,7 +97,7 @@ nav ul {
     flex-direction: row;
     justify-content: center;
     list-style: none;
-    gap: 20px;
+    gap: 1.25rem;
     padding: 1rem;
 }
 
@@ -111,7 +111,7 @@ nav a{
 a img {
     width: 3.85rem;
     height: 3.5rem;
-    margin: -15px;
+    margin: -0.983rem;
 }
 
 /*Mensagem inicial*/
@@ -158,8 +158,8 @@ section.card {
 }
 
 section.card img {
-    width: 350px;
-    height: 300px;
+    width: 21.875rem;
+    height: 18.75rem;
     object-fit: cover;
     object-position: left;
     border-left: var(--Vermelho-D-Escurecido) solid 2rem;
@@ -192,8 +192,8 @@ section.download {
 }
 
 section.download img {
-    width: 350px;
-    height: 300px;
+    width: 21.875rem;
+    height: 18.75rem;
     object-fit: cover;
     object-position: left;
     border-right: var(--Vermelho-D-Escurecido) solid 2rem;
@@ -228,8 +228,8 @@ section.instalacao{
 }
 
 section.instalacao img {
-    width: 720px;
-    height: 300px;
+    width: 45rem;
+    height: 18.75rem;
     object-fit: cover;
     object-position: left;
     border-bottom: var(--Vermelho-D-Escurecido) solid 2rem;
@@ -252,8 +252,8 @@ div.texto-baixo a {
     font-weight: bold;
     background-color: var(--Vermelho-D);
     border-bottom: solid var(--Vermelho-D-Escurecido);
-    border-radius: 4px;
-    width: 380px;
+    border-radius: 0.25rem;
+    width: 23.75rem;
     padding: 0.5rem;
     margin: 1rem;
     transition: background-color 0.5s ease, border-color 0.5s ease;
@@ -313,7 +313,7 @@ section.vtstudio-extra {
 }
 
 section.vtstudio-extra img {
-    width: 680px;
+    width: 42.5rem;
     height: 18.75rem;
     object-fit: cover;
     object-position: center;
@@ -394,7 +394,7 @@ section.Sobre .Sobre-Texto {
 .Sobre-Indicadores {
     position: absolute;
     left: 50%;
-    bottom: 12px;
+    bottom: 0.75rem;
     transition: opacity 1.2s ease;
     opacity: 1;
     translate: -50% 0;
