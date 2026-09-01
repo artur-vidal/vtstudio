@@ -136,12 +136,13 @@ section a.Download {
     text-align: center;
     font-weight: bold;
     padding: 0.25rem;
-    transition:  background-color 0.5s ease;
+    transition:  background-color 0.5s ease, border-color 0.5s ease;
     margin: 1rem;
 }
 
 section a.Download:hover {
     background-color: var(--Vermelho-D-Escurecido);
+    border-color: var(--Vermelho-Sombra);
 }
 
 /*Card descubra mais*/
