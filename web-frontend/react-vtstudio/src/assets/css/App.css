@@ -287,6 +287,35 @@ section.Vtstudio p{
     padding-left: 2rem;
 }
 
+/*Sessão sobre o VTStudio extra*/
+
+section.vtstudio-extra {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    align-items: flex-start;
+    justify-content: center;
+    margin: 0 auto;
+    width: fit-content;
+    padding: 2rem;
+    gap: 1rem;
+}
+
+section.vtstudio-extra img {
+    width: 680px;
+    height: 18.75rem;
+    object-fit: cover;
+    object-position: center;
+    border-bottom: var(--Vermelho-D-Escurecido) solid 2rem;
+    border-radius: 1rem;
+    transition: border-color 0.5s ease;
+    align-self: center;
+}
+
+section.vtstudio-extra img:hover{
+    border-color: var(--Vermelho-Sombra);
+}
+
 /*Card sobre nós*/
 section.Sobre {
     display: flex;
