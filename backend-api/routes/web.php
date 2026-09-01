@@ -7,10 +7,14 @@ use Illuminate\Http\Request;
 
 Route::controller(GoogleAuthController::class)
     ->prefix('auth/google')
+    ->name('auth.google.')
     ->group(function() {
 
-        Route::get('/redirect', 'redirect');
-        Route::get('/callback', 'callback');
-        Route::post('/exchange', 'exchange')->withoutMiddleware(ValidateCsrfToken::class);
+        Route::get('/redirect', 'redirect')->name('redirect');
+        Route::get('/callback', 'callback')->name('callback');
+        Route::post('/exchange', 'exchange')->name('exchange')
+            ->withoutMiddleware(ValidateCsrfToken::class);
+
+        Route::view('/fallback', 'google-fallback')->name('fallback');
 
     });

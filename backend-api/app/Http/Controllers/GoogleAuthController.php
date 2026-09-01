@@ -54,7 +54,7 @@ class GoogleAuthController extends Controller
             return redirect("{$redirect}?code={$code}&state={$state}");
             
         } catch(\Exception $e) {
-            return redirect()->route('app.auth.google.fallback');
+            return redirect()->route('auth.google.fallback');
         }
     }
 
