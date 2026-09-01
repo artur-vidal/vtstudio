@@ -11,4 +11,9 @@ class User extends Authenticatable
     use Notifiable, HasApiTokens;
 
     protected $guarded = ['id', 'created_at', 'updated_at'];
+    protected $casts = [
+        'password' => 'hashed'
+    ];
+
+    protected $hidden = ['password'];
 }
