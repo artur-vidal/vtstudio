@@ -80,6 +80,21 @@ img.terceiro{
     top:80%;
 }
 
+.fade-pagina {
+    animation: fadeInPage 1s ease;
+}
+
+@keyframes fadeInPage {
+    from {
+        opacity: 0;
+        transform: translateY(0.625rem);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /*Estilização de texto*/
 h1 {font-size: 2.25rem;}
 h2 {font-size: 1.875rem;}

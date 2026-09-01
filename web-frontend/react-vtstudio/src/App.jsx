@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import './assets/css/App.css'
 import { Routes, Route} from 'react-router-dom'
 import Navbar from './components/Navbar.jsx'
@@ -11,6 +12,7 @@ import Vtstudio from './pages/VTStudio.jsx'
 import Dado from './assets/imgs/dado.png'
 
 function App() {
+    const location = useLocation();
     return (
         <>
             <div className='app-wrapper'>
@@ -21,7 +23,7 @@ function App() {
                     <img src={Dado} alt="dado de fundo de tela" className='segundo'/>
                     <img src={Dado} alt="dado de fundo de tela" className='terceiro'/>
                 </div>
-                <main>
+                <main key={location.pathname} className='fade-pagina'>
                     <Routes>
                         <Route path='/' element={<Home />} />
                         <Route path='/download' element={<Download />} />
