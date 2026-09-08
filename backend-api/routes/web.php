@@ -3,7 +3,6 @@
 use App\Http\Controllers\GoogleAuthController;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request;
 
 Route::controller(GoogleAuthController::class)
     ->prefix('auth/google')
