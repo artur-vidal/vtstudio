@@ -1,0 +1,457 @@
+/*Import de fontes da página*/
+
+@import url('https://fonts.googleapis.com/css2?family=Fondamento:ital@0;1&family=Outfit:wght@100..900&display=swap');
+
+:root {
+    --Marrom-P : #3F0D12;
+    --Cinza-Escuro : #202020;
+    --Cinza-S : #747578;
+    --Vermelho-D : #A71D31;
+    --Vermelho-D-Escurecido : #9C1C2E;
+    --Vermelho-Sombra : #771724;
+    --Vermelho-Contraste : #EAB2B3;
+    --Vermelho-Contraste-Escuro : #cc9c9d;
+    --Dourado-D : #D5BF86;
+    --Dourado-D-Escurecido : #CDBB8D;
+    --Dourado-Sombra : #978A67;
+    --Amarelo-D : #F1F0CC;
+    --Preto : #020202;
+    --Branco : #FCFCFF;
+}
+
+/*Reset de formatação*/
+
+html {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar {
+    display: none;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Outfit;
+    background: linear-gradient(to bottom, #9C1C2E 10%,#020202 30%);
+    min-height: 100vh;
+    color: var(--Branco);
+}
+
+.app-wrapper {
+    position: relative;
+    min-height: 100vh;
+}
+
+.dado-fundo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.dado-fundo img {
+    position: absolute;
+    width: 31.25rem;
+}
+
+img.primeiro{
+    rotate: 80deg;
+    right: 85%;
+    top: 10rem;
+}
+img.segundo{
+    rotate: 45deg;
+    left: 85%;
+    top: 40rem;
+}
+img.terceiro{
+    rotate: 270deg;
+    right: 85%;
+    top: 80rem;
+}
+
+.fade-pagina {
+    animation: fadeInPage 1s ease;
+}
+
+@keyframes fadeInPage {
+    from {
+        opacity: 0;
+        transform: translateY(0.625rem);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/*Estilização de texto*/
+h1 {font-size: 2.25rem;}
+h2 {font-size: 1.875rem;}
+h3 {font-size: 1.5rem;}
+h3.Negrito {font-weight: bold;}
+p {font-size: 1.25rem;}
+
+
+/*Navbar*/
+header {
+    color: var(--Branco);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: center;
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+nav ul {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    list-style: none;
+    gap: 1.25rem;
+    padding: 1rem;
+}
+
+nav a{
+    text-decoration: none;
+    color: var(--Branco);
+    font-size: 0.875rem;
+    margin: 2rem;
+}
+
+a img {
+    width: 3.85rem;
+    height: 3.5rem;
+    margin: -0.983rem;
+}
+
+/*Mensagem inicial*/
+
+section.Mensagem {
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
+    align-items: center;
+    text-align: center;
+    padding: 2rem;
+    padding-bottom: 4rem;
+}
+
+section a.Download {
+    text-decoration: none;
+    color: var(--Branco);
+    background-color: var(--Vermelho-D);
+    border-bottom: var(--Vermelho-Sombra) 0.25rem solid;
+    border-radius: 0.25rem;
+    min-width: 16rem;
+    text-align: center;
+    font-weight: bold;
+    padding: 0.25rem;
+    transition:  background-color 0.5s ease, border-color 0.5s ease;
+    margin: 1rem;
+}
+
+section a.Download:hover {
+    background-color: var(--Vermelho-D-Escurecido);
+    border-color: var(--Vermelho-Sombra);
+}
+
+/*Card descubra mais*/
+section.card {
+    display: flex;
+    flex-direction: row;
+    text-align: right;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    width: fit-content;
+    padding: 2rem;
+}
+
+section.card img {
+    width: 21.875rem;
+    height: 18.75rem;
+    object-fit: cover;
+    object-position: left;
+    border-left: var(--Vermelho-D-Escurecido) solid 2rem;
+    border-radius: 1rem;
+    transition: border-color 0.5s ease;
+}
+
+section.card img:hover {
+    border-color: var(--Vermelho-Sombra);
+}
+
+.descubra {
+    position: relative;
+    left: 1.565rem;
+    writing-mode: sideways-lr;
+    font-weight: bold;
+    color: var(--Vermelho-Contraste);
+}
+
+/*Card Download*/
+section.download {
+    display: flex;
+    flex-direction: row;
+    text-align: left;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    width: fit-content;
+    padding: 2rem;
+}
+
+section.download img {
+    width: 21.875rem;
+    height: 18.75rem;
+    object-fit: cover;
+    object-position: left;
+    border-right: var(--Vermelho-D-Escurecido) solid 2rem;
+    border-radius: 1rem;
+    transition: border-color 0.5s ease;
+    margin: 2rem;
+}
+
+section.download img:hover {
+    border-color: var(--Vermelho-Sombra);
+}
+
+section.download h2{padding: 1rem;}
+section.download p {padding-left: 1rem;}
+
+section.download a.Download {
+    min-width: 23.75rem;
+    display: inline-block;
+}
+
+/*Sessão de download extra*/
+
+section.instalacao{
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    width: fit-content;
+    padding: 2rem;
+}
+
+section.instalacao img {
+    width: 45rem;
+    height: 18.75rem;
+    object-fit: cover;
+    object-position: left;
+    border-bottom: var(--Vermelho-D-Escurecido) solid 2rem;
+    border-radius: 1rem;
+    transition: border-color 0.5s ease;
+    margin: 1rem;
+}
+
+section.instalacao img:hover{
+    border-color: var(--Vermelho-Sombra);
+}
+
+div.texto-cima {text-align: left;}
+div.texto-baixo {text-align: center;}
+
+div.texto-baixo a {
+    display: inline-block;
+    text-decoration: none;
+    color: var(--Branco);
+    font-weight: bold;
+    background-color: var(--Vermelho-D);
+    border-bottom: solid var(--Vermelho-D-Escurecido);
+    border-radius: 0.25rem;
+    width: 23.75rem;
+    padding: 0.5rem;
+    margin: 1rem;
+    transition: background-color 0.5s ease, border-color 0.5s ease;
+}
+
+div.texto-baixo a:hover {
+    background-color: var(--Vermelho-D-Escurecido);
+    border-color: var(--Vermelho-Sombra);
+}
+
+/*Card vtstudio*/
+section.Vtstudio {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    align-items: flex-start;
+    justify-content: center;
+    margin: 0 auto;
+    width: fit-content;
+    padding: 2rem;
+}
+
+section.Vtstudio img {
+    width: 34.375rem;
+    height: 18.75rem;
+    object-fit: cover;
+    object-position: center;
+    border-bottom: var(--Vermelho-D-Escurecido) solid 2rem;
+    border-radius: 1rem;
+    transition: border-color 0.5s ease;
+    margin: 2rem;
+    align-self: center;
+}
+
+section.Vtstudio img:hover {
+    border-color: var(--Vermelho-Sombra);
+}
+
+section.Vtstudio h2, 
+section.Vtstudio p{
+    text-align: left;
+    padding-left: 2rem;
+}
+
+/*Sessão sobre o VTStudio extra*/
+
+section.vtstudio-extra {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    align-items: flex-start;
+    justify-content: center;
+    margin: 0 auto;
+    width: fit-content;
+    padding: 2rem;
+    gap: 1rem;
+}
+
+section.vtstudio-extra img {
+    width: 42.5rem;
+    height: 18.75rem;
+    object-fit: cover;
+    object-position: center;
+    border-bottom: var(--Vermelho-D-Escurecido) solid 2rem;
+    border-radius: 1rem;
+    transition: border-color 0.5s ease;
+    align-self: center;
+}
+
+section.vtstudio-extra img:hover{
+    border-color: var(--Vermelho-Sombra);
+}
+
+/*Card sobre nós*/
+section.Sobre {
+    display: flex;
+    flex-direction: row;
+    text-align: justify;
+    align-items: flex-start;
+    justify-content: center;
+    margin: 0 auto;
+    width: fit-content;
+    padding: 2rem;
+    gap: 2rem;
+}
+
+section.Sobre .Sobre-Texto {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    padding-top: 2rem;
+}
+
+.Sobre-Texto {
+    transition: opacity 1.5s ease;
+    opacity: 1;
+}
+
+.Sobre-Texto.trocando {
+    opacity: 0;
+}
+
+.Sobre-Texto p {
+    white-space: pre-line;
+}
+
+.Sobre-Carrossel {
+    position: relative;
+}
+
+.Sobre-Carrossel button {
+    background: var(--Vermelho-D);
+    color: var(--Branco);
+    border: none;
+    border-radius: 50%;
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.Sobre-Carrossel img {
+    width: 20rem;
+    height: 20rem;
+    object-fit: cover;
+    object-position: center;
+    border-bottom: var(--Vermelho-D-Escurecido) solid 2rem;
+    border-radius: 1rem;
+    transition: opacity 1.5s ease;
+    align-self: center;
+    opacity: 1;
+}
+
+.Sobre-Carrossel img.trocando{
+    opacity: 0;
+}
+
+.Sobre-Indicadores {
+    position: absolute;
+    left: 50%;
+    bottom: 0.75rem;
+    transition: opacity 1.2s ease;
+    opacity: 1;
+    translate: -50% 0;
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.Sobre-Indicadores.trocando{
+    opacity: 0;
+}
+
+.Sobre-Indicadores span {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+    background: var(--Cinza-S);
+    cursor: pointer;
+}
+
+.Sobre-Indicadores span.ativo {
+    background: var(--Branco);
+}
+
+/*Footer*/
+footer {
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
+    align-items: center;
+    padding: 3rem;
+    background: linear-gradient(to top, #9C1C2E 50%, #020202 100%);
+}
+
+footer p {margin-top: 3rem;}
+footer a {color: var(--Branco);}
