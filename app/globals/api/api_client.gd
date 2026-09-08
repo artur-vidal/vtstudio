@@ -18,7 +18,7 @@ var response_body: PackedByteArray = PackedByteArray()
 var connected: bool = false
 
 func _ready() -> void:
-	http.connect_to_host(Config.API_HOST)
+	http.connect_to_host(Config.API_HOST, Config.API_PORT)
 
 func _process(_delta: float) -> void:
 	http.poll()
@@ -43,6 +43,13 @@ func _process(_delta: float) -> void:
 			var chunk = http.read_response_body_chunk()
 			if chunk.size() > 0:
 				current.response.append_array(chunk)
+		
+		HTTPClient.Status.STATUS_CONNECTION_ERROR, HTTPClient.Status.STATUS_TLS_HANDSHAKE_ERROR:
+			# volta o request atual pra frente da fila e tento reconectar novamente
+			if current != null:
+				queue.push_front(current)
+				current = null
+			http.connect_to_host(Config.API_HOST, Config.API_PORT)
 
 func request(method: HTTPClient.Method, path: String, body: String = "", headers: PackedStringArray = []) -> Variant:
 	# temporario, depois crio alguma maneira de fazer requests mais flexíveis
@@ -62,9 +69,11 @@ func request(method: HTTPClient.Method, path: String, body: String = "", headers
 	
 	var data = JSON.parse_string(item.response.get_string_from_utf8()) if !item.response.is_empty() else {}
 	
-	return { 
-		"data": data,
+	var response = { 
 		"response_headers": item.response_headers,
 		"code": http.get_response_code(),
 		"ok": str(http.get_response_code()).begins_with('2') # código 2XX
 	}
+	response.merge(data)
+	
+	return response

@@ -17,7 +17,7 @@ var expire_seconds := Config.GOOGLE_AUTH_SERVER_EXPIRE_TIME
 var server_ttl := Config.GOOGLE_AUTH_SERVER_TIME_TO_LIVE
 
 @onready var redirect_url := Config.get_api_url() + Config.GOOGLE_LOGIN_PATH
-@onready var login_url := redirect_url + "?client_redirect=http://127.0.0.1:" + str(port) + "/callback?state=%s"
+@onready var login_url := redirect_url + "?client_redirect=http://127.0.0.1:" + str(port) + "/callback&state=%s"
 
 func _process(_delta: float) -> void:
 	if server.is_listening() and server.is_connection_available():
@@ -46,7 +46,7 @@ func _process(_delta: float) -> void:
 					var code = params_dict.get('code')
 					if(code):
 						authenticated = await _exchange_credentials(code)
-			
+				
 			_stop_server(authenticated)
 			
 			var response = ""
@@ -72,27 +72,32 @@ func begin_authentication(callback: Callable = func(): return null) -> void:
 	
 	var err = server.listen(port)
 	if(err == OK):
-		print('Auth Server open.')
-		
 		running = true
+		expired = false
 		state = Crypto.new().generate_random_bytes(32).hex_encode()
 		on_complete = callback
 		OS.shell_open(login_url % [state])
 		_start_timers()
+		
+		print('Auth Server open.')
 	else:
 		print('Auth Server couldn\'t be open. Status: %d' % err)
 
-func _expired() -> void:
-	expired = true
-	print('Auth Server time expired.')
-
 func _stop_server(success: bool) -> void:
-	running = false
+	if(success):
+		on_complete.call()
+	
 	server.stop()
+
+	running = false
+	expired = false
 	state = ""
 	on_complete = func(): return null
+	
 	if(server_timer):
 		server_timer.queue_free()
+	if(expire_timer):
+		expire_timer.queue_free()
 	
 	server_stopped.emit(success)
 	print('Auth Server stopped.')
@@ -133,7 +138,7 @@ func _exchange_credentials(code: String) -> bool:
 		return false
 	
 	# salvando credenciais
-	_write_credentials(response.data.accessToken, response.data.refreshToken)
+	_write_credentials(response.accessToken, response.refreshToken)
 	return true
 
 func _write_credentials(access_token: String, refresh_token: String) -> void:
@@ -142,3 +147,8 @@ func _write_credentials(access_token: String, refresh_token: String) -> void:
 	var file = FileAccess.open_encrypted_with_pass('user://auth.dat', FileAccess.WRITE, Config.APP_KEY)
 	file.store_string(JSON.stringify({ "refresh_token": refresh_token }))
 	file.close()
+
+func _expired() -> void:
+	expired = true
+	_stop_server(false)
+	print('Auth Server time expired.')

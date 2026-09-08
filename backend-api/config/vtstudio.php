@@ -12,7 +12,7 @@ return [
     */
 
     'godot' => [
-        'redirect' => env('GODOT_REDIRECT_SERVER', env('APP_URL')),
+        'redirect' => env('GODOT_REDIRECT', env('APP_URL')),
         'ttl' => env('GODOT_TTL', 120),
     ],
 
