@@ -16,7 +16,7 @@ class FeedbackResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'conteudo' => $this->texto,
+            'texto' => $this->texto,
             'criado_em' => $this->created_at,
             'user' => $this->user?->toResource(),
         ];
