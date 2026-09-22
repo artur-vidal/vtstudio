@@ -13,12 +13,13 @@ class FeedbackController extends Controller
 
     public function store(Request $request) {
         $data = $request->validate([
-            'texto' => ['required', 'string', 'max:65535']
+            'texto' => ['required', 'string', 'max:65535'],
+            'anonimo' => ['sometimes', 'boolean']
         ]);
 
         $feedback = Feedback::create([
             'texto' => $data['texto'],
-            'usuario_id' => $request->user()?->id
+            'usuario_id' => ($data['anonimo'] ?? false) ? null : $request->user()?->id
         ]);
 
         return response()->json([
