@@ -76,10 +76,29 @@ CREATE TABLE `pagamentos`(
     `usuario_id` BIGINT UNSIGNED NOT NULL,
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+CREATE TABLE `refresh_tokens`(
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `usuario_id` BIGINT UNSIGNED NOT NULL,
+    `token_hash` VARCHAR(255) NOT NULL,
+    `family_id` CHAR(36) NOT NULL,
+    `expires_at` TIMESTAMP NOT NULL,
+    `revoked_at` TIMESTAMP NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE `google_credenciais`(
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `usuario_id` BIGINT UNSIGNED NOT NULL,
+    `google_id` VARCHAR(255) NOT NULL,
+    `google_refresh` TEXT NOT NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 ALTER TABLE
     `usuario_permissao` ADD CONSTRAINT `usuario_permissao_usuario_mesa_id_foreign` FOREIGN KEY(`usuario_mesa_id`) REFERENCES `usuario_mesa`(`usuario_id`);
 ALTER TABLE
     `pagamentos` ADD CONSTRAINT `pagamentos_usuario_id_foreign` FOREIGN KEY(`usuario_id`) REFERENCES `usuarios`(`id`);
+ALTER TABLE
+    `refresh_tokens` ADD CONSTRAINT `refresh_tokens_usuario_id_foreign` FOREIGN KEY(`usuario_id`) REFERENCES `usuarios`(`id`);
 ALTER TABLE
     `mesas` ADD CONSTRAINT `mesas_dono_id_foreign` FOREIGN KEY(`dono_id`) REFERENCES `usuarios`(`id`);
 ALTER TABLE
@@ -90,6 +109,10 @@ ALTER TABLE
     `recuperar_senhas` ADD CONSTRAINT `recuperar_senhas_usuario_id_foreign` FOREIGN KEY(`usuario_id`) REFERENCES `usuarios`(`id`);
 ALTER TABLE
     `usuario_mesa` ADD CONSTRAINT `usuario_mesa_usuario_id_foreign` FOREIGN KEY(`usuario_id`) REFERENCES `usuarios`(`id`);
+ALTER TABLE
+    `google_credenciais` ADD CONSTRAINT `google_credenciais_usuario_id_foreign` FOREIGN KEY(`usuario_id`) REFERENCES `usuarios`(`id`);
+ALTER TABLE
+    `usuario_mesa` ADD CONSTRAINT `usuario_mesa_mesa_id_foreign` FOREIGN KEY(`mesa_id`) REFERENCES `mesas`(`id`);
 ALTER TABLE
     `feedbacks` ADD CONSTRAINT `feedbacks_id_foreign` FOREIGN KEY(`id`) REFERENCES `usuarios`(`id`);
 ALTER TABLE
