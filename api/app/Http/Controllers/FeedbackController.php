@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 class FeedbackController extends Controller
 {
     public function index() {
-        // implementar
+        return Feedback::latest()->paginate(5)->toResourceCollection();
     }
 
     public function store(Request $request) {
