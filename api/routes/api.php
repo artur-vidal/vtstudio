@@ -30,7 +30,9 @@ Route::controller(FeedbackController::class)
     ->group(function() {
 
         // TODO: implementar algum sistema de roles de usuário para proteger essa rota
-        Route::get('/', 'index')->name('index'); 
-        Route::post('/', 'store')->name('store');
+        Route::get('/', 'index')->name('index')
+            ->middleware('api-token'); 
+        Route::post('/', 'store')->name('store')
+            ->middleware('loose-api-token');
 
     });
