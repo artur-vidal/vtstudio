@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ApiAuthController;
+use App\Http\Controllers\FeedbackController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/me', [ApiAuthController::class, 'me'])
@@ -20,5 +21,18 @@ Route::controller(ApiAuthController::class)
         Route::post('/refresh', 'refresh')->name('refresh');
 
         Route::post('/logout', 'logout')->name('logout');
+
+    });
+
+Route::controller(FeedbackController::class)
+    ->prefix('feedbacks')
+    ->name('feedbacks.')
+    ->group(function() {
+
+        // TODO: implementar algum sistema de roles de usuário para proteger essa rota
+        Route::get('/', 'index')->name('index')
+            ->middleware('api-token'); 
+        Route::post('/', 'store')->name('store')
+            ->middleware('loose-api-token');
 
     });
