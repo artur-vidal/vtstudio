@@ -25,9 +25,9 @@ class ApiAuthController extends Controller
 
     public function register(Request $request) {
         $data = $request->validate([
-            'name' => ['required', 'string'],
-            'email' => ['required', 'email', 'unique:users,email'],
-            'password' => ['required', 'string', Password::min(8)
+            'nome' => ['required', 'string'],
+            'email' => ['required', 'email', 'unique:usuarios,email'],
+            'senha' => ['required', 'string', Password::min(8)
                 ->mixedCase()
                 ->numbers()
             ],
@@ -45,11 +45,11 @@ class ApiAuthController extends Controller
     public function login(Request $request) {
         $data = $request->validate([
             'email' => ['required', 'email'],
-            'password' => ['required', 'string']
+            'senha' => ['required', 'string']
         ]);
 
         $user = User::firstWhere('email', $data['email']);
-        if(!$user || !Hash::check($data['password'], $user->password)) {
+        if(!$user || !Hash::check($data['senha'], $user->senha)) {
             return response()->json([
                 'message' => 'Credenciais inválidas. Tente novamente.'
             ], 401);

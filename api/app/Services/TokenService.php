@@ -33,7 +33,7 @@ class TokenService
         $plain = Str::random(64);
 
         RefreshToken::create([
-            'user_id' => $user->id,
+            'usuario_id' => $user->id,
             'family_id' => $family_id ?? Str::uuid(),
             'token_hash' => hash('sha256', $plain),
             'expires_at' => now()->addDays(config('vtstudio.tokens.refresh_lifetime')) // 30 dias
