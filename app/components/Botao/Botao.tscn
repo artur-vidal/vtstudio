@@ -1,0 +1,17 @@
+[gd_scene format=3 uid="uid://bibap5kc4ibb2"]
+
+[ext_resource type="Theme" uid="uid://ccntfg5km537x" path="res://components/themes/ButtonDourado-Outline.tres" id="1_dhiux"]
+[ext_resource type="Script" uid="uid://dj635ovtnaopo" path="res://components/Botao/button.gd" id="2_mhv5s"]
+
+[node name="BotaoDourado" type="Button" unique_id=151969610]
+custom_minimum_size = Vector2(96, 42)
+custom_maximum_size = Vector2(144, 60)
+offset_right = 96.0
+offset_bottom = 42.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme = ExtResource("1_dhiux")
+text = "Botão"
+script = ExtResource("2_mhv5s")
+cor = "Vermelho-Outline"
+metadata/_edit_use_anchors_ = true
