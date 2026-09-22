@@ -1,0 +1,20 @@
+[gd_scene format=3 uid="uid://brotkrsfn8tyt"]
+
+[ext_resource type="Theme" uid="uid://mnrtuqist27d" path="res://components/themes/IconeCinza-Outline.tres" id="1_i7wvb"]
+[ext_resource type="Script" uid="uid://cq7n6bym6mcoo" path="res://components/icone/icon.gd" id="1_t7egm"]
+
+[node name="PanelContainer" type="PanelContainer" unique_id=1726400785]
+custom_minimum_size = Vector2(64, 64)
+custom_maximum_size = Vector2(80, 80)
+offset_right = 64.0
+offset_bottom = 64.0
+theme = ExtResource("1_i7wvb")
+script = ExtResource("1_t7egm")
+tamanho = "Medium"
+cor = "Dourado-Outline"
+
+[node name="TextureRect" type="TextureRect" parent="." unique_id=131913931]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
