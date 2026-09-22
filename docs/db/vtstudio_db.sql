@@ -7,8 +7,7 @@ CREATE TABLE `usuarios`(
     `nome` VARCHAR(100) NOT NULL,
     `email` VARCHAR(255) NOT NULL,
     `senha` CHAR(60) NULL,
-    `google_id` VARCHAR(255) NULL,
-    `avatar_url` VARCHAR(255) NOT NULL,
+    `avatar_url` VARCHAR(255) NULL,
     `verified_at` TIMESTAMP NULL,
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
