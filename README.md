@@ -3,4 +3,5 @@ VTStudio é um projeto criado pelos alunos Artur Vidal, Augusto dos Santos, Davi
 o trabalho consiste em uma mesa de RPG virtual (Virtual Table Top) em 3D, visto que demais programas para criações de VTT´s são complicadas e com funções faltantes, o VTStudio visa ser um editor simples e intuitivo,
 consistente e moderno, sendo tanto uma porta de entrada, quanto um ótimo local para quem já e familiarizado com o mundo do RPG.
 
-## Instalação
+## Diagrama ER
+Para o Diagrama Entidade-Relacionamento do Banco de Dados, migramos para a plataforma DrawSQL durante o desenvolvimento. A plataforma oferece visualização síncrona do diagrama, facilitando a edição e consulta. O diagrama está disponível clicando [aqui.](https://drawsql.app/teams/artur-vidal/diagrams/vtstudio)
