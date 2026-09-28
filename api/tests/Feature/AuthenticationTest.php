@@ -15,20 +15,31 @@ class AuthenticationTest extends TestCase
 
     public function testValidUserIsRegistered(): void
     {
-        $response = $this->post('/api/auth/register', $this->getValidUserData(), $this->apiHeaders());
-        $response->assertStatus(201);
+        $res = $this->post('/api/auth/register', $this->getValidUserData(), $this->apiHeaders());
+        $res->assertStatus(201);
     }
 
     public function testUserWithInvalidEmailIsNotRegistered(): void
     {
-        $response = $this->post('/api/auth/register', $this->getInvalidEmailUserData(), $this->apiHeaders());
-        $response->assertStatus(422);
+        $res = $this->post('/api/auth/register', $this->getInvalidEmailUserData(), $this->apiHeaders());
+        $res->assertStatus(422);
     }
 
     public function testUserWithInvalidPasswordIsNotRegistered(): void
     {
-        $response = $this->post('/api/auth/register', $this->getInvalidPasswordUserData(), $this->apiHeaders());
-        $response->assertStatus(422);
+        $res = $this->post('/api/auth/register', $this->getInvalidPasswordUserData(), $this->apiHeaders());
+        $res->assertStatus(422);
+    }
+
+    public function testUserWithDuplicateEmailIsNotRegistered(): void
+    {
+        // registra o primeiro
+        $res1 = $this->post('/api/auth/register', $this->getValidUserData(), $this->apiHeaders());
+        $res1->assertStatus(201);
+
+        // tenta registrar o segundo e da errado (espero)
+        $res2 = $this->post('/api/auth/register', $this->getValidUserData(), $this->apiHeaders());
+        $res2->assertStatus(422);
     }
 
     protected function getValidUserData(): array
