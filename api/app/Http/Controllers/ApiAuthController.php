@@ -31,7 +31,7 @@ class ApiAuthController extends Controller
             'accessToken' => $this->tokenator->createAccess($user),
             'refreshToken' => $this->tokenator->createRefresh($user),
             'data' => $user->toResource()
-        ]);
+        ], 201);
     }
 
     public function login(LoginRequest $request)
