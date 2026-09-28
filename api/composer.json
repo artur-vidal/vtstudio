@@ -69,7 +69,9 @@
         ],
         "pre-package-uninstall": [
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
-        ]
+        ],
+        "sniff": "vendor/bin/phpcs --standard=PSR12 --colors app/ tests/",
+        "sniff-fix": "vendor/bin/phpcbf --standard=PSR12 --colors app/ tests/"
     },
     "extra": {
         "laravel": {
