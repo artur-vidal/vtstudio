@@ -13,25 +13,25 @@ class AuthenticationTest extends TestCase
 
     public ?User $user = null;
 
-    public function testValidUserIsRegistered(): void
+    public function testUsuarioValidoEhRegistrado(): void
     {
         $res = $this->post('/api/auth/register', $this->getValidUserData(), $this->apiHeaders());
         $res->assertStatus(201);
     }
 
-    public function testUserWithInvalidEmailIsNotRegistered(): void
+    public function testUsuarioComEmailInvalidoNaoEhRegistrado(): void
     {
         $res = $this->post('/api/auth/register', $this->getInvalidEmailUserData(), $this->apiHeaders());
         $res->assertStatus(422);
     }
 
-    public function testUserWithInvalidPasswordIsNotRegistered(): void
+    public function testUsuarioComSenhaInvalidaNaoEhRegistrado(): void
     {
         $res = $this->post('/api/auth/register', $this->getInvalidPasswordUserData(), $this->apiHeaders());
         $res->assertStatus(422);
     }
 
-    public function testUserWithDuplicateEmailIsNotRegistered(): void
+    public function testUsuarioComEmailDuplicadoNaoEhRegistrado(): void
     {
         // registra o primeiro
         $res1 = $this->post('/api/auth/register', $this->getValidUserData(), $this->apiHeaders());
