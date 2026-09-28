@@ -29,7 +29,8 @@ class TokenService
         return JWT::encode($payload, $this->secret, 'HS256');
     }
 
-    public function createRefresh(User $user, ?string $family_id = null): string {
+    public function createRefresh(User $user, ?string $family_id = null): string
+    {
         $plain = Str::random(64);
 
         RefreshToken::create([
@@ -41,7 +42,7 @@ class TokenService
 
         return $plain;
     }
-    
+
     public function decode(string $token): ?object
     {
         return JWT::decode($token, new Key($this->secret, 'HS256'));

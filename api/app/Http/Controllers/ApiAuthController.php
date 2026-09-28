@@ -13,14 +13,16 @@ class ApiAuthController extends Controller
     public function __construct(
         public TokenService $tokenator
     ) {
-        $this->tokenator = new TokenService;
+        $this->tokenator = new TokenService();
     }
 
-    public function me(Request $request) {
+    public function me(Request $request)
+    {
         return $request->user()->toResource();
     }
 
-    public function register(RegisterRequest $request) {
+    public function register(RegisterRequest $request)
+    {
         $data = $request->validated();
 
         $user = User::create($data);
@@ -32,11 +34,12 @@ class ApiAuthController extends Controller
         ]);
     }
 
-    public function login(LoginRequest $request) {
+    public function login(LoginRequest $request)
+    {
         $data = $request->validated();
 
         $user = User::firstWhere('email', $data['email']);
-        if(!$user || !Hash::check($data['senha'], $user->senha)) {
+        if (!$user || !Hash::check($data['senha'], $user->senha)) {
             return response()->json([
                 'message' => 'Credenciais inválidas. Tente novamente.'
             ], 401);
@@ -48,7 +51,8 @@ class ApiAuthController extends Controller
         ], 200);
     }
 
-    public function refresh(Request $request) {
+    public function refresh(Request $request)
+    {
         $data = $request->validate([
             'token' => ['required', 'string']
         ]);
@@ -79,7 +83,8 @@ class ApiAuthController extends Controller
         ]);
     }
 
-    public function logout(Request $request) {
+    public function logout(Request $request)
+    {
         $hash = hash('sha256', $request->input('refreshToken'));
         RefreshToken::where('token_hash', $hash)->update(['revoked_at' => now()]);
         return response()->json(['message' => 'Deslogado com sucesso.']);

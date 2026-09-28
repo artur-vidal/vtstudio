@@ -7,11 +7,13 @@ use Illuminate\Http\Request;
 
 class FeedbackController extends Controller
 {
-    public function index() {
+    public function index()
+    {
         return Feedback::latest()->paginate(5)->toResourceCollection();
     }
 
-    public function store(Request $request) {
+    public function store(Request $request)
+    {
         $data = $request->validate([
             'texto' => ['required', 'string', 'max:65535'],
             'anonimo' => ['sometimes', 'boolean']

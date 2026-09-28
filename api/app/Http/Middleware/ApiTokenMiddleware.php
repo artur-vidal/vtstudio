@@ -21,23 +21,23 @@ class ApiTokenMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         $token = $request->bearerToken();
-        if(!$token) {
+        if (!$token) {
             return response()->json([
                 'message' => 'Token faltando.'
             ], 401);
         }
 
         try {
-            $token_data = (new TokenService)->decode($token);
-        } catch(ExpiredException $e) {
+            $token_data = (new TokenService())->decode($token);
+        } catch (ExpiredException $e) {
             return response()->json([
                 'message' => 'Token expirado.'
             ], 401);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             $token_data = null;
         }
-        
-        if(!$token_data || !($user = User::find($token_data->sub))) {
+
+        if (!$token_data || !($user = User::find($token_data->sub))) {
             return response()->json([
                 'message' => 'Token inválido.'
             ], 401);

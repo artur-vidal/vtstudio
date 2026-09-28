@@ -19,14 +19,15 @@ class LooseAuthMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         $token = $request->bearerToken();
-        if($token) {
+        if ($token) {
             try {
-                $token_data = (new TokenService)->decode($token);
+                $token_data = (new TokenService())->decode($token);
                 $user = User::find($token_data->sub);
                 Auth::login($user);
-            } catch(\Exception) {}
+            } catch (\Exception) {
+            }
         }
-        
+
         return $next($request);
     }
 }

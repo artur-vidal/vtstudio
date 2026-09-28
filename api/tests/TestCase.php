@@ -8,7 +8,7 @@ abstract class TestCase extends BaseTestCase
 {
     protected $seed = true;
 
-    protected function apiHeaders(): array 
+    protected function apiHeaders(): array
     {
         return [
             'Accept' => 'application/json',
