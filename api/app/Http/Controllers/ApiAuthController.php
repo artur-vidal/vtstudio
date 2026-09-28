@@ -2,20 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\RefreshToken;
-use App\Models\User;
-use App\Services\JwtService;
+use App\Http\Requests\User\{RegisterRequest, LoginRequest};
+use App\Models\{User, RefreshToken};
 use App\Services\TokenService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
 
 class ApiAuthController extends Controller
 {
     public function __construct(
         public TokenService $tokenator
-    )
-    {
+    ) {
         $this->tokenator = new TokenService;
     }
 
@@ -23,15 +20,8 @@ class ApiAuthController extends Controller
         return $request->user()->toResource();
     }
 
-    public function register(Request $request) {
-        $data = $request->validate([
-            'nome' => ['required', 'string'],
-            'email' => ['required', 'email', 'unique:usuarios,email'],
-            'senha' => ['required', 'string', Password::min(8)
-                ->mixedCase()
-                ->numbers()
-            ],
-        ]);
+    public function register(RegisterRequest $request) {
+        $data = $request->validated();
 
         $user = User::create($data);
 
@@ -42,11 +32,8 @@ class ApiAuthController extends Controller
         ]);
     }
 
-    public function login(Request $request) {
-        $data = $request->validate([
-            'email' => ['required', 'email'],
-            'senha' => ['required', 'string']
-        ]);
+    public function login(LoginRequest $request) {
+        $data = $request->validated();
 
         $user = User::firstWhere('email', $data['email']);
         if(!$user || !Hash::check($data['senha'], $user->senha)) {
