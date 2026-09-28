@@ -67,7 +67,7 @@ class AuthenticationTest extends TestCase
     {
         return [
             'nome' => 'John Persona',
-            'email' => 'john.persona.com',
+            'email' => 'john.persona@email.com',
             'senha' => 'Persona'
         ];
     }
