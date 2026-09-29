@@ -72,4 +72,14 @@ class AuthMiddlewareTest extends TestCase
 
         $this->assertEquals(403, $res->getStatusCode());
     }
+
+    public function testVisitanteNaoPodeAcessarRotaProtegidaParaAdministradores(): void
+    {
+        $req = Request::create('/api/me');
+        $middleware = new AdminMiddleware();
+        $res = $middleware->handle($req, function () {
+        });
+
+        $this->assertEquals(403, $res->getStatusCode());
+    }
 }
