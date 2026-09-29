@@ -11,12 +11,9 @@ class AuthMiddlewareTest extends TestCase
 
     public function testUsuarioLogadoPodeAcessarRotaProtegida(): void
     {
-        $auth = $this->actingAsApiUser();
+        $this->actingAsApiUser();
 
-        $userRes = $this->get('/api/me', [
-            ...$this->apiHeaders(),
-            'Authorization' => 'Bearer ' . $auth['accessToken']
-        ]);
+        $userRes = $this->get('/api/me', $this->apiHeaders());
         $userRes->assertStatus(200);
     }
 
