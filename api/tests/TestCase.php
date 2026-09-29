@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use App\Models\User;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
@@ -19,9 +20,14 @@ abstract class TestCase extends BaseTestCase
         ] : []);
     }
 
-    protected function actingAsApiUser(): array
+    protected function actingAsApiUser(bool $admin = false): array
     {
-        $user = \App\Models\User::factory()->create();
+        $factory = User::factory();
+        if ($admin) {
+            $factory = $factory->admin();
+        }
+
+        $user = $factory->create();
         $response = $this->post('/api/auth/login', [
             'email' => $user->email,
             'senha' => 'Persona6',

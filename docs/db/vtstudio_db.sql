@@ -8,6 +8,7 @@ CREATE TABLE `usuarios`(
     `email` VARCHAR(255) NOT NULL,
     `senha` CHAR(60) NULL,
     `avatar_url` VARCHAR(255) NULL,
+    `admin` BOOLEAN NOT NULL DEFAULT FALSE,
     `verified_at` TIMESTAMP NULL,
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

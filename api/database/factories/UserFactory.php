@@ -17,4 +17,11 @@ class UserFactory extends Factory
             'senha' => 'Persona6', // Senha padrão para facilitar testes de login
         ];
     }
+
+    public function admin(): self
+    {
+        return $this->state(function (array $attributes) {
+            return ['admin' => true];
+        });
+    }
 }
