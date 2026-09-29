@@ -15,4 +15,19 @@ abstract class TestCase extends BaseTestCase
             'Content-Type' => 'multipart/form-data',
         ];
     }
+
+    protected function actingAsApiUser(): array
+    {
+        $user = \App\Models\User::factory()->create();
+        $response = $this->post('/api/auth/login', [
+            'email' => $user->email,
+            'senha' => 'Persona6',
+        ], $this->apiHeaders());
+
+        return [
+            'user' => $user,
+            'accessToken' => $response->json('accessToken'),
+            'refreshToken' => $response->json('refreshToken'),
+        ];
+    }
 }
