@@ -1,7 +1,7 @@
 [gd_resource type="Theme" format=3 uid="uid://b766624uxondf"]
 
-[ext_resource type="Texture2D" uid="uid://4x3gtjb1uvat" path="res://components/CheckBox/Checkbox.png" id="1_kgxhb"]
-[ext_resource type="Texture2D" uid="uid://cky0hekxau2h" path="res://components/CheckBox/Uncheck_Box.png" id="2_h0m5b"]
+[ext_resource type="Texture2D" uid="uid://4x3gtjb1uvat" path="res://components/checkbox/Checkbox.png" id="1_kgxhb"]
+[ext_resource type="Texture2D" uid="uid://cky0hekxau2h" path="res://components/checkbox/Uncheck_Box.png" id="2_h0m5b"]
 
 [resource]
 CheckBox/icons/checked = ExtResource("1_kgxhb")

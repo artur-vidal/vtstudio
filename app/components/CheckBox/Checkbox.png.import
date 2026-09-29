@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://4x3gtjb1uvat"
-path="res://.godot/imported/Checkbox.png-ad7f83711f2b890b1b4e4816da479517.ctex"
+path="res://.godot/imported/Checkbox.png-20f371e0167ed46518f329607fc507ff.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://components/CheckBox/Checkbox.png"
-dest_files=["res://.godot/imported/Checkbox.png-ad7f83711f2b890b1b4e4816da479517.ctex"]
+source_file="res://components/checkbox/Checkbox.png"
+dest_files=["res://.godot/imported/Checkbox.png-20f371e0167ed46518f329607fc507ff.ctex"]
 
 [params]
 

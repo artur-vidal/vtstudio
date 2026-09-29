@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cky0hekxau2h"
-path="res://.godot/imported/Uncheck_Box.png-716d7738e01d08b1e156c9a26e1fca4e.ctex"
+path="res://.godot/imported/Uncheck_Box.png-2589ac2b9da2491e0e89b7daa8e43515.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://components/CheckBox/Uncheck_Box.png"
-dest_files=["res://.godot/imported/Uncheck_Box.png-716d7738e01d08b1e156c9a26e1fca4e.ctex"]
+source_file="res://components/checkbox/Uncheck_Box.png"
+dest_files=["res://.godot/imported/Uncheck_Box.png-2589ac2b9da2491e0e89b7daa8e43515.ctex"]
 
 [params]
 
