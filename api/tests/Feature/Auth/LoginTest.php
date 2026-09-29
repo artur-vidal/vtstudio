@@ -25,6 +25,6 @@ class LoginTest extends TestCase
 
         $tokenizer = new TokenService();
         $this->assertEquals($user->id, $tokenizer->decode($loginRes->json('accessToken'))->sub);
-        $this->assertTrue(RefreshToken::query()->where('usuario_id', $user->id)->exists());
+        $this->assertDatabaseHas('refresh_tokens', ['usuario_id' => $user->id]);
     }
 }

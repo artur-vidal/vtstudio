@@ -19,6 +19,7 @@ class LogoutTest extends TestCase
         $logoutRes = $this->post('/api/auth/logout', ['refreshToken' => $refreshToken], $this->apiHeaders());
         $logoutRes->assertStatus(200);
 
-        $this->assertTrue(RefreshToken::query()->where('usuario_id', $userId)->whereNotNull('revoked_at')->exists());
+        $this->assertDatabaseHas('refresh_tokens', ['usuario_id' => $userId]);
+        $this->assertDatabaseMissing('refresh_tokens', ['revoked_at' => null]);
     }
 }
