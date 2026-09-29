@@ -10,7 +10,7 @@ class FeedbackController extends Controller
 {
     public function index()
     {
-        return Feedback::latest()->paginate(5)->toResourceCollection();
+        return Feedback::query()->latest()->paginate(5)->toResourceCollection();
     }
 
     public function store(StoreRequest $request)
