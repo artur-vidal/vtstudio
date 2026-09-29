@@ -2,13 +2,13 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\User;
-use App\Services\TokenService;
+use App\Exceptions\Auth\InvalidTokenException;
+use App\Exceptions\Auth\MissingTokenException;
+use App\Exceptions\Auth\SessionRevokedException;
+use App\Services\AuthService;
 use Closure;
 use Firebase\JWT\ExpiredException;
-use Firebase\JWT\JWT;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class ApiTokenMiddleware
@@ -20,30 +20,22 @@ class ApiTokenMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $token = $request->bearerToken();
-        if (!$token) {
+        try {
+            $user = app()->make(AuthService::class)->authenticate($request);
+        } catch (MissingTokenException) {
             return response()->json([
                 'message' => 'Token faltando.'
             ], 401);
-        }
-
-        try {
-            $token_data = (new TokenService())->decode($token);
-        } catch (ExpiredException $e) {
+        } catch (ExpiredException | InvalidTokenException | SessionRevokedException) {
             return response()->json([
                 'message' => 'Token expirado.'
             ], 401);
         } catch (\Exception $e) {
-            $token_data = null;
-        }
-
-        if (!$token_data || !($user = User::find($token_data->sub))) {
             return response()->json([
-                'message' => 'Token inválido.'
-            ], 401);
+                'message' => $e->getMessage()
+            ], 422);
         }
 
-        Auth::login($user);
         return $next($request);
     }
 }

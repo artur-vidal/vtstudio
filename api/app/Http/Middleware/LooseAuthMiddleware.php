@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\User;
+use App\Services\AuthService;
 use App\Services\TokenService;
 use Closure;
 use Illuminate\Http\Request;
@@ -18,14 +19,10 @@ class LooseAuthMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $token = $request->bearerToken();
-        if ($token) {
-            try {
-                $token_data = (new TokenService())->decode($token);
-                $user = User::find($token_data->sub);
-                Auth::login($user);
-            } catch (\Exception) {
-            }
+        try {
+            app()->make(AuthService::class)->authenticate($request);
+        } catch (\Exception) {
+            // aqui não precisa quebrar
         }
 
         return $next($request);
