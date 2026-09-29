@@ -1,0 +1,31 @@
+[gd_scene format=3 uid="uid://c1obvgvsof0i4"]
+
+[ext_resource type="Script" uid="uid://fyl0inhiqt2j" path="res://components/radio/containerRadio.gd" id="1_32dd1"]
+[ext_resource type="PackedScene" uid="uid://ophlrrbfo31i" path="res://components/radio/radio.tscn" id="1_ritiw"]
+[ext_resource type="ButtonGroup" uid="uid://xmr4tkuyugnj" path="res://components/themes/ButtonGroup.tres" id="3_w4a77"]
+
+[node name="VBoxContainer" type="VBoxContainer" unique_id=573323882]
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_32dd1")
+button_group = ExtResource("3_w4a77")
+
+[node name="Radio" parent="." unique_id=1373734525 instance=ExtResource("1_ritiw")]
+layout_mode = 2
+button_group = ExtResource("3_w4a77")
+
+[node name="Radio2" parent="." unique_id=1315747590 instance=ExtResource("1_ritiw")]
+layout_mode = 2
+button_group = ExtResource("3_w4a77")
+
+[node name="Radio3" parent="." unique_id=1463818620 instance=ExtResource("1_ritiw")]
+layout_mode = 2
+button_group = ExtResource("3_w4a77")
+
+[node name="Radio4" parent="." unique_id=1751617396 instance=ExtResource("1_ritiw")]
+layout_mode = 2
+button_group = ExtResource("3_w4a77")
+
+[node name="Radio5" parent="." unique_id=1553113749 instance=ExtResource("1_ritiw")]
+layout_mode = 2
+button_group = ExtResource("3_w4a77")
