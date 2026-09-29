@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\RefreshToken;
 use App\Models\User;
 use App\Services\TokenService;
 use Closure;
@@ -29,6 +30,10 @@ class ApiTokenMiddleware
 
         try {
             $token_data = (new TokenService())->decode($token);
+            if (RefreshToken::query()->where('id', $token_data->sid)->whereNotNull('revoked_at')->exists())
+            {
+               throw new ExpiredException();
+            }
         } catch (ExpiredException $e) {
             return response()->json([
                 'message' => 'Token expirado.'

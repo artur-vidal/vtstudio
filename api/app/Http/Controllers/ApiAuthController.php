@@ -27,9 +27,11 @@ class ApiAuthController extends Controller
 
         $user = User::create($data);
 
+        ['model' => $refreshToken, 'plain' => $plainRefreshToken] = $this->tokenator->createRefresh($user);
+
         return response()->json([
-            'accessToken' => $this->tokenator->createAccess($user),
-            'refreshToken' => $this->tokenator->createRefresh($user),
+            'accessToken' => $this->tokenator->createAccess($user, $refreshToken),
+            'refreshToken' => $plainRefreshToken,
             'data' => $user->toResource()
         ], 201);
     }
@@ -45,9 +47,11 @@ class ApiAuthController extends Controller
             ], 401);
         }
 
+        ['model' => $refreshToken, 'plain' => $plainRefreshToken] = $this->tokenator->createRefresh($user);
+
         return response()->json([
-            'accessToken' => $this->tokenator->createAccess($user),
-            'refreshToken' => $this->tokenator->createRefresh($user)
+            'accessToken' => $this->tokenator->createAccess($user, $refreshToken),
+            'refreshToken' => $plainRefreshToken,
         ], 200);
     }
 

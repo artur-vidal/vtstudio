@@ -17,30 +17,34 @@ class TokenService
         $this->secret = config('app.key'); // reutilizando chave do aplicativos
     }
 
-    public function createAccess(User $user): string
+    public function createAccess(User $user, RefreshToken $refreshToken): string
     {
         $payload = [
             'iss' => config('app.url'),
             'iat' => time(),
             'exp' => time() + (60 * config('vtstudio.tokens.access_lifetime')), // 20 minutos
-            'sub' => $user->id
+            'sub' => $user->id,
+            'sid' => $refreshToken->id
         ];
 
         return JWT::encode($payload, $this->secret, 'HS256');
     }
 
-    public function createRefresh(User $user, ?string $family_id = null): string
+    public function createRefresh(User $user, ?string $family_id = null): array
     {
         $plain = Str::random(64);
 
-        RefreshToken::create([
+        $refresh = RefreshToken::create([
             'usuario_id' => $user->id,
             'family_id' => $family_id ?? Str::uuid(),
             'token_hash' => hash('sha256', $plain),
             'expires_at' => now()->addDays(config('vtstudio.tokens.refresh_lifetime')) // 30 dias
         ]);
 
-        return $plain;
+        return [
+            'model' => $refresh,
+            'plain' => $plain,
+        ];
     }
 
     public function decode(string $token): ?object
