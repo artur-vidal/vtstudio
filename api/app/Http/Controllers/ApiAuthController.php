@@ -2,66 +2,61 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\RefreshToken;
-use App\Models\User;
-use App\Services\JwtService;
+use App\Http\Requests\User\{RegisterRequest, LoginRequest};
+use App\Models\{User, RefreshToken};
 use App\Services\TokenService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
 
 class ApiAuthController extends Controller
 {
     public function __construct(
         public TokenService $tokenator
-    )
-    {
-        $this->tokenator = new TokenService;
+    ) {
+        $this->tokenator = new TokenService();
     }
 
-    public function me(Request $request) {
+    public function me(Request $request)
+    {
         return $request->user()->toResource();
     }
 
-    public function register(Request $request) {
-        $data = $request->validate([
-            'nome' => ['required', 'string'],
-            'email' => ['required', 'email', 'unique:usuarios,email'],
-            'senha' => ['required', 'string', Password::min(8)
-                ->mixedCase()
-                ->numbers()
-            ],
-        ]);
+    public function register(RegisterRequest $request)
+    {
+        $data = $request->validated();
 
         $user = User::create($data);
 
+        ['model' => $refreshToken, 'plain' => $plainRefreshToken] = $this->tokenator->createRefresh($user);
+
         return response()->json([
-            'accessToken' => $this->tokenator->createAccess($user),
-            'refreshToken' => $this->tokenator->createRefresh($user),
+            'accessToken' => $this->tokenator->createAccess($user, $refreshToken),
+            'refreshToken' => $plainRefreshToken,
             'data' => $user->toResource()
-        ]);
+        ], 201);
     }
 
-    public function login(Request $request) {
-        $data = $request->validate([
-            'email' => ['required', 'email'],
-            'senha' => ['required', 'string']
-        ]);
+    public function login(LoginRequest $request)
+    {
+        $data = $request->validated();
 
         $user = User::firstWhere('email', $data['email']);
-        if(!$user || !Hash::check($data['senha'], $user->senha)) {
+        if (!$user || !Hash::check($data['senha'], $user->senha)) {
             return response()->json([
                 'message' => 'Credenciais inválidas. Tente novamente.'
             ], 401);
         }
 
+        ['model' => $refreshToken, 'plain' => $plainRefreshToken] = $this->tokenator->createRefresh($user);
+
         return response()->json([
-            'accessToken' => $this->tokenator->createAccess($user),
-            'refreshToken' => $this->tokenator->createRefresh($user)
+            'accessToken' => $this->tokenator->createAccess($user, $refreshToken),
+            'refreshToken' => $plainRefreshToken,
         ], 200);
     }
 
-    public function refresh(Request $request) {
+    public function refresh(Request $request)
+    {
         $data = $request->validate([
             'token' => ['required', 'string']
         ]);
@@ -92,7 +87,8 @@ class ApiAuthController extends Controller
         ]);
     }
 
-    public function logout(Request $request) {
+    public function logout(Request $request)
+    {
         $hash = hash('sha256', $request->input('refreshToken'));
         RefreshToken::where('token_hash', $hash)->update(['revoked_at' => now()]);
         return response()->json(['message' => 'Deslogado com sucesso.']);

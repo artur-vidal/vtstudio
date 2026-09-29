@@ -9,12 +9,14 @@ use Google\Service\Drive\DriveFile;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\UnauthorizedException;
 
-class GoogleClient {
+class GoogleClient
+{
     protected Client $client;
     protected Drive $driveService;
 
-    public static function for(User $user) {
-        if(!$user->googleRefresh) {
+    public static function for(User $user)
+    {
+        if (!$user->googleRefresh) {
             throw new UnauthorizedException('Não autorizado.');
         }
 
@@ -26,15 +28,16 @@ class GoogleClient {
 
         $drive = new Drive($client);
 
-        $new = new self;
+        $new = new self();
         $new->client = $client;
         $new->driveService = $drive;
 
         return $new;
     }
 
-    public function getAppFolder(User $user) {
-        if($user->drive_folder_id) {
+    public function getAppFolder(User $user)
+    {
+        if ($user->drive_folder_id) {
             return $user->drive_folder_id;
         }
 
@@ -53,7 +56,8 @@ class GoogleClient {
         return $folder_id;
     }
 
-    public function upload(UploadedFile $file, string $folderId) {
+    public function upload(UploadedFile $file, string $folderId)
+    {
         $file_meta = new DriveFile([
             'name' => $file->getClientOriginalName(),
             'parents' => [$folderId]

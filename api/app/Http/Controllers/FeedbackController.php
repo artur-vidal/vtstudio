@@ -2,20 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Feedback\StoreRequest;
 use App\Models\Feedback;
 use Illuminate\Http\Request;
 
 class FeedbackController extends Controller
 {
-    public function index() {
-        return Feedback::latest()->paginate(5)->toResourceCollection();
+    public function index()
+    {
+        return Feedback::query()->latest()->paginate(5)->toResourceCollection();
     }
 
-    public function store(Request $request) {
-        $data = $request->validate([
-            'texto' => ['required', 'string', 'max:65535'],
-            'anonimo' => ['sometimes', 'boolean']
-        ]);
+    public function store(StoreRequest $request)
+    {
+        $data = $request->validated();
 
         $feedback = Feedback::create([
             'texto' => $data['texto'],
