@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://bx6ggb3yi2rb5"]
+
+[ext_resource type="Theme" uid="uid://dxnj307ss2re6" path="res://components/themes/Switch_Small.tres" id="1_xxjog"]
+[ext_resource type="Script" uid="uid://ba5ykhg77k18g" path="res://components/switch/switch.gd" id="2_xxjog"]
+
+[node name="Switch" type="CheckButton" unique_id=406740346]
+theme = ExtResource("1_xxjog")
+script = ExtResource("2_xxjog")
