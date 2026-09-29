@@ -15,3 +15,6 @@
 ## Checklist
 - [ ] Eu testei e revisei o código.
 - [ ] A estilização (se existir) segue as paletas de cores e guias de estilo do projeto.
+
+## Notas
+Observações adicionais (avisos, detalhamentos, etc). Opcional.
