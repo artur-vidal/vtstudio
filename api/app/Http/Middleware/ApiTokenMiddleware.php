@@ -30,9 +30,8 @@ class ApiTokenMiddleware
 
         try {
             $token_data = (new TokenService())->decode($token);
-            if (RefreshToken::query()->where('id', $token_data->sid)->whereNotNull('revoked_at')->exists())
-            {
-               throw new ExpiredException();
+            if (RefreshToken::query()->where('id', $token_data->sid)->whereNotNull('revoked_at')->exists()) {
+                throw new ExpiredException();
             }
         } catch (ExpiredException $e) {
             return response()->json([
