@@ -15,7 +15,8 @@ class User extends Authenticatable
 
     protected $guarded = ['id', 'created_at', 'updated_at'];
     protected $casts = [
-        'senha' => 'hashed'
+        'senha' => 'hashed',
+        'admin' => 'boolean'
     ];
 
     protected $hidden = ['password'];
