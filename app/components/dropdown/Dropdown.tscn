@@ -1,0 +1,72 @@
+[gd_scene format=3 uid="uid://dgiyf8adwj63m"]
+
+[ext_resource type="Texture2D" uid="uid://424l1qgeo0k3" path="res://components/dropdown/Imagens/Arrow down-circle.png" id="1_x12gm"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_royqa"]
+bg_color = Color(0.9764706, 0.9411765, 0.7019608, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0xdbw"]
+bg_color = Color(0.94509804, 0.9411765, 0.8, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kvaeu"]
+bg_color = Color(0.94509804, 0.9411765, 0.8, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="Theme" id="Theme_l4les"]
+OptionButton/colors/font_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+OptionButton/colors/font_disabled_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+OptionButton/colors/font_focus_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+OptionButton/colors/font_hover_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+OptionButton/colors/font_hover_pressed_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+OptionButton/colors/font_outline_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+OptionButton/colors/font_pressed_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+OptionButton/icons/arrow = ExtResource("1_x12gm")
+OptionButton/styles/hover = SubResource("StyleBoxFlat_royqa")
+OptionButton/styles/normal = SubResource("StyleBoxFlat_0xdbw")
+OptionButton/styles/pressed = SubResource("StyleBoxFlat_kvaeu")
+
+[sub_resource type="DPITexture" id="DPITexture_dsdcs"]
+
+[node name="Dropdown" type="OptionButton" unique_id=538495497]
+offset_right = 240.0
+offset_bottom = 27.0
+theme = SubResource("Theme_l4les")
+selected = 0
+allow_reselect = true
+search_bar_enabled = true
+item_count = 4
+popup/item_0/text = "Escolha 1"
+popup/item_0/icon = SubResource("DPITexture_dsdcs")
+popup/item_0/id = 0
+popup/item_1/text = "Escolha 2"
+popup/item_1/id = 1
+popup/item_2/text = "Escolha 3"
+popup/item_2/id = 2
+popup/item_3/text = "Escolha 4"
+popup/item_3/id = 3
