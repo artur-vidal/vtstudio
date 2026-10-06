@@ -1,31 +1,53 @@
 [gd_scene format=3 uid="uid://c1obvgvsof0i4"]
 
-[ext_resource type="Script" uid="uid://fyl0inhiqt2j" path="res://components/radio/containerRadio.gd" id="1_32dd1"]
 [ext_resource type="PackedScene" uid="uid://ophlrrbfo31i" path="res://components/radio/radio.tscn" id="1_ritiw"]
-[ext_resource type="ButtonGroup" uid="uid://xmr4tkuyugnj" path="res://components/themes/ButtonGroup.tres" id="3_w4a77"]
+[ext_resource type="ButtonGroup" uid="uid://xmr4tkuyugnj" path="res://components/themes/radio/ButtonGroup.tres" id="3_w4a77"]
+
+[sub_resource type="GDScript" id="GDScript_mhlhe"]
+script/source = "extends VBoxContainer
+
+# Called when the node enters the scene tree for the first time.
+func _ready() -> void:
+	pass
+
+func _on_opcao_selecionada(botao: BaseButton) -> void:
+	print(\"Selecionado: \" + botao.text)
+
+func _on_radio_toggled(ligado: bool, source: CheckBox) -> void:
+	for radio in get_children():
+		radio.button_pressed = false
+		if(radio.name == source.name):
+			radio.button_pressed = true
+"
 
 [node name="VBoxContainer" type="VBoxContainer" unique_id=573323882]
 offset_right = 40.0
 offset_bottom = 40.0
-script = ExtResource("1_32dd1")
-button_group = ExtResource("3_w4a77")
+script = SubResource("GDScript_mhlhe")
 
 [node name="Radio" parent="." unique_id=1373734525 instance=ExtResource("1_ritiw")]
 layout_mode = 2
 button_group = ExtResource("3_w4a77")
+texto = ""
+tamanho = "Large"
 
 [node name="Radio2" parent="." unique_id=1315747590 instance=ExtResource("1_ritiw")]
 layout_mode = 2
 button_group = ExtResource("3_w4a77")
+texto = ""
+tamanho = "Large"
 
 [node name="Radio3" parent="." unique_id=1463818620 instance=ExtResource("1_ritiw")]
 layout_mode = 2
 button_group = ExtResource("3_w4a77")
+tamanho = "Large"
 
 [node name="Radio4" parent="." unique_id=1751617396 instance=ExtResource("1_ritiw")]
 layout_mode = 2
 button_group = ExtResource("3_w4a77")
+tamanho = "Large"
 
 [node name="Radio5" parent="." unique_id=1553113749 instance=ExtResource("1_ritiw")]
 layout_mode = 2
 button_group = ExtResource("3_w4a77")
+tamanho = "Large"

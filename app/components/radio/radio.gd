@@ -6,11 +6,18 @@ extends CheckBox
 		texto = value
 		text = texto
 
-# Called when the node enters the scene tree for the first time.
+const TEMAS := {
+	"Small": preload("res://components/themes/radio/RadioSmall.tres"),
+	"Large": preload("res://components/themes/radio/RadioLarge.tres")
+}
+
+@export_enum("Small", "Large") var tamanho := "Small":
+	set(value):
+		tamanho = value
+		_aplicar_tamanho()
+
 func _ready() -> void:
-	pass # Replace with function body.
+	_aplicar_tamanho()
 
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	pass
+func _aplicar_tamanho() -> void:
+	theme = TEMAS[tamanho]

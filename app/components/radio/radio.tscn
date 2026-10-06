@@ -1,8 +1,9 @@
 [gd_scene format=3 uid="uid://ophlrrbfo31i"]
 
-[ext_resource type="Theme" uid="uid://g8cwmbo0mliv" path="res://components/themes/RadioLarge.tres" id="1_118c3"]
+[ext_resource type="Theme" uid="uid://g8cwmbo0mliv" path="res://components/themes/radio/RadioLarge.tres" id="1_118c3"]
 [ext_resource type="Script" uid="uid://s7ecs6ovuuje" path="res://components/radio/radio.gd" id="2_d6e2t"]
 
 [node name="Radio" type="CheckBox" unique_id=1373734525]
 theme = ExtResource("1_118c3")
 script = ExtResource("2_d6e2t")
+tamanho = null
