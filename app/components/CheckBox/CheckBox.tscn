@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://dhdmig1wfbjjw"]
+
+[ext_resource type="Theme" uid="uid://b766624uxondf" path="res://components/themes/checkbox/CheckBox.tres" id="1_we3tx"]
+
+[node name="CheckBox" type="CheckBox" unique_id=2007701302]
+theme = ExtResource("1_we3tx")

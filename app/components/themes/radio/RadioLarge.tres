@@ -1,0 +1,8 @@
+[gd_resource type="Theme" format=3 uid="uid://g8cwmbo0mliv"]
+
+[ext_resource type="Texture2D" uid="uid://dkk8dmq8mjw2i" path="res://components/radio/Imagem/Radio_Large_Select.png" id="1_qnh2g"]
+[ext_resource type="Texture2D" uid="uid://dldqx4yfl3mq6" path="res://components/radio/Imagem/Radio_Large.png" id="2_skair"]
+
+[resource]
+CheckBox/icons/radio_checked = ExtResource("1_qnh2g")
+CheckBox/icons/radio_unchecked = ExtResource("2_skair")

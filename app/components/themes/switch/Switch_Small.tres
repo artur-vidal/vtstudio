@@ -1,0 +1,10 @@
+[gd_resource type="Theme" format=3 uid="uid://dxnj307ss2re6"]
+
+[ext_resource type="Texture2D" uid="uid://c507p1ujddjv" path="res://components/switch/Small/Switch_Small_Check.png" id="1_kaash"]
+[ext_resource type="Texture2D" uid="uid://bivuyrheeonvd" path="res://components/switch/Small/Switch_Small_Uncheck.png" id="2_dhr46"]
+
+[resource]
+CheckButton/colors/button_checked_color = Color(0.94509804, 0.9411765, 0.8, 1)
+CheckButton/colors/button_unchecked_color = Color(0.94509804, 0.9411765, 0.8, 1)
+CheckButton/icons/checked = ExtResource("1_kaash")
+CheckButton/icons/unchecked = ExtResource("2_dhr46")

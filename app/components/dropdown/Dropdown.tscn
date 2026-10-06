@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://dgiyf8adwj63m"]
+
+[ext_resource type="Theme" uid="uid://dpsa2ei8x6jst" path="res://components/themes/dropdown/DropDown.tres" id="1_x12gm"]
+
+[node name="Dropdown" type="OptionButton" unique_id=538495497]
+offset_right = 240.0
+offset_bottom = 27.0
+theme = ExtResource("1_x12gm")
+selected = 0
+search_bar_enabled = true
+item_count = 4
+popup/item_0/text = "Escolha 1"
+popup/item_0/id = 0
+popup/item_1/text = "Escolha 2"
+popup/item_1/id = 1
+popup/item_2/text = "Escolha 3"
+popup/item_2/id = 2
+popup/item_3/text = "Escolha 4"
+popup/item_3/id = 3
