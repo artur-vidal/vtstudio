@@ -1,6 +1,6 @@
 [gd_resource type="Theme" format=3 uid="uid://cvxwbqhpo6xtf"]
 
-[ext_resource type="FontFile" uid="uid://cqs1uld5njnu1" path="res://assets/fonts/Outfit/Outfit-VariableFont_wght.ttf" id="1_5ydx6"]
+[ext_resource type="FontFile" uid="uid://cqs1uld5njnu1" path="res://assets/fonts/Outfit/Outfit-VariableFont_wght.ttf" id="1_dcg1q"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ffjng"]
 content_margin_left = 4.0
@@ -18,5 +18,5 @@ corner_radius_bottom_left = 8
 [resource]
 LineEdit/colors/font_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
 LineEdit/colors/selection_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
-LineEdit/fonts/Outfit = ExtResource("1_5ydx6")
+LineEdit/fonts/Outfit = ExtResource("1_dcg1q")
 LineEdit/styles/normal = SubResource("StyleBoxFlat_ffjng")

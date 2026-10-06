@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bibap5kc4ibb2"]
 
-[ext_resource type="Theme" uid="uid://ccntfg5km537x" path="res://components/themes/ButtonDourado-Outline.tres" id="1_dhiux"]
+[ext_resource type="Theme" uid="uid://ccntfg5km537x" path="res://components/themes/button/ButtonDourado-Outline.tres" id="1_dhiux"]
 [ext_resource type="Script" uid="uid://dj635ovtnaopo" path="res://components/botao/button.gd" id="2_mhv5s"]
 
 [node name="BotaoDourado" type="Button" unique_id=151969610]

@@ -26,10 +26,10 @@ func _aplicar_tamanho() -> void:
 
 func _aplicar_cor() -> void:
 	var temas := {
-		"Dourado": preload("res://components/themes/ButtonDourado.tres"),
-		"Vermelho": preload("res://components/themes/ButtonVermelho.tres"),
-		"Cinza-Outline": preload("res://components/themes/ButttonCinza-Outline.tres"),
-		"Vermelho-Outline": preload("res://components/themes/ButtonVermelho-Outline.tres"),
-		"Dourado-Outline": preload("res://components/themes/ButtonDourado-Outline.tres"),
+		"Dourado": preload("res://components/themes/button/ButtonDourado.tres"),
+		"Vermelho": preload("res://components/themes/button/ButtonVermelho.tres"),
+		"Cinza-Outline": preload("res://components/themes/button/ButttonCinza-Outline.tres"),
+		"Vermelho-Outline": preload("res://components/themes/button/ButtonVermelho-Outline.tres"),
+		"Dourado-Outline": preload("res://components/themes/button/ButtonDourado-Outline.tres"),
 	}
 	theme = temas[cor]

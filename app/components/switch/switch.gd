@@ -2,8 +2,8 @@
 extends CheckButton
 
 const TEMAS := {
-	"Small": preload("res://components/themes/Switch_Small.tres"),
-	"Large": preload("res://components/themes/Switch_Large.tres")
+	"Small": preload("res://components/themes/switch/Switch_Small.tres"),
+	"Large": preload("res://components/themes/switch/Switch_Large.tres")
 }
 
 @export_enum("Small", "Large") var tamanho := "Small":
