@@ -1,0 +1,89 @@
+[gd_scene format=3 uid="uid://1u2kdwv4crfi"]
+
+[ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://components/Botao/Botao.tscn" id="1_e0k58"]
+[ext_resource type="Texture2D" uid="uid://1y287ilvq2xa" path="res://assets/images/Vector.png" id="1_sfeqj"]
+[ext_resource type="FontFile" uid="uid://dwhrhbcuu4ruw" path="res://assets/fonts/Fondamento/Fondamento-Regular.ttf" id="2_847vk"]
+[ext_resource type="Theme" uid="uid://bwp2tkasans1b" path="res://components/themes/button/ButtonDourado.tres" id="2_kxkhy"]
+[ext_resource type="PackedScene" uid="uid://gcopp6rysbwg" path="res://components/textfield/TextField.tscn" id="3_sfeqj"]
+
+[sub_resource type="Theme" id="Theme_i1ghu"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_847vk"]
+bg_color = Color(0.654902, 0.11372549, 0.19215687, 1)
+
+[node name="CadastrarSe" type="Control" unique_id=143214516]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=574066315]
+custom_minimum_size = Vector2(412, 917)
+custom_maximum_size = Vector2(412, 917)
+layout_mode = 0
+offset_right = 412.0
+offset_bottom = 917.0
+theme = SubResource("Theme_i1ghu")
+theme_override_styles/panel = SubResource("StyleBoxFlat_847vk")
+
+[node name="Sprite2D" type="Sprite2D" parent="PanelContainer" unique_id=1765227725]
+position = Vector2(-2, 0)
+scale = Vector2(1.1666666, 1)
+texture = ExtResource("1_sfeqj")
+offset = Vector2(32, 32)
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer" unique_id=387725139]
+layout_mode = 2
+offset_transform_enabled = true
+offset_transform_position = Vector2(0, 232)
+theme_override_colors/default_color = Color(0.83137256, 0.7529412, 0.5411765, 1)
+theme_override_colors/font_selected_color = Color(0.83137256, 0.7529412, 0.5411765, 1)
+theme_override_fonts/normal_font = ExtResource("2_847vk")
+theme_override_fonts/bold_font = ExtResource("2_847vk")
+theme_override_font_sizes/normal_font_size = 36
+text = "Cadastrar-se"
+horizontal_alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer" unique_id=2051824737]
+layout_mode = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 520
+
+[node name="Cadastrar" parent="PanelContainer/MarginContainer" unique_id=151969610 instance=ExtResource("1_e0k58")]
+custom_minimum_size = Vector2(144, 42)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 6
+theme = ExtResource("2_kxkhy")
+text = "Cadastrar"
+tamanho = "Medium"
+cor = "Dourado"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer" unique_id=1691565061]
+custom_minimum_size = Vector2(96, 132)
+custom_maximum_size = Vector2(500, 240)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+offset_transform_enabled = true
+offset_transform_position_ratio = Vector2(0, -1)
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="TextField" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=535203837 instance=ExtResource("3_sfeqj")]
+layout_mode = 2
+placeholder_text = "Nome"
+
+[node name="TextField2" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=1339779170 instance=ExtResource("3_sfeqj")]
+layout_mode = 2
+placeholder_text = "E-mail"
+
+[node name="TextField3" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=788329338 instance=ExtResource("3_sfeqj")]
+layout_mode = 2
+placeholder_text = "Senha"
+
+[node name="TextField4" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=198734233 instance=ExtResource("3_sfeqj")]
+layout_mode = 2
+placeholder_text = "Confirmar Senha"
