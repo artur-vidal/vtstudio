@@ -1,0 +1,85 @@
+[gd_scene format=3 uid="uid://jj1hffbx4inr"]
+
+[ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://components/Botao/Botao.tscn" id="1_qksk2"]
+[ext_resource type="Theme" uid="uid://bbubev3ycaqjc" path="res://components/themes/button/ButtonVermelho.tres" id="2_gpufo"]
+[ext_resource type="Texture2D" uid="uid://bcl2g2mu5g85u" path="res://assets/icons/Casa.png" id="3_v2dd8"]
+[ext_resource type="Texture2D" uid="uid://cmnvpqf4ci22" path="res://assets/icons/Carta.png" id="4_f3b18"]
+[ext_resource type="Texture2D" uid="uid://ckoltbqe1qmev" path="res://assets/icons/Lapis.png" id="5_u58k2"]
+[ext_resource type="Texture2D" uid="uid://bummnu7aur6qn" path="res://assets/icons/Pastas.png" id="6_bnnoi"]
+[ext_resource type="Texture2D" uid="uid://uxfhwlj7bg4s" path="res://assets/images/Detalhe.png" id="7_1alol"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_p877t"]
+bg_color = Color(0.6117647, 0.10980392, 0.18039216, 1)
+
+[node name="NavBar" type="HBoxContainer" unique_id=1337153430]
+custom_minimum_size = Vector2(412, 140)
+alignment = 1
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=1430154191]
+custom_minimum_size = Vector2(412, 140)
+custom_maximum_size = Vector2(412, 140)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_p877t")
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer" unique_id=421320659]
+layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer" unique_id=979314522]
+layout_mode = 2
+alignment = 1
+
+[node name="BotaoDourado" parent="PanelContainer/MarginContainer/HBoxContainer" unique_id=151969610 instance=ExtResource("1_qksk2")]
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 4
+theme = ExtResource("2_gpufo")
+text = ""
+icon = ExtResource("3_v2dd8")
+icon_alignment = 1
+tamanho = "Nav"
+cor = "Vermelho"
+
+[node name="BotaoDourado2" parent="PanelContainer/MarginContainer/HBoxContainer" unique_id=1410929047 instance=ExtResource("1_qksk2")]
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 4
+theme = ExtResource("2_gpufo")
+text = ""
+icon = ExtResource("4_f3b18")
+icon_alignment = 1
+tamanho = "Nav"
+cor = "Vermelho"
+
+[node name="BotaoDourado3" parent="PanelContainer/MarginContainer/HBoxContainer" unique_id=1932619316 instance=ExtResource("1_qksk2")]
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 4
+theme = ExtResource("2_gpufo")
+text = ""
+icon = ExtResource("5_u58k2")
+icon_alignment = 1
+tamanho = "Nav"
+cor = "Vermelho"
+
+[node name="BotaoDourado4" parent="PanelContainer/MarginContainer/HBoxContainer" unique_id=122122126 instance=ExtResource("1_qksk2")]
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 4
+theme = ExtResource("2_gpufo")
+text = ""
+icon = ExtResource("6_bnnoi")
+icon_alignment = 1
+tamanho = "Nav"
+cor = "Vermelho"
+
+[node name="Detalhe" type="Sprite2D" parent="PanelContainer" unique_id=52730255]
+position = Vector2(206, 121.00001)
+scale = Vector2(1, 1.6413014)
+texture = ExtResource("7_1alol")
