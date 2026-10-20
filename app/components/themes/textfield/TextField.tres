@@ -18,7 +18,7 @@ corner_radius_bottom_left = 8
 [resource]
 LineEdit/colors/caret_color = Color(0.95, 0.95, 0.95, 1)
 LineEdit/colors/font_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
-LineEdit/colors/font_placeholder_color = Color(0, 0, 0, 1)
+LineEdit/colors/font_placeholder_color = Color(0.49747366, 0.49747372, 0.49747354, 1)
 LineEdit/colors/selection_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
 LineEdit/fonts/Outfit = SubResource("FontVariation_47x7n")
 LineEdit/styles/normal = SubResource("StyleBoxFlat_ffjng")
