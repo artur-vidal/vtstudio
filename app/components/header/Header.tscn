@@ -1,0 +1,39 @@
+[gd_scene format=3 uid="uid://bt83a05dyt67o"]
+
+[ext_resource type="FontFile" uid="uid://dwhrhbcuu4ruw" path="res://assets/fonts/Fondamento/Fondamento-Regular.ttf" id="1_5n03m"]
+[ext_resource type="PackedScene" uid="uid://brotkrsfn8tyt" path="res://components/icone/icon.tscn" id="2_atucb"]
+[ext_resource type="Theme" uid="uid://c2q3rcmq2d5vv" path="res://components/themes/icone/IconeVermelho.tres" id="3_wvlia"]
+[ext_resource type="Texture2D" uid="uid://cceq6vmhp7tw8" path="res://assets/images/Portrait_Placeholder.png" id="4_xyv4m"]
+
+[node name="Header" type="HBoxContainer" unique_id=1395886438]
+custom_minimum_size = Vector2(412, 140)
+custom_maximum_size = Vector2(412, 140)
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=661109907]
+layout_mode = 2
+theme_override_constants/margin_left = 120
+theme_override_constants/margin_right = 80
+
+[node name="RichTextLabel" type="RichTextLabel" parent="MarginContainer" unique_id=447159453]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_colors/default_color = Color(0.007843138, 0.007843138, 0.007843138, 1)
+theme_override_fonts/normal_font = ExtResource("1_5n03m")
+theme_override_font_sizes/normal_font_size = 32
+text = "Início"
+fit_content = true
+scroll_active = false
+
+[node name="PanelContainer" parent="." unique_id=1726400785 instance=ExtResource("2_atucb")]
+clip_children = 2
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = ExtResource("3_wvlia")
+textura = ExtResource("4_xyv4m")
+cor = "Vermelho"
