@@ -1,0 +1,83 @@
+[gd_scene format=3 uid="uid://cwiulaqtovxyn"]
+
+[ext_resource type="Texture2D" uid="uid://1y287ilvq2xa" path="res://assets/images/Vector.png" id="1_b5wxr"]
+[ext_resource type="FontFile" uid="uid://dwhrhbcuu4ruw" path="res://assets/fonts/Fondamento/Fondamento-Regular.ttf" id="2_fqjle"]
+[ext_resource type="PackedScene" uid="uid://gcopp6rysbwg" path="res://components/textfield/TextField.tscn" id="3_g2u2o"]
+[ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://components/Botao/Botao.tscn" id="4_kmh6x"]
+[ext_resource type="Theme" uid="uid://bwp2tkasans1b" path="res://components/themes/button/ButtonDourado.tres" id="5_xl4fp"]
+
+[sub_resource type="Theme" id="Theme_aicb1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_keq60"]
+bg_color = Color(0.654902, 0.11372549, 0.19215687, 1)
+
+[node name="AlterarSenha" type="Control" unique_id=645418356]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=1201033975]
+custom_minimum_size = Vector2(412, 917)
+custom_maximum_size = Vector2(412, 917)
+layout_mode = 0
+offset_right = 412.0
+offset_bottom = 917.0
+theme = SubResource("Theme_aicb1")
+theme_override_styles/panel = SubResource("StyleBoxFlat_keq60")
+
+[node name="Sprite2D" type="Sprite2D" parent="PanelContainer" unique_id=1191194788]
+position = Vector2(-2, 0)
+scale = Vector2(1.1666666, 1)
+texture = ExtResource("1_b5wxr")
+offset = Vector2(32, 32)
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer" unique_id=184692575]
+layout_mode = 2
+offset_transform_enabled = true
+offset_transform_position = Vector2(0, 232)
+theme_override_colors/default_color = Color(0.83137256, 0.7529412, 0.5411765, 1)
+theme_override_colors/font_selected_color = Color(0.83137256, 0.7529412, 0.5411765, 1)
+theme_override_fonts/normal_font = ExtResource("2_fqjle")
+theme_override_fonts/bold_font = ExtResource("2_fqjle")
+theme_override_font_sizes/normal_font_size = 36
+text = "Alterar senha"
+horizontal_alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer" unique_id=1784223477]
+layout_mode = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 520
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer" unique_id=1647159101]
+custom_minimum_size = Vector2(96, 132)
+custom_maximum_size = Vector2(500, 240)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+offset_transform_enabled = true
+offset_transform_position_ratio = Vector2(0, -1)
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="TextField" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=535203837 instance=ExtResource("3_g2u2o")]
+layout_mode = 2
+placeholder_text = "Nova senha"
+
+[node name="TextField2" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=841801303 instance=ExtResource("3_g2u2o")]
+layout_mode = 2
+placeholder_text = "Confirmar Senha"
+
+[node name="Alterar_senha" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=151969610 instance=ExtResource("4_kmh6x")]
+custom_minimum_size = Vector2(144, 42)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 6
+offset_transform_enabled = true
+offset_transform_position = Vector2(0, 16)
+theme = ExtResource("5_xl4fp")
+text = "Alterar"
+tamanho = "Medium"
+cor = "Dourado"
