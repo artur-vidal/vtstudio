@@ -47,6 +47,7 @@ alignment = 1
 
 [node name="Titulo" type="RichTextLabel" parent="PanelContainer/MarginContainer/VBoxContainer-Principal/VBoxContainer - Titulo e PlaceHolder" unique_id=1264013285]
 layout_mode = 2
+theme_override_colors/default_color = Color(0.8039216, 0.73333335, 0.5529412, 1)
 theme_override_fonts/normal_font = ExtResource("1_i7s3f")
 theme_override_font_sizes/normal_font_size = 36
 text = "Recuperar Senha"
