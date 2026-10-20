@@ -1,0 +1,80 @@
+[gd_scene format=3 uid="uid://doymesbige321"]
+
+[ext_resource type="Texture2D" uid="uid://wige0t5t1l7u" path="res://assets/images/LogoVTStudio.png" id="1_x0t4h"]
+[ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://components/Botao/Botao.tscn" id="2_yfl6q"]
+[ext_resource type="Theme" uid="uid://ccntfg5km537x" path="res://components/themes/button/ButtonDourado-Outline.tres" id="3_yfl6q"]
+[ext_resource type="Texture2D" uid="uid://c6n2mnmcxp6hu" path="res://assets/images/google.png" id="4_7tse2"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cqbs0"]
+bg_color = Color(0.654902, 0.11372549, 0.19215687, 1)
+
+[node name="Login" type="Control" unique_id=1264724303]
+layout_mode = 3
+anchor_right = 0.36
+anchor_bottom = 1.404
+offset_right = 0.27996826
+offset_bottom = 0.20794678
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=1686937340]
+custom_minimum_size = Vector2(412, 917)
+custom_maximum_size = Vector2(412, 917)
+layout_mode = 0
+offset_right = 412.0
+offset_bottom = 917.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_cqbs0")
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer" unique_id=269143568]
+layout_mode = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 520
+
+[node name="LogoVtStudio" type="Sprite2D" parent="PanelContainer/MarginContainer" unique_id=49392572]
+position = Vector2(200, 360)
+scale = Vector2(0.35, 0.35)
+texture = ExtResource("1_x0t4h")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer" unique_id=1002959681]
+custom_minimum_size = Vector2(96, 132)
+custom_maximum_size = Vector2(500, 240)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_constants/separation = 16
+
+[node name="Login" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=151969610 instance=ExtResource("2_yfl6q")]
+custom_minimum_size = Vector2(144, 60)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 6
+theme = ExtResource("3_yfl6q")
+text = "Login"
+tamanho = "Large"
+
+[node name="Cadastro" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=359354849 instance=ExtResource("2_yfl6q")]
+custom_minimum_size = Vector2(144, 60)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 6
+theme = ExtResource("3_yfl6q")
+text = "Cadastra-se"
+tamanho = "Large"
+
+[node name="Google" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=591157280 instance=ExtResource("2_yfl6q")]
+custom_minimum_size = Vector2(224, 42)
+custom_maximum_size = Vector2(320, 60)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 6
+theme_override_constants/icon_max_width = 32
+text = "Entrar com google"
+icon = ExtResource("4_7tse2")
+tamanho = "Big"
+cor = "Branco-Outline"
+
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=727182852]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 6
+text = "Entrar sem uma conta..."
