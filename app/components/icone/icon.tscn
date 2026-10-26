@@ -6,14 +6,15 @@
 [node name="PanelContainer" type="PanelContainer" unique_id=1726400785]
 custom_minimum_size = Vector2(48, 48)
 custom_maximum_size = Vector2(80, 80)
-offset_right = 68.0
-offset_bottom = 68.0
+offset_right = 52.0
+offset_bottom = 52.0
 theme = ExtResource("1_i7wvb")
 script = ExtResource("1_t7egm")
 cor = "Cinza-Outline"
 
 [node name="TextureRect" type="TextureRect" parent="." unique_id=131913931]
 custom_minimum_size = Vector2(48, 48)
+custom_maximum_size = Vector2(160, 160)
 layout_mode = 2
 expand_mode = 1
 stretch_mode = 5

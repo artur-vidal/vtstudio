@@ -6,7 +6,7 @@ extends PanelContainer
 		textura = value
 		_aplicar_textura()
 
-@export_enum("Small", "Medium", "Large") var tamanho := "Small":
+@export_enum("Small", "Medium", "Large", "Giga") var tamanho := "Small":
 	set(value):
 		tamanho = value
 		_aplicar_tamanho()
@@ -32,6 +32,7 @@ func _aplicar_tamanho() -> void:
 		"Small": Vector2(48, 48),
 		"Medium": Vector2(64, 64),
 		"Large": Vector2(80, 80),
+		"Giga": Vector2(160,160)
 	}
 	custom_minimum_size = tamanhos[tamanho]
 	size = tamanhos[tamanho]
