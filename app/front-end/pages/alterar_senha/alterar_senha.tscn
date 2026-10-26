@@ -4,7 +4,7 @@
 [ext_resource type="FontFile" uid="uid://dwekkaa2472rb" path="res://assets/fonts/Fondamento/Fondamento-Italic.ttf" id="1_y5ylb"]
 [ext_resource type="PackedScene" uid="uid://gcopp6rysbwg" path="res://components/textfield/TextField.tscn" id="3_0bes8"]
 [ext_resource type="FontFile" uid="uid://iyvms52ed4p4" path="res://assets/fonts/Outfit/static/Outfit-Regular.ttf" id="3_dswyk"]
-[ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://components/Botao/Botao.tscn" id="4_dswyk"]
+[ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://components/botao/Botao.tscn" id="4_dswyk"]
 [ext_resource type="Theme" uid="uid://bwp2tkasans1b" path="res://components/themes/button/ButtonDourado.tres" id="5_mdtov"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mdtov"]

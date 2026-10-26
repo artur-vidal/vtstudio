@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://1u2kdwv4crfi"]
 
 [ext_resource type="FontFile" uid="uid://dwekkaa2472rb" path="res://assets/fonts/Fondamento/Fondamento-Italic.ttf" id="1_847vk"]
-[ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://components/Botao/Botao.tscn" id="1_e0k58"]
+[ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://components/botao/Botao.tscn" id="1_e0k58"]
 [ext_resource type="Texture2D" uid="uid://1y287ilvq2xa" path="res://assets/images/Vector.png" id="1_sfeqj"]
 [ext_resource type="Theme" uid="uid://bwp2tkasans1b" path="res://components/themes/button/ButtonDourado.tres" id="2_kxkhy"]
 [ext_resource type="FontFile" uid="uid://iyvms52ed4p4" path="res://assets/fonts/Outfit/static/Outfit-Regular.ttf" id="3_fqqn3"]
