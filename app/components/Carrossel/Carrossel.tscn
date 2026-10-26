@@ -3,7 +3,7 @@
 [ext_resource type="FontFile" uid="uid://iyvms52ed4p4" path="res://assets/fonts/Outfit/static/Outfit-Regular.ttf" id="1_u3q8b"]
 [ext_resource type="Texture2D" uid="uid://r76kxhpnhhpu" path="res://assets/images/PlaceHolder-image.png" id="2_jt3ec"]
 [ext_resource type="FontFile" uid="uid://duh8pcqgfmpp" path="res://assets/fonts/Outfit/static/Outfit-Medium.ttf" id="3_1tc73"]
-[ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://components/Botao/Botao.tscn" id="4_2ni2y"]
+[ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://components/botao/Botao.tscn" id="4_2ni2y"]
 [ext_resource type="Theme" uid="uid://bbubev3ycaqjc" path="res://components/themes/button/ButtonVermelho.tres" id="5_3rhw2"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_11xii"]

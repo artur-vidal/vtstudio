@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://jj1hffbx4inr"]
 
-[ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://components/Botao/Botao.tscn" id="1_qksk2"]
+[ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://components/botao/Botao.tscn" id="1_qksk2"]
 [ext_resource type="Theme" uid="uid://bbubev3ycaqjc" path="res://components/themes/button/ButtonVermelho.tres" id="2_gpufo"]
 [ext_resource type="Texture2D" uid="uid://bcl2g2mu5g85u" path="res://assets/icons/Casa.png" id="3_v2dd8"]
 [ext_resource type="Texture2D" uid="uid://cmnvpqf4ci22" path="res://assets/icons/Carta.png" id="4_f3b18"]
@@ -33,6 +33,7 @@ alignment = 1
 
 [node name="BotaoDourado" parent="PanelContainer/MarginContainer/HBoxContainer" unique_id=151969610 instance=ExtResource("1_qksk2")]
 custom_minimum_size = Vector2(96, 96)
+custom_maximum_size = Vector2(96, 96)
 layout_mode = 2
 size_flags_horizontal = 6
 size_flags_vertical = 4
@@ -45,6 +46,7 @@ cor = "Vermelho"
 
 [node name="BotaoDourado2" parent="PanelContainer/MarginContainer/HBoxContainer" unique_id=1410929047 instance=ExtResource("1_qksk2")]
 custom_minimum_size = Vector2(96, 96)
+custom_maximum_size = Vector2(96, 96)
 layout_mode = 2
 size_flags_horizontal = 6
 size_flags_vertical = 4
@@ -57,6 +59,7 @@ cor = "Vermelho"
 
 [node name="BotaoDourado3" parent="PanelContainer/MarginContainer/HBoxContainer" unique_id=1932619316 instance=ExtResource("1_qksk2")]
 custom_minimum_size = Vector2(96, 96)
+custom_maximum_size = Vector2(96, 96)
 layout_mode = 2
 size_flags_horizontal = 6
 size_flags_vertical = 4
@@ -69,6 +72,7 @@ cor = "Vermelho"
 
 [node name="BotaoDourado4" parent="PanelContainer/MarginContainer/HBoxContainer" unique_id=122122126 instance=ExtResource("1_qksk2")]
 custom_minimum_size = Vector2(96, 96)
+custom_maximum_size = Vector2(96, 96)
 layout_mode = 2
 size_flags_horizontal = 6
 size_flags_vertical = 4

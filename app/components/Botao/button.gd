@@ -1,7 +1,7 @@
 @tool
 extends Button
 
-@export_enum("Small", "Medium", "Large", "Big") var tamanho := "Small":
+@export_enum("Small", "Medium", "Large", "Big", "Nav") var tamanho := "Small":
 	set(value):
 		tamanho = value
 		_aplicar_tamanho()
@@ -21,6 +21,7 @@ func _aplicar_tamanho() -> void:
 		"Medium": Vector2(144, 42),
 		"Large": Vector2(144, 60),
 		"Big": Vector2(224,42),
+		"Nav": Vector2(96,96)
 	}
 	custom_minimum_size = tamanhos[tamanho]
 	size = tamanhos[tamanho]
