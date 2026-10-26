@@ -1,0 +1,73 @@
+[gd_scene format=3 uid="uid://c5j7a1n6anoim"]
+
+[ext_resource type="Texture2D" uid="uid://ckdhqmluadyul" path="res://assets/images/background/Background.png" id="1_vaof3"]
+[ext_resource type="FontFile" uid="uid://dwhrhbcuu4ruw" path="res://assets/fonts/Fondamento/Fondamento-Regular.ttf" id="2_u3v86"]
+[ext_resource type="PackedScene" uid="uid://brotkrsfn8tyt" path="res://components/icone/icon.tscn" id="3_mptai"]
+[ext_resource type="Theme" uid="uid://c2q3rcmq2d5vv" path="res://components/themes/icone/IconeVermelho.tres" id="4_1tb7j"]
+[ext_resource type="Texture2D" uid="uid://cceq6vmhp7tw8" path="res://assets/images/Portrait_Placeholder.png" id="5_xjq7b"]
+[ext_resource type="PackedScene" uid="uid://dffalfludannm" path="res://components/carrossel/Carrossel.tscn" id="6_mkilh"]
+[ext_resource type="PackedScene" uid="uid://jj1hffbx4inr" path="res://components/navBar/NavBar.tscn" id="7_38xtv"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_cqbs0"]
+texture = ExtResource("1_vaof3")
+axis_stretch_vertical = 2
+
+[node name="Home" type="Control" unique_id=439898800]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=1400880053]
+custom_minimum_size = Vector2(412, 917)
+custom_maximum_size = Vector2(412, 917)
+layout_mode = 0
+offset_right = 412.0
+offset_bottom = 917.0
+theme_override_styles/panel = SubResource("StyleBoxTexture_cqbs0")
+
+[node name="Separação tela" type="VBoxContainer" parent="PanelContainer" unique_id=353860444]
+layout_mode = 2
+theme_override_constants/separation = 109
+
+[node name="Header" type="HBoxContainer" parent="PanelContainer/Separação tela" unique_id=1903790456]
+custom_minimum_size = Vector2(412, 140)
+custom_maximum_size = Vector2(412, 140)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/Separação tela/Header" unique_id=14882340]
+layout_mode = 2
+theme_override_constants/margin_left = 120
+theme_override_constants/margin_right = 80
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=1073589073]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_colors/default_color = Color(0.007843138, 0.007843138, 0.007843138, 1)
+theme_override_fonts/normal_font = ExtResource("2_u3v86")
+theme_override_font_sizes/normal_font_size = 32
+text = "Início"
+fit_content = true
+scroll_active = false
+
+[node name="PanelContainer" parent="PanelContainer/Separação tela/Header" unique_id=1726400785 instance=ExtResource("3_mptai")]
+clip_children = 2
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = ExtResource("4_1tb7j")
+textura = ExtResource("5_xjq7b")
+cor = "Vermelho"
+
+[node name="Carrossel" parent="PanelContainer/Separação tela" unique_id=1793015799 instance=ExtResource("6_mkilh")]
+layout_mode = 2
+
+[node name="NavBar" parent="PanelContainer/Separação tela" unique_id=1337153430 instance=ExtResource("7_38xtv")]
+layout_mode = 2
