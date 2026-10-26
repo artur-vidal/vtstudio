@@ -1,0 +1,115 @@
+[gd_scene format=3 uid="uid://sld3q6geqf6d"]
+
+[ext_resource type="PackedScene" uid="uid://brotkrsfn8tyt" path="res://components/icone/icon.tscn" id="1_mwmg0"]
+[ext_resource type="Theme" uid="uid://c2q3rcmq2d5vv" path="res://components/themes/icone/IconeVermelho.tres" id="2_x7cqh"]
+[ext_resource type="FontFile" uid="uid://tagvraybmw0d" path="res://assets/fonts/Outfit/static/Outfit-SemiBold.ttf" id="3_d7n8f"]
+[ext_resource type="Texture2D" uid="uid://cceq6vmhp7tw8" path="res://assets/images/Portrait_Placeholder.png" id="3_w4wjy"]
+[ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://components/botao/Botao.tscn" id="4_w4wjy"]
+[ext_resource type="Theme" uid="uid://bkdw5caiuqbxt" path="res://components/themes/button/ButtonVermelho-Outline.tres" id="5_oqspu"]
+[ext_resource type="Theme" uid="uid://dyfecp62utps3" path="res://components/themes/button/ButttonCinza-Outline.tres" id="6_w8t0t"]
+[ext_resource type="Texture2D" uid="uid://bvucj8altx52" path="res://assets/icons/vetores/Engrenagem.png" id="7_4jg41"]
+[ext_resource type="Texture2D" uid="uid://b5vgjtiocmcpr" path="res://assets/icons/vetores/Lapis.png" id="8_f0bvd"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i1ghu"]
+bg_color = Color(0.9882353, 0.9882353, 1, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(0, 0, 0, 0.27450982)
+shadow_size = 8
+shadow_offset = Vector2(2, 6)
+
+[node name="Perfil" type="PanelContainer" unique_id=1252379890]
+custom_minimum_size = Vector2(320, 640)
+anchors_preset = -1
+anchor_left = 0.12100001
+anchor_top = 0.115
+anchor_right = 0.89800006
+anchor_bottom = 0.81200004
+offset_left = 0.14799881
+offset_top = -0.45500183
+offset_right = 0.023986816
+offset_bottom = 0.3959961
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_i1ghu")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1358516567]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 8
+
+[node name="PanelContainer" parent="VBoxContainer" unique_id=1726400785 instance=ExtResource("1_mwmg0")]
+clip_children = 2
+custom_minimum_size = Vector2(160, 160)
+custom_maximum_size = Vector2(160, 160)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = ExtResource("2_x7cqh")
+textura = ExtResource("3_w4wjy")
+tamanho = "Giga"
+cor = "Vermelho"
+
+[node name="RichTextLabel" type="RichTextLabel" parent="VBoxContainer" unique_id=671303974]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.007843138, 0.007843138, 0.007843138, 1)
+theme_override_fonts/normal_font = ExtResource("3_d7n8f")
+theme_override_font_sizes/normal_font_size = 32
+text = "Nome de usuário"
+fit_content = true
+horizontal_alignment = 1
+
+[node name="BotaoPremium" parent="VBoxContainer" unique_id=151969610 instance=ExtResource("4_w4wjy")]
+custom_minimum_size = Vector2(144, 42)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 6
+theme = ExtResource("5_oqspu")
+text = "Plano Premium"
+tamanho = "Medium"
+cor = "Vermelho-Outline"
+
+[node name="GridContainer" type="GridContainer" parent="VBoxContainer" unique_id=77429267]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 16
+columns = 2
+
+[node name="Botao" parent="VBoxContainer/GridContainer" unique_id=546586361 instance=ExtResource("4_w4wjy")]
+layout_mode = 2
+theme = ExtResource("6_w8t0t")
+theme_override_constants/h_separation = -4
+theme_override_constants/icon_max_width = 24
+text = "Config"
+icon = ExtResource("7_4jg41")
+autowrap_trim_flags = 0
+icon_alignment = 2
+expand_icon = true
+cor = "Cinza-Outline"
+
+[node name="Botao2" parent="VBoxContainer/GridContainer" unique_id=523072403 instance=ExtResource("4_w4wjy")]
+layout_mode = 2
+theme = ExtResource("6_w8t0t")
+theme_override_constants/h_separation = 0
+theme_override_constants/icon_max_width = 24
+text = "Editar"
+icon = ExtResource("8_f0bvd")
+icon_alignment = 2
+expand_icon = true
+cor = "Cinza-Outline"
+
+[node name="Botao3" parent="VBoxContainer/GridContainer" unique_id=906077075 instance=ExtResource("4_w4wjy")]
+layout_mode = 2
+theme = ExtResource("6_w8t0t")
+text = "Amigos"
+cor = "Cinza-Outline"
+
+[node name="Botao4" parent="VBoxContainer/GridContainer" unique_id=942791657 instance=ExtResource("4_w4wjy")]
+layout_mode = 2
+theme = ExtResource("6_w8t0t")
+text = "Deslogar"
+cor = "Cinza-Outline"
