@@ -1,3 +1,87 @@
 [gd_scene format=3 uid="uid://deis8gu7eegll"]
 
+[ext_resource type="FontFile" uid="uid://dwekkaa2472rb" path="res://assets/fonts/Fondamento/Fondamento-Italic.ttf" id="1_qu4xp"]
+[ext_resource type="PackedScene" uid="uid://gcopp6rysbwg" path="res://components/textfield/TextField.tscn" id="2_uou7q"]
+[ext_resource type="FontFile" uid="uid://iyvms52ed4p4" path="res://assets/fonts/Outfit/static/Outfit-Regular.ttf" id="3_m70gh"]
+[ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://components/Botao/Botao.tscn" id="4_0b1mb"]
+[ext_resource type="Theme" uid="uid://bwp2tkasans1b" path="res://components/themes/button/ButtonDourado.tres" id="5_qit2m"]
+[ext_resource type="Texture2D" uid="uid://1y287ilvq2xa" path="res://assets/images/Vector.png" id="6_5nj1u"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fn8xn"]
+bg_color = Color(0.6117647, 0.10980392, 0.18039216, 1)
+
 [node name="EntrarLogin" type="Node2D" unique_id=267031324]
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=1165807573]
+custom_minimum_size = Vector2(412, 917)
+offset_right = 40.0
+offset_bottom = 40.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_fn8xn")
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer" unique_id=1791493110]
+layout_mode = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 40
+
+[node name="VBoxContainer-Principal" type="VBoxContainer" parent="PanelContainer/MarginContainer" unique_id=1188332627]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/separation = 14
+
+[node name="VBoxContainer - Titulo e PlaceHolder" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer-Principal" unique_id=2034005510]
+custom_minimum_size = Vector2(200, 400)
+custom_maximum_size = Vector2(400, 600)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="Titulo" type="RichTextLabel" parent="PanelContainer/MarginContainer/VBoxContainer-Principal/VBoxContainer - Titulo e PlaceHolder" unique_id=1528317649]
+layout_mode = 2
+offset_transform_enabled = true
+offset_transform_position = Vector2(0, -7.155)
+offset_transform_position_ratio = Vector2(0, -0.255)
+offset_transform_scale = Vector2(1.055, 1.055)
+theme_override_colors/default_color = Color(0.8039216, 0.73333335, 0.5529412, 1)
+theme_override_fonts/normal_font = ExtResource("1_qu4xp")
+theme_override_font_sizes/normal_font_size = 36
+text = "LOGIN"
+fit_content = true
+scroll_active = false
+scroll_following = true
+horizontal_alignment = 1
+
+[node name="VBoxContainer - Legenda e Texto" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer-Principal/VBoxContainer - Titulo e PlaceHolder" unique_id=1804841011]
+layout_mode = 2
+theme_override_constants/separation = 27
+
+[node name="TextField2" parent="PanelContainer/MarginContainer/VBoxContainer-Principal/VBoxContainer - Titulo e PlaceHolder/VBoxContainer - Legenda e Texto" unique_id=535203837 instance=ExtResource("2_uou7q")]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_m70gh")
+placeholder_text = "E-mail"
+
+[node name="TextField3" parent="PanelContainer/MarginContainer/VBoxContainer-Principal/VBoxContainer - Titulo e PlaceHolder/VBoxContainer - Legenda e Texto" unique_id=1454452124 instance=ExtResource("2_uou7q")]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_m70gh")
+placeholder_text = "Senha"
+
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer-Principal/VBoxContainer - Titulo e PlaceHolder/VBoxContainer - Legenda e Texto" unique_id=680704832]
+layout_mode = 2
+text = "Esqueceu a senha ?"
+horizontal_alignment = 1
+
+[node name="BotaoDourado" parent="PanelContainer/MarginContainer/VBoxContainer-Principal" unique_id=151969610 instance=ExtResource("4_0b1mb")]
+custom_minimum_size = Vector2(144, 60)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 6
+theme = ExtResource("5_qit2m")
+text = "Login"
+tamanho = "Large"
+cor = "Dourado"
+
+[node name="Vector" type="Sprite2D" parent="PanelContainer/MarginContainer" unique_id=784198833]
+position = Vector2(23, 27)
+texture = ExtResource("6_5nj1u")
