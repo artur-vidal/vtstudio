@@ -1,0 +1,104 @@
+[gd_scene format=3 uid="uid://dffalfludannm"]
+
+[ext_resource type="FontFile" uid="uid://iyvms52ed4p4" path="res://assets/fonts/Outfit/static/Outfit-Regular.ttf" id="1_u3q8b"]
+[ext_resource type="Texture2D" uid="uid://r76kxhpnhhpu" path="res://assets/images/PlaceHolder-image.png" id="2_jt3ec"]
+[ext_resource type="FontFile" uid="uid://duh8pcqgfmpp" path="res://assets/fonts/Outfit/static/Outfit-Medium.ttf" id="3_1tc73"]
+[ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://components/Botao/Botao.tscn" id="4_2ni2y"]
+[ext_resource type="Theme" uid="uid://bbubev3ycaqjc" path="res://components/themes/button/ButtonVermelho.tres" id="5_3rhw2"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_11xii"]
+bg_color = Color(0.8039216, 0.73333335, 0.5529412, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cqbs0"]
+bg_color = Color(0.6117647, 0.10980392, 0.18039216, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_207kn"]
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.9882353, 0.9882353, 1, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="Carrossel" type="VBoxContainer" unique_id=1793015799]
+custom_minimum_size = Vector2(320, 420)
+custom_maximum_size = Vector2(320, 600)
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="BackGround" type="PanelContainer" parent="." unique_id=800875697]
+custom_minimum_size = Vector2(320, 420)
+custom_maximum_size = Vector2(320, 600)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_11xii")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="BackGround" unique_id=133694087]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Titulo" type="PanelContainer" parent="BackGround/VBoxContainer" unique_id=1794497651]
+custom_minimum_size = Vector2(400, 80)
+custom_maximum_size = Vector2(400, 80)
+propagate_maximum_size = false
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_cqbs0")
+
+[node name="RichTextLabel" type="RichTextLabel" parent="BackGround/VBoxContainer/Titulo" unique_id=1518063280]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_fonts/normal_font = ExtResource("1_u3q8b")
+theme_override_font_sizes/normal_font_size = 32
+text = "Título RPG"
+fit_content = true
+horizontal_alignment = 1
+
+[node name="Imagem" type="PanelContainer" parent="BackGround/VBoxContainer" unique_id=1687638741]
+custom_minimum_size = Vector2(280, 150)
+custom_maximum_size = Vector2(300, 240)
+propagate_maximum_size = false
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_207kn")
+
+[node name="TextureRect" type="TextureRect" parent="BackGround/VBoxContainer/Imagem" unique_id=1765880650]
+custom_minimum_size = Vector2(280, 150)
+custom_maximum_size = Vector2(300, 240)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture = ExtResource("2_jt3ec")
+expand_mode = 1
+
+[node name="RichTextLabel" type="RichTextLabel" parent="BackGround/VBoxContainer" unique_id=6084577]
+custom_minimum_size = Vector2(280, 0)
+custom_maximum_size = Vector2(280, -1)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_colors/default_color = Color(0.007843138, 0.007843138, 0.007843138, 1)
+theme_override_fonts/normal_font = ExtResource("3_1tc73")
+text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis tortor lacus, tempor malesuada ipsum id, vestibulum tristique lacus"
+fit_content = true
+horizontal_alignment = 1
+
+[node name="BotaoDourado" parent="BackGround/VBoxContainer" unique_id=151969610 instance=ExtResource("4_2ni2y")]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = ExtResource("5_3rhw2")
+text = "Ver"
+cor = "Vermelho"
