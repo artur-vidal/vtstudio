@@ -15,7 +15,7 @@ alignment = 1
 
 [node name="MarginContainer" type="MarginContainer" parent="." unique_id=661109907]
 layout_mode = 2
-theme_override_constants/margin_left = 120
+theme_override_constants/margin_left = 0
 theme_override_constants/margin_right = 80
 
 [node name="RichTextLabel" type="RichTextLabel" parent="MarginContainer" unique_id=447159453]
