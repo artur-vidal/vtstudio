@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://b5twx6pxx6p24"]
 
 [ext_resource type="PackedScene" uid="uid://2lf6ir5c2sd2" path="res://editor/NavigationCamera.tscn" id="1_ff3ga"]
+[ext_resource type="PackedScene" uid="uid://dsoh78u6ujdqn" path="res://assets/models/temporary/pikmin_blue/gamecube_-_pikmin_2_-_blue_pikmin.glb" id="2_k7dwc"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_lnx2f"]
 sky_top_color = Color(0.47955805, 0.5640533, 0.6820065, 1)
@@ -37,3 +38,6 @@ mesh = SubResource("BoxMesh_ika0p")
 
 [node name="NavigationCamera" parent="Cena Principal" unique_id=992210718 instance=ExtResource("1_ff3ga")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.7519255, 14.913958)
+
+[node name="Sketchfab_Scene" parent="Cena Principal" unique_id=333936763 instance=ExtResource("2_k7dwc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.20409179, 0, -5.7911797)

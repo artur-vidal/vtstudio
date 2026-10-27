@@ -1,6 +1,74 @@
 [gd_scene format=3 uid="uid://2lf6ir5c2sd2"]
 
+[sub_resource type="GDScript" id="GDScript_3ulup"]
+resource_name = "navigation_camera"
+script/source = "extends Node3D
+
+@export var pan_speed: float = 12.0
+@export var orbit_sensitivity: float = 0.005
+@export var zoom_step: float = 1.5
+
+@export var min_distance: float = 3.0
+@export var max_distance: float = 40.0
+@export var min_eixo_rotation: float = deg_to_rad(-80.0)
+@export var max_eixo_rotation: float = deg_to_rad(-15.0)
+
+@onready var eixo: Node3D = $Eixo
+@onready var camera: Camera3D = $Eixo/Camera3D
+
+var camera_z = 0.0
+var distance: float = 20.0
+
+func _ready() -> void:
+	_apply_zoom()
+
+func _process(delta: float) -> void:
+	if Input.is_action_pressed(\"cam_slow\"):
+		delta /= 10
+	
+	var input := Input.get_vector(\"cam_left\", \"cam_right\", \"cam_forwards\", \"cam_backwards\")
+	
+	var direction := basis * Vector3(input.x, 0.0, input.y)
+	
+	position += direction * pan_speed * delta
+	
+	if Input.is_action_pressed(\"cam_raise\"):
+		position.y += 10 * delta
+	elif Input.is_action_pressed(\"cam_lower\"):
+		position.y -= 10 * delta
+	
+	if Input.is_action_pressed(\"cam_roll_left\"):
+		camera_z += 2.0 * delta
+	elif Input.is_action_pressed(\"cam_roll_right\"):
+		camera_z -= 2.0 * delta
+	
+	if Input.is_action_pressed(\"cam_reset\"):
+		camera_z = 0.0
+	
+	eixo.rotation.z = lerp(eixo.rotation.z, camera_z, 0.1)
+	
+	_apply_zoom()
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed(\"cam_zoom_in\"):
+		distance = clampf(distance - zoom_step, min_distance, max_distance)
+	elif event.is_action_pressed(\"cam_zoom_out\"):
+		distance = clampf(distance + zoom_step, min_distance, max_distance)
+	
+	if event is InputEventMouseMotion and event.button_mask & MOUSE_BUTTON_MASK_RIGHT:
+		rotation.y -= event.relative.x * orbit_sensitivity
+		eixo.rotation.x = clampf(
+			eixo.rotation.x - event.relative.y * orbit_sensitivity,
+			min_eixo_rotation,
+			max_eixo_rotation
+		)
+
+func _apply_zoom() -> void:
+	camera.position.z = lerp(camera.position.z, distance, 0.1)
+"
+
 [node name="NavigationCamera" type="Node3D" unique_id=992210718]
+script = SubResource("GDScript_3ulup")
 
 [node name="Eixo" type="Node3D" parent="." unique_id=320876619]
 
