@@ -1,0 +1,59 @@
+[gd_scene format=3 uid="uid://b27qm5kt2fm23"]
+
+[ext_resource type="Script" uid="uid://vsn328u3s50l" path="res://globals/scene_changer/loading_screen.gd" id="1_cu4ly"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yti0c"]
+bg_color = Color(0, 0, 0, 1)
+
+[sub_resource type="Animation" id="Animation_cu4ly"]
+length = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Panel:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_4mgpl"]
+resource_name = "transition"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Panel:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_glp7h"]
+_data = {
+&"RESET": SubResource("Animation_cu4ly"),
+&"transition": SubResource("Animation_4mgpl")
+}
+
+[node name="LoadingScreen" type="CanvasLayer" unique_id=1490402055 node_paths=PackedStringArray("animation_player")]
+script = ExtResource("1_cu4ly")
+animation_player = NodePath("AnimationPlayer")
+
+[node name="Panel" type="Panel" parent="." unique_id=1865868976]
+modulate = Color(1, 1, 1, 0)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_yti0c")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=503903050]
+libraries/ = SubResource("AnimationLibrary_glp7h")
