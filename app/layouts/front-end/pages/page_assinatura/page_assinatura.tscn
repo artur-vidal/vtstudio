@@ -1,0 +1,81 @@
+[gd_scene format=3 uid="uid://b10wdjg8ufkv0"]
+
+[ext_resource type="Texture2D" uid="uid://ckdhqmluadyul" path="res://assets/images/background/Background.png" id="1_vxwkb"]
+[ext_resource type="FontFile" uid="uid://dwhrhbcuu4ruw" path="res://assets/fonts/Fondamento/Fondamento-Regular.ttf" id="2_oqpke"]
+[ext_resource type="PackedScene" uid="uid://brotkrsfn8tyt" path="res://assets/components/icone/icon.tscn" id="3_gypal"]
+[ext_resource type="Theme" uid="uid://c2q3rcmq2d5vv" path="res://assets/components/themes/icone/IconeVermelho.tres" id="4_wchwk"]
+[ext_resource type="Texture2D" uid="uid://cceq6vmhp7tw8" path="res://assets/images/Portrait_Placeholder.png" id="5_oevhm"]
+[ext_resource type="PackedScene" path="res://components/Carrossel/Carrossel.tscn" id="6_87k5t"]
+[ext_resource type="PackedScene" uid="uid://jj1hffbx4inr" path="res://assets/components/navBar/NavBar.tscn" id="7_22ene"]
+[ext_resource type="Texture2D" uid="uid://bl6k0uvdun88t" path="res://assets/images/background/assinaturas_background.png" id="8_oqpke"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_u7bvn"]
+texture = ExtResource("1_vxwkb")
+axis_stretch_vertical = 2
+
+[node name="PageAssinatura" type="Control" unique_id=1918764558]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=444959238]
+custom_minimum_size = Vector2(412, 917)
+custom_maximum_size = Vector2(412, 917)
+layout_mode = 0
+offset_right = 412.0
+offset_bottom = 917.0
+theme_override_styles/panel = SubResource("StyleBoxTexture_u7bvn")
+
+[node name="Separação tela" type="VBoxContainer" parent="PanelContainer" unique_id=367315060]
+layout_mode = 2
+theme_override_constants/separation = 109
+
+[node name="Header" type="HBoxContainer" parent="PanelContainer/Separação tela" unique_id=937305483]
+custom_minimum_size = Vector2(412, 140)
+custom_maximum_size = Vector2(412, 140)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/Separação tela/Header" unique_id=1206766428]
+layout_mode = 2
+theme_override_constants/margin_left = 120
+theme_override_constants/margin_right = 80
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=718286826]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_colors/default_color = Color(0.007843138, 0.007843138, 0.007843138, 1)
+theme_override_fonts/normal_font = ExtResource("2_oqpke")
+theme_override_font_sizes/normal_font_size = 32
+text = "Assinatura"
+fit_content = true
+scroll_active = false
+
+[node name="PanelContainer" parent="PanelContainer/Separação tela/Header" unique_id=1726400785 instance=ExtResource("3_gypal")]
+clip_children = 2
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = ExtResource("4_wchwk")
+textura = ExtResource("5_oevhm")
+cor = "Vermelho"
+
+[node name="Carrossel" parent="PanelContainer/Separação tela" unique_id=1793015799 instance=ExtResource("6_87k5t")]
+layout_mode = 2
+
+[node name="NavBar" parent="PanelContainer/Separação tela" unique_id=1337153430 instance=ExtResource("7_22ene")]
+layout_mode = 2
+
+[node name="Panel" type="Panel" parent="PanelContainer/Separação tela" unique_id=1516959671]
+layout_mode = 2
+
+[node name="TextureRect" type="TextureRect" parent="PanelContainer/Separação tela" unique_id=1942543586]
+layout_mode = 2
+texture = ExtResource("8_oqpke")
