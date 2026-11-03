@@ -1,3 +1,25 @@
 [gd_scene format=3 uid="uid://beibwif0vc7b2"]
 
+[ext_resource type="FontFile" uid="uid://tagvraybmw0d" path="res://assets/fonts/Outfit/static/Outfit-SemiBold.ttf" id="1_kdxa8"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bhjm2"]
+bg_color = Color(0.9764706, 0.9411765, 0.7019608, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
 [node name="Notificacao" type="PanelContainer" unique_id=1395802091]
+custom_minimum_size = Vector2(220, 64)
+custom_maximum_size = Vector2(220, 64)
+theme_override_styles/panel = SubResource("StyleBoxFlat_bhjm2")
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=530774949]
+layout_mode = 2
+
+[node name="RichTextLabel" type="RichTextLabel" parent="CenterContainer" unique_id=1213832640]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+theme_override_fonts/normal_font = ExtResource("1_kdxa8")
+text = "Insira texto de aviso"
+fit_content = true
