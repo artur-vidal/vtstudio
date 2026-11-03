@@ -1,7 +1,4 @@
-[gd_scene format=3 uid="uid://do1dp8dx6h41"]
-
-[sub_resource type="GDScript" id="GDScript_3ebed"]
-script/source = "class_name MapObject
+class_name MapObject
 extends StaticBody3D
 
 ## 0 = sem snap. Ex.: 1.0 alinha o objeto a uma grade de 1 unidade.
@@ -27,14 +24,14 @@ func _on_mouse_exited() -> void:
 	_update_cursor()
 
 func _on_input_event(_camera: Node, event: InputEvent, _position: Vector3, _normal: Vector3, _shape_idx: int) -> void:
-	if event is InputEventMouseButton \\
-			and event.button_index == MOUSE_BUTTON_LEFT \\
+	if event is InputEventMouseButton \
+			and event.button_index == MOUSE_BUTTON_LEFT \
 			and event.pressed:
 		var hit: Variant = _mouse_on_plane()
 		if hit == null:
 			return
 		# Guarda a distância entre o ponto clicado e o centro do objeto,
-		# para ele não \"pular\" para o cursor ao começar a arrastar
+		# para ele não "pular" para o cursor ao começar a arrastar
 		_grab_offset = global_position - (hit as Vector3)
 		_dragging = true
 		set_process(true)
@@ -42,9 +39,9 @@ func _on_input_event(_camera: Node, event: InputEvent, _position: Vector3, _norm
 
 # Solta o botão em qualquer lugar da tela, mesmo fora do objeto
 func _input(event: InputEvent) -> void:
-	if _dragging \\
-			and event is InputEventMouseButton \\
-			and event.button_index == MOUSE_BUTTON_LEFT \\
+	if _dragging \
+			and event is InputEventMouseButton \
+			and event.button_index == MOUSE_BUTTON_LEFT \
 			and not event.pressed:
 		_dragging = false
 		set_process(false)
@@ -84,23 +81,3 @@ func _update_cursor() -> void:
 		Input.set_default_cursor_shape(Input.CURSOR_POINTING_HAND)
 	else:
 		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
-"
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_3ebed"]
-size = Vector3(2, 2, 2)
-
-[sub_resource type="BoxMesh" id="BoxMesh_gq7dh"]
-size = Vector3(2, 2, 2)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3ebed"]
-albedo_color = Color(0.96555024, 0.83631724, 0.3566433, 1)
-
-[node name="MapObject" type="StaticBody3D" unique_id=2113961865]
-script = SubResource("GDScript_3ebed")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=459893223]
-shape = SubResource("BoxShape3D_3ebed")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=902994171]
-mesh = SubResource("BoxMesh_gq7dh")
-surface_material_override/0 = SubResource("StandardMaterial3D_3ebed")
