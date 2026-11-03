@@ -7,8 +7,8 @@ extends CheckBox
 		text = texto
 
 const TEMAS := {
-	"Small": preload("res://components/themes/radio/RadioSmall.tres"),
-	"Large": preload("res://components/themes/radio/RadioLarge.tres")
+	"Small": preload("res://assets/components/themes/radio/RadioSmall.tres"),
+	"Large": preload("res://assets/components/themes/radio/RadioLarge.tres")
 }
 
 @export_enum("Small", "Large") var tamanho := "Small":
