@@ -82,13 +82,17 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and event.button_mask & MOUSE_BUTTON_MASK_RIGHT:
 		# Compensa o roll: converte o movimento da tela para o referencial do eixo
 		var rel: Vector2 = event.relative.rotated(-eixo.rotation.z)
-
+		
 		target_yaw -= rel.x * orbit_sensitivity
 		target_pitch = clampf(
 			target_pitch - rel.y * orbit_sensitivity,
 			min_eixo_rotation,
 			max_eixo_rotation
 		)
+		
+		Input.set_default_cursor_shape(Input.CURSOR_DRAG)
+	else:
+		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
 
 # Converte uma "velocidade" em fator de lerp estável com qualquer FPS
 func _smooth(speed: float, delta: float) -> float:
