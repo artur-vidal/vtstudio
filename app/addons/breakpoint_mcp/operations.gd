@@ -1,0 +1,4985 @@
+@tool
+extends RefCounted
+## Request handlers for the Breakpoint MCP.
+##
+## Every handler returns a plain Dictionary that becomes the JSON-RPC `result`.
+## Errors are raised via `_err(code, message)`. All edit-time mutations are
+## wrapped in the EditorUndoRedoManager so a human can Ctrl-Z anything the assistant did.
+
+const Codec := preload("res://addons/breakpoint_mcp/variant_json.gd")
+const Remedies := preload("res://addons/breakpoint_mcp/error_remedies.gd")
+const ADDON_VERSION := "1.19.0"
+
+var _plugin: EditorPlugin
+
+
+func setup(plugin: EditorPlugin) -> void:
+	_plugin = plugin
+
+
+## Dispatch a method name + params to a handler. Returns {ok, result|error}.
+func dispatch(method: String, params: Dictionary) -> Dictionary:
+	match method:
+		"ping":
+			return _ok(_ping())
+		"editor.get_state":
+			return _ok(_editor_get_state())
+		"edit.undo":
+			return _edit_undo(params)
+		"edit.redo":
+			return _edit_redo(params)
+		"project.get_info":
+			return _ok(_project_get_info())
+		"project.get_setting":
+			return _project_get_setting(params)
+		"project.set_setting":
+			return _project_set_setting(params)
+		"scene.get_tree":
+			return _scene_get_tree(params)
+		"scene.open":
+			return _scene_open(params)
+		"scene.save":
+			return _scene_save()
+		"scene.new":
+			return _scene_new(params)
+		"scene.list_open":
+			return _ok(_scene_list_open())
+		"scene.reload":
+			return _scene_reload(params)
+		"scene.close":
+			return _scene_close(params)
+		"scene.pack":
+			return _scene_pack(params)
+		"scene.get_dependencies":
+			return _scene_get_dependencies(params)
+		"scene.save_as":
+			return _scene_save_as(params)
+		"node.add":
+			return _node_add(params)
+		"node.delete":
+			return _node_delete(params)
+		"node.rename":
+			return _node_rename(params)
+		"node.reparent":
+			return _node_reparent(params)
+		"node.set_property":
+			return _node_set_property(params)
+		"node.get_property":
+			return _node_get_property(params)
+		"node.duplicate":
+			return _node_duplicate(params)
+		"node.get_children":
+			return _node_get_children(params)
+		"node.find":
+			return _node_find(params)
+		"node.list_groups":
+			return _node_list_groups(params)
+		"node.add_to_group":
+			return _node_add_to_group(params)
+		"node.remove_from_group":
+			return _node_remove_from_group(params)
+		"node.instantiate_scene":
+			return _node_instantiate_scene(params)
+		"node.move_child":
+			return _node_move_child(params)
+		"node.change_type":
+			return _node_change_type(params)
+		"node.set_owner":
+			return _node_set_owner(params)
+		"node.set_editable_instance":
+			return _node_set_editable_instance(params)
+		"node.call_method":
+			return _node_call_method(params)
+		"node.get_path":
+			return _node_get_path(params)
+		"node.list_properties":
+			return _node_list_properties(params)
+		"signal.list":
+			return _signal_list(params)
+		"signal.list_connections":
+			return _signal_list_connections(params)
+		"signal.connect":
+			return _signal_connect(params)
+		"signal.disconnect":
+			return _signal_disconnect(params)
+		"signal.add_user_signal":
+			return _signal_add_user_signal(params)
+		"signal.emit":
+			return _signal_emit(params)
+		"resource.create":
+			return _resource_create(params)
+		"resource.load":
+			return _resource_load(params)
+		"resource.save":
+			return _resource_save(params)
+		"resource.duplicate":
+			return _resource_duplicate(params)
+		"resource.get_property":
+			return _resource_get_property(params)
+		"resource.set_property":
+			return _resource_set_property(params)
+		"resource.get_import_settings":
+			return _resource_get_import_settings(params)
+		"resource.set_import_settings":
+			return _resource_set_import_settings(params)
+		"filesystem.list":
+			return _filesystem_list(params)
+		"filesystem.scan":
+			return _filesystem_scan(params)
+		"filesystem.move":
+			return _filesystem_move(params)
+		"filesystem.create_dir":
+			return _filesystem_create_dir(params)
+		"asset.gen_placeholder":
+			return _asset_gen_placeholder(params)
+		"asset.import":
+			return _asset_import(params)
+		"mp.add_spawner":
+			return _mp_add_spawner(params)
+		"mp.add_synchronizer":
+			return _mp_add_synchronizer(params)
+		"mp.set_authority":
+			return _mp_set_authority(params)
+		"mp.write_script":
+			return _mp_write_script(params)
+		"backend.detect":
+			return _backend_detect(params)
+		"anim.player_create":
+			return _anim_player_create(params)
+		"anim.create":
+			return _anim_create(params)
+		"anim.delete":
+			return _anim_delete(params)
+		"anim.add_track":
+			return _anim_add_track(params)
+		"anim.insert_key":
+			return _anim_insert_key(params)
+		"anim.remove_key":
+			return _anim_remove_key(params)
+		"anim.set_length":
+			return _anim_set_length(params)
+		"anim.set_loop":
+			return _anim_set_loop(params)
+		"anim.get_track_keys":
+			return _anim_get_track_keys(params)
+		"anim.list":
+			return _anim_list(params)
+		"anim.tree_create":
+			return _anim_tree_create(params)
+		"anim.tree_add_node":
+			return _anim_tree_add_node(params)
+		"anim.statemachine_add_state":
+			return _anim_statemachine_add_state(params)
+		"anim.statemachine_add_transition":
+			return _anim_statemachine_add_transition(params)
+		"tileset.create":
+			return _tileset_create(params)
+		"tileset.add_source":
+			return _tileset_add_source(params)
+		"tileset.add_tile":
+			return _tileset_add_tile(params)
+		"tileset.set_tile_collision":
+			return _tileset_set_tile_collision(params)
+		"tilemaplayer.create":
+			return _tilemaplayer_create(params)
+		"tilemap.set_cell":
+			return _tilemap_set_cell(params)
+		"tilemap.set_cells_rect":
+			return _tilemap_set_cells_rect(params)
+		"tilemap.get_cell":
+			return _tilemap_get_cell(params)
+		"tilemap.clear":
+			return _tilemap_clear(params)
+		"body.create":
+			return _body_create(params)
+		"collisionshape.add":
+			return _collisionshape_add(params)
+		"body.set_collision_layer":
+			return _body_set_collision_layer(params)
+		"body.set_collision_mask":
+			return _body_set_collision_mask(params)
+		"area.set_monitoring":
+			return _area_set_monitoring(params)
+		"area.set_gravity":
+			return _area_set_gravity(params)
+		"joint.create":
+			return _joint_create(params)
+		"joint.set_bodies":
+			return _joint_set_bodies(params)
+		"collisionpolygon.add":
+			return _collisionpolygon_add(params)
+		"rigidbody.set_properties":
+			return _rigidbody_set_properties(params)
+		"body.set_physics_material":
+			return _body_set_physics_material(params)
+		"physics.set_gravity":
+			return _physics_set_gravity(params)
+		"particles.create":
+			return _particles_create(params)
+		"particles.set_process_material":
+			return _particles_set_process_material(params)
+		"particles.set_amount":
+			return _particles_set_amount(params)
+		"particles.set_lifetime":
+			return _particles_set_lifetime(params)
+		"particles.set_emitting":
+			return _particles_set_emitting(params)
+		"particles.set_texture":
+			return _particles_set_texture(params)
+		"shader.create":
+			return _shader_create(params)
+		"shader.set_code":
+			return _shader_set_code(params)
+		"shadermaterial.create":
+			return _shadermaterial_create(params)
+		"shadermaterial.set_shader":
+			return _shadermaterial_set_shader(params)
+		"shadermaterial.set_param":
+			return _shadermaterial_set_param(params)
+		"audio.player_create":
+			return _audio_player_create(params)
+		"audio.set_stream":
+			return _audio_set_stream(params)
+		"audio.bus_add":
+			return _audio_bus_add(params)
+		"audio.bus_add_effect":
+			return _audio_bus_add_effect(params)
+		"audio.bus_set_volume":
+			return _audio_bus_set_volume(params)
+		"audio.set_bus_layout":
+			return _audio_set_bus_layout(params)
+		"control.create":
+			return _control_create(params)
+		"container.add_child":
+			return _container_add_child(params)
+		"control.set_anchors":
+			return _control_set_anchors(params)
+		"control.set_layout_preset":
+			return _control_set_layout_preset(params)
+		"control.set_size_flags":
+			return _control_set_size_flags(params)
+		"control.set_theme":
+			return _control_set_theme(params)
+		"theme.create":
+			return _theme_create(params)
+		"theme.set_color":
+			return _theme_set_color(params)
+		"theme.set_font":
+			return _theme_set_font(params)
+		"theme.set_stylebox":
+			return _theme_set_stylebox(params)
+		"theme.set_constant":
+			return _theme_set_constant(params)
+		"meshinstance.create":
+			return _meshinstance_create(params)
+		"mesh.set_surface_material":
+			return _mesh_set_surface_material(params)
+		"primitive_mesh.create":
+			return _primitive_mesh_create(params)
+		"light.create":
+			return _light_create(params)
+		"camera.create":
+			return _camera_create(params)
+		"environment.create":
+			return _environment_create(params)
+		"environment.set_sky":
+			return _environment_set_sky(params)
+		"csg.create":
+			return _csg_create(params)
+		"navregion.create":
+			return _navregion_create(params)
+		"navagent.configure":
+			return _navagent_configure(params)
+		"inputmap.add_action":
+			return _inputmap_add_action(params)
+		"inputmap.add_event":
+			return _inputmap_add_event(params)
+		"inputmap.list":
+			return _inputmap_list(params)
+		"inputmap.erase_action":
+			return _inputmap_erase_action(params)
+		"project.add_autoload":
+			return _project_add_autoload(params)
+		"project.remove_autoload":
+			return _project_remove_autoload(params)
+		"project.add_export_preset":
+			return _project_add_export_preset(params)
+		"project.set_main_scene":
+			return _project_set_main_scene(params)
+		"project.list_settings":
+			return _project_list_settings(params)
+		"editorsettings.get_set":
+			return _editorsettings_get_set(params)
+		"test.detect":
+			return _test_detect(params)
+		"test.list":
+			return _test_list(params)
+		"selection.get":
+			return _ok(_selection_get())
+		"selection.set":
+			return _selection_set(params)
+		"main_screen.get":
+			return _main_screen_get()
+		"main_screen.set":
+			return _main_screen_set(params)
+		"classdb.get_class":
+			return _classdb_get_class(params)
+		"classdb.reference":
+			return _classdb_reference(params)
+		"docs.search":
+			return _docs_search(params)
+		"screenshot.editor_viewport":
+			return _screenshot(params)
+		_:
+			return _err("unknown_method", "No such method: %s" % method)
+
+
+# ---------------------------------------------------------------- helpers ----
+
+func _ok(result: Variant) -> Dictionary:
+	return {"ok": true, "result": result}
+
+
+func _err(code: String, message: String) -> Dictionary:
+	# 254: the message says what went wrong; the remedy says what to do about it. It is
+	# attached HERE, at the one place every editor-plane failure passes through, so no
+	# call site can forget it and none has to repeat it.
+	var e := {"code": code, "message": message}
+	var r := Remedies.remedy(code, Remedies.EDITOR)
+	if r != "":
+		e["remedy"] = r
+	return {"ok": false, "error": e}
+
+
+func _edited_root() -> Node:
+	return EditorInterface.get_edited_scene_root()
+
+
+## Resolve a node path relative to the edited scene root.
+## "" or "." → the root itself; otherwise a path like "Player/Sprite2D".
+func _resolve(root: Node, path: String) -> Node:
+	if root == null:
+		return null
+	if path == "" or path == "." or path == "/root":
+		return root
+	if root.has_node(path):
+		return root.get_node(path)
+	return null
+
+
+func _path_of(root: Node, node: Node) -> String:
+	if node == root:
+		return "."
+	return String(root.get_path_to(node))
+
+
+## THE ONE PLACE A NODE JOINS THE EDITED SCENE.
+##
+## 🔴 `force_readable_name = true` IS LOAD-BEARING, NOT COSMETIC. Left at Godot's
+## default of false — which is what all twenty-two authoring tools did before 283 —
+## the engine answers ANY name collision with the machine form `@Type@N`, a name no
+## caller asked for and no human reads. Measured on 4.7: `node_add {name: "SFX"}`
+## twice returned "SFX" and then "@AudioStreamPlayer3D@19825", with no error and no
+## flag, so the caller's next call addressing "SFX" got `bad_path`. `node_duplicate`
+## had NO non-colliding case at all — a duplicate always collides with its source,
+## so "@Label@19826" was that tool's ONLY behaviour, where the editor's own Duplicate
+## gives "Label2". With `true` the engine takes the readable path the editor's Add
+## Node and Duplicate take, and the host's shipped promise that a name "defaults to
+## the class name" is true for the first time.
+##
+## 🔵 AND THE RENAME IS REPORTED, BECAUSE "SFX2" IS STILL NOT WHAT WAS ASKED FOR.
+## The returned Dictionary carries `coerced: true` and `requested` whenever the
+## engine's name differs — the shape `node_set_property` has answered with since
+## 1.82.0, so a caller parses one convention rather than two. `requested` is read
+## off the node itself rather than passed in, so a site cannot report a name it did
+## not actually ask the engine for.
+##
+## 🔴 A BARE `add_child` IN AN AUTHORING HANDLER IS THE DEFECT AGAIN, so this is the
+## only registration site in this file and `contract_check.py` check 31 refuses a
+## second one. A twenty-third authoring tool is covered by USING the seam, not by
+## somebody remembering the flag.
+func _commit_add(node: Node, parent: Node, root: Node, action: String, also_own: Array = []) -> Dictionary:
+	var requested := String(node.name)
+	var ur := _plugin.get_undo_redo()
+	ur.create_action(action)
+	ur.add_do_method(parent, "add_child", node, true)
+	ur.add_do_method(node, "set_owner", root)
+	for d in also_own:
+		ur.add_do_method(d, "set_owner", root)
+	ur.add_do_reference(node)
+	ur.add_undo_method(parent, "remove_child", node)
+	ur.commit_action()
+	var actual := String(node.name)
+	var out := {"path": _path_of(root, node), "name": actual}
+	if actual != requested:
+		out["coerced"] = true
+		out["requested"] = requested
+	return out
+
+
+## 🆕 284 — THE ONE PLACE THIS FILE WRITES A RESOURCE TO DISK.
+##
+## 🔴 MEASURED FROM A USER'S SIDE AGAINST A LIVE GODOT 4.7, AND IT IS 283 §1 ONE AXIS
+## OVER. 283 found that every tool taking a `name` handed it to `add_child` with
+## `force_readable_name` defaulted false, so a collision came back as `@Type@N` with no
+## flag. The collision here is a FILE and the answer was DELETION. Nine resources were
+## created, a sentinel line appended to each on disk, and each tool called a SECOND time
+## with identical arguments: every sentinel was gone, and every reply read `created` /
+## `saved` / `packed` — the same words, in the same shape, as the first call.
+##
+## `resource_create` overwrote an Environment a property had been set on, resetting it;
+## asked for a StandardMaterial3D at the same path it silently turned that resource into
+## a material, so anything referencing it as an Environment now holds the wrong type.
+## `scene_new` replaced a saved scene on disk while the editor's open copy still held the
+## node that had been added, so file and editor disagree and nothing says so.
+##
+## 🔴 AND THE PRODUCT GAVE FOUR ANSWERS TO ONE QUESTION. `filesystem_move` refused
+## `exists` with no way to force; the seven scaffold tools under `_mp_write_script`
+## refused `exists` unless `overwrite`; `filesystem_create_dir` succeeded and reported
+## `existed`; and the rest destroyed silently. `_mp_write_script` was already right, and
+## it was right because it is a SEAM — one function, one answer, seven tools. This is
+## that function for the twenty-four `ResourceSaver.save` sites, which were a roster:
+## 282 §2.3's rule, paid on a second uncounted population one session after the first.
+##
+## 🔵 THE TWO KINDS ARE A PROPERTY OF THE CALL SITE, NOT OF THE CALLER'S ARGUMENTS, and
+## that distinction is the whole design. `SAVE_NEW` means `to_path` is a DESTINATION the
+## caller named — a collision there is somebody else's file. `SAVE_BACK` means the path
+## is the resource's own home, loaded a few lines above and written back: overwriting is
+## not a hazard there, it IS the operation, and refusing it would break every
+## `*_set_property` tool on the surface. A flag the CALLER could set would let a caller
+## turn `theme_set_color` into a refusal; a constant at the SITE cannot.
+##
+## 🔵 `replaced` IS REPORTED ONLY WHEN IT HAPPENED — the shape `node_set_property` has
+## carried since 1.82.0 and `_commit_add` since 283: a field that appears when the engine
+## did something other than the plain thing, and is absent otherwise. *I created a file*
+## and *I overwrote your file because you asked me to* are not the same sentence.
+const SAVE_NEW := 0
+const SAVE_BACK := 1
+
+
+func _commit_save(res: Resource, to_path: String, params: Dictionary, kind: int,
+		flags: int = 0) -> Dictionary:
+	var existed := FileAccess.file_exists(to_path)
+	if kind == SAVE_NEW and existed and not bool(params.get("overwrite", false)):
+		return {"error": _err("exists", "File already exists (pass overwrite): %s" % to_path)}
+	var e := ResourceSaver.save(res, to_path, flags)
+	if e != OK:
+		return {"error": _err("save_failed", "ResourceSaver.save() returned %d" % e)}
+	return {"fields": {"replaced": true} if (existed and kind == SAVE_NEW) else {}}
+
+
+# ------------------------------------------------------------- handlers ------
+
+func _ping() -> Dictionary:
+	return {
+		"pong": true,
+		"addon_version": ADDON_VERSION,
+		"godot": Engine.get_version_info().get("string", ""),
+	}
+
+
+func _editor_get_state() -> Dictionary:
+	var root := _edited_root()
+	var selection: Array = []
+	if root:
+		for n in EditorInterface.get_selection().get_selected_nodes():
+			selection.append(_path_of(root, n))
+	return {
+		"has_open_scene": root != null,
+		"edited_scene_root": (_path_of(root, root) if root else null),
+		"edited_scene_path": (root.scene_file_path if root else null),
+		"root_type": (root.get_class() if root else null),
+		"selection": selection,
+		"godot": Engine.get_version_info().get("string", ""),
+	}
+
+
+func _edit_undo(params: Dictionary) -> Dictionary:
+	return _edit_history_step(params, true)
+
+
+func _edit_redo(params: Dictionary) -> Dictionary:
+	return _edit_history_step(params, false)
+
+
+## Drive the editor's undo/redo history. `is_undo` picks the direction.
+## `scope` selects which history: "scene" (default) resolves the edited scene's
+## history via EditorUndoRedoManager.get_object_history_id(root) — the same
+## routing the node_* mutators commit into — while "global" targets the
+## editor-wide GLOBAL_HISTORY. The concrete UndoRedo is fetched with
+## get_history_undo_redo(id) and stepped directly; that is the only
+## scripting-exposed route to a programmatic Ctrl-Z (validated on Godot 4.7).
+func _edit_history_step(params: Dictionary, is_undo: bool) -> Dictionary:
+	var ur := _plugin.get_undo_redo()
+	var scope := String(params.get("scope", "scene"))
+	var hid := _history_id_for_scope(ur, scope)
+	if hid == EditorUndoRedoManager.INVALID_HISTORY:
+		return _err("no_history", "No undo/redo history for scope '%s'" % scope)
+	var hist := ur.get_history_undo_redo(hid)
+	if hist == null:
+		return _err("no_history", "No UndoRedo for history %d (scope '%s')" % [hid, scope])
+	var performed := false
+	var action_name := ""
+	if is_undo:
+		if hist.has_undo():
+			action_name = hist.get_current_action_name()
+			performed = hist.undo()
+	else:
+		if hist.has_redo():
+			performed = hist.redo()
+			action_name = hist.get_current_action_name()
+	return _ok({
+		"performed": performed,
+		"direction": ("undo" if is_undo else "redo"),
+		"action": (action_name if performed else ""),
+		"has_undo": hist.has_undo(),
+		"has_redo": hist.has_redo(),
+		"history_id": hid,
+		"scope": scope,
+	})
+
+
+## Resolve the target undo-history id for a scope string.
+func _history_id_for_scope(ur: EditorUndoRedoManager, scope: String) -> int:
+	if scope == "global":
+		return EditorUndoRedoManager.GLOBAL_HISTORY
+	var root := _edited_root()
+	if root != null:
+		return ur.get_object_history_id(root)
+	return EditorUndoRedoManager.GLOBAL_HISTORY
+
+
+func _project_get_info() -> Dictionary:
+	return {
+		"name": ProjectSettings.get_setting("application/config/name", ""),
+		"main_scene": ProjectSettings.get_setting("application/run/main_scene", ""),
+		"project_root": ProjectSettings.globalize_path("res://"),
+		"godot": Engine.get_version_info().get("string", ""),
+		"features": Array(ProjectSettings.get_setting("application/config/features", [])),
+	}
+
+
+func _project_get_setting(params: Dictionary) -> Dictionary:
+	var key := String(params.get("name", ""))
+	if key == "" or not ProjectSettings.has_setting(key):
+		return _err("not_found", "Project setting not found: %s" % key)
+	return _ok({"name": key, "value": Codec.encode(ProjectSettings.get_setting(key))})
+
+
+func _project_set_setting(params: Dictionary) -> Dictionary:
+	var key := String(params.get("name", ""))
+	if key == "":
+		return _err("bad_params", "Missing 'name'")
+	ProjectSettings.set_setting(key, Codec.decode(params.get("value")))
+	if bool(params.get("save", false)):
+		var e := ProjectSettings.save()
+		if e != OK:
+			return _err("save_failed", "ProjectSettings.save() returned %d" % e)
+	return _ok({"name": key, "saved": bool(params.get("save", false))})
+
+
+func _serialize_node(node: Node, root: Node, depth: int, max_depth: int) -> Dictionary:
+	var script_path: Variant = null
+	var scr := node.get_script()
+	if scr and scr is Resource:
+		script_path = (scr as Resource).resource_path
+	var d := {
+		"name": String(node.name),
+		"type": node.get_class(),
+		"path": _path_of(root, node),
+		"script": script_path,
+		"child_count": node.get_child_count(),
+	}
+	if depth < max_depth and node.get_child_count() > 0:
+		var kids: Array = []
+		for c in node.get_children():
+			kids.append(_serialize_node(c, root, depth + 1, max_depth))
+		d["children"] = kids
+	return d
+
+
+func _scene_get_tree(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is currently open in the editor")
+	var max_depth := int(params.get("max_depth", 64))
+	return _ok(_serialize_node(root, root, 0, max_depth))
+
+
+func _scene_open(params: Dictionary) -> Dictionary:
+	var path := String(params.get("path", ""))
+	if path == "" or not ResourceLoader.exists(path):
+		return _err("not_found", "Scene not found: %s" % path)
+	EditorInterface.open_scene_from_path(path)
+	return _ok({"opened": path})
+
+
+func _scene_save() -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var e := EditorInterface.save_scene()
+	if e != OK:
+		return _err("save_failed", "save_scene() returned %d (has the scene ever been saved to a path?)" % e)
+	return _ok({"saved": root.scene_file_path})
+
+
+func _scene_new(params: Dictionary) -> Dictionary:
+	var root_type := String(params.get("root_type", "Node"))
+	var path := String(params.get("path", ""))
+	if path == "":
+		return _err("bad_params", "'path' is required (e.g. res://scenes/new.tscn)")
+	if not ClassDB.can_instantiate(root_type):
+		return _err("bad_type", "Cannot instantiate class: %s" % root_type)
+	var root: Node = ClassDB.instantiate(root_type)
+	root.name = String(params.get("name", root_type))
+	var packed := PackedScene.new()
+	var e := packed.pack(root)
+	if e != OK:
+		return _err("pack_failed", "PackedScene.pack() returned %d" % e)
+	var saved := _commit_save(packed, path, params, SAVE_NEW)
+	if saved.has("error"):
+		return saved["error"]
+	EditorInterface.open_scene_from_path(path)
+	return _ok({"created": path, "root_type": root_type}.merged(saved["fields"]))
+
+
+func _node_add(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var parent := _resolve(root, String(params.get("parent_path", "")))
+	if parent == null:
+		return _err("bad_path", "Parent not found: %s" % params.get("parent_path", ""))
+	var type := String(params.get("type", "Node"))
+	if not ClassDB.can_instantiate(type):
+		return _err("bad_type", "Cannot instantiate class: %s" % type)
+	var node: Node = ClassDB.instantiate(type)
+	node.name = String(params.get("name", type))
+	var added := _commit_add(node, parent, root, "Breakpoint: add %s" % node.name)
+	added["type"] = type
+	return _ok(added)
+
+
+func _node_delete(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	if node == root:
+		return _err("refused", "Refusing to delete the scene root")
+	var parent := node.get_parent()
+	var index := node.get_index()
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: delete %s" % node.name)
+	ur.add_do_method(parent, "remove_child", node)
+	ur.add_undo_method(parent, "add_child", node)
+	ur.add_undo_method(parent, "move_child", node, index)
+	ur.add_undo_method(node, "set_owner", root)
+	ur.add_undo_reference(node)
+	ur.commit_action()
+	return _ok({"deleted": String(params.get("path", ""))})
+
+
+func _node_rename(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	var new_name := String(params.get("new_name", ""))
+	if new_name == "":
+		return _err("bad_params", "Missing 'new_name'")
+	var old_name := String(node.name)
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: rename %s -> %s" % [old_name, new_name])
+	ur.add_do_property(node, "name", new_name)
+	ur.add_undo_property(node, "name", old_name)
+	ur.commit_action()
+	return _ok({"path": _path_of(root, node), "name": String(node.name)})
+
+
+func _node_reparent(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	if node == root:
+		return _err("refused", "Cannot reparent the scene root")
+	var new_parent := _resolve(root, String(params.get("new_parent_path", "")))
+	if new_parent == null:
+		return _err("bad_path", "New parent not found: %s" % params.get("new_parent_path", ""))
+	var keep := bool(params.get("keep_global_transform", true))
+	var old_parent := node.get_parent()
+	var old_index := node.get_index()
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: reparent %s" % node.name)
+	ur.add_do_method(node, "reparent", new_parent, keep)
+	ur.add_do_method(node, "set_owner", root)
+	ur.add_undo_method(node, "reparent", old_parent, keep)
+	ur.add_undo_method(old_parent, "move_child", node, old_index)
+	ur.add_undo_method(node, "set_owner", root)
+	ur.commit_action()
+	return _ok({"path": _path_of(root, node)})
+
+
+func _node_set_property(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	var prop := String(params.get("property", ""))
+	if prop == "":
+		return _err("bad_params", "Missing 'property'")
+	# 🔴 SAME FAMILY AS THE RUNTIME PLANE'S `_set_property` (issue #327) — an absent
+	# `value` is not a null one, and letting it through wrote the property type's zero
+	# over whatever was there, under a success envelope. See runtime_bridge.gd for the
+	# measurement; this plane reached it by the same route and through UndoRedo, so the
+	# wipe landed in the undo history looking like a deliberate edit.
+	if not params.has("value"):
+		return _err(
+			"bad_params",
+			"Missing 'value'. Pass it explicitly — an absent value is not the same request as a null one, and writing null here would set %s to its type's zero." % prop
+		)
+	var old_value: Variant = Codec.read_property(node, prop)
+	var new_value: Variant = Codec.decode(params["value"])
+	# 🔴 TRIAL FIRST, HISTORY ONLY IF IT LANDS. The engine coerces at the moment of the
+	# write, so the outcome cannot be known before it happens — and a refused write must
+	# leave neither a changed property NOR an undo entry. Committing first and undoing
+	# afterwards would put a "Breakpoint: set .." action in the editor's history for an
+	# edit that never took, which is a worse artifact than the one being fixed.
+	Codec.write_property(node, prop, new_value)
+	var after: Variant = Codec.read_property(node, prop)
+	var outcome := _set_outcome(new_value, old_value, after)
+	Codec.write_property(node, prop, old_value)
+	if outcome == "applied" or outcome == "coerced":
+		var ur := _plugin.get_undo_redo()
+		ur.create_action("Breakpoint: set %s.%s" % [node.name, prop])
+		if Codec.is_indexed(prop):
+			# UndoRedo's property methods take a property NAME; a sub-property has to go
+			# through the indexed setter as a method call, or the action records an edit
+			# to a property called "position:x" that no node has.
+			ur.add_do_method(node, "set_indexed", NodePath(prop), new_value)
+			ur.add_undo_method(node, "set_indexed", NodePath(prop), old_value)
+		else:
+			ur.add_do_property(node, prop, new_value)
+			ur.add_undo_property(node, prop, old_value)
+		ur.commit_action()
+		after = Codec.read_property(node, prop)
+	if outcome == "mismatch":
+		return _err(
+			"set_mismatch",
+			"%s.%s holds %s after the write and %s was asked for. Nothing the caller wrote survived: rich types cross this wire as {\"__type__\": \"Vector2\", \"x\": .., \"y\": ..} and a bare map, array or string is not that."
+				% [_path_of(root, node), prop, _describe(after), _describe(new_value)]
+		)
+	if outcome == "ignored":
+		return _err(
+			"set_ignored",
+			"%s.%s is unchanged at %s after being asked for %s. The property may not exist on this node, or its setter refused the value."
+				% [_path_of(root, node), prop, _describe(after), _describe(new_value)]
+		)
+	var out := {"path": _path_of(root, node), "property": prop, "value": Codec.encode(after)}
+	if outcome == "coerced":
+		out["coerced"] = true
+		out["requested"] = Codec.encode(new_value)
+	return _ok(out)
+
+
+## The three outcomes of a write. Deliberately duplicated across the two planes rather
+## than hoisted into the codec: 254's per-plane split is the house rule and these two
+## scripts have separate lifetimes. See `runtime_bridge.gd::_set_outcome` for the
+## argument the three names carry.
+static func _set_outcome(asked: Variant, before: Variant, after: Variant) -> String:
+	if Codec.values_equal(asked, after):
+		return "applied"
+	if not Codec.types_compatible(typeof(asked), typeof(after)):
+		return "mismatch"
+	if Codec.values_equal(before, after):
+		return "ignored"
+	return "coerced"
+
+
+## `type_string(typeof(v))` plus the value, for a message a reader can act on.
+static func _describe(v: Variant) -> String:
+	return "%s %s" % [type_string(typeof(v)), JSON.stringify(Codec.encode(v))]
+
+
+func _node_get_property(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	var prop := String(params.get("property", ""))
+	if prop == "":
+		return _err("bad_params", "Missing 'property'")
+	return _ok({"path": _path_of(root, node), "property": prop, "value": Codec.encode(Codec.read_property(node, prop))})
+
+
+func _selection_get() -> Dictionary:
+	var root := _edited_root()
+	var paths: Array = []
+	if root:
+		for n in EditorInterface.get_selection().get_selected_nodes():
+			paths.append(_path_of(root, n))
+	return {"selection": paths}
+
+
+func _selection_set(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var sel := EditorInterface.get_selection()
+	sel.clear()
+	var applied: Array = []
+	for p in params.get("paths", []):
+		var node := _resolve(root, String(p))
+		if node:
+			sel.add_node(node)
+			applied.append(String(p))
+	return _ok({"selection": applied})
+
+
+# ------------------------------------------------- main-screen tab ----------
+# Godot keeps the INACTIVE main-screen tab's viewport alive at its minimum size,
+# so screenshot_editor on the wrong tab "succeeds" and returns a 2x2 placeholder.
+# The host has guarded that since #139 by rejecting anything under 8px, but the
+# error could only tell the caller to switch tabs by hand -- there was no tool to
+# do it with, which is a dead end for the assistant this addon exists to serve.
+#
+# Tab names are NOT hardcoded anywhere here. The engine reports them, they differ
+# between versions (Godot 4.6 added "Game"), and a caller that asks for one that
+# does not exist gets the live list back in the error. `_main_screen_set` matches
+# case-insensitively so "2d" works as well as the engine's own "2D".
+#
+# Both EditorInterface methods are reached through call()/has_method rather than
+# literally, for the reason spelled out on _scene_close: a literal call to a
+# method the running engine lacks fails at PARSE time and takes the WHOLE addon
+# down on that version, not just this tool. get_editor_main_screen is 4.1+ and
+# set_main_screen_editor is 4.0+, so both should be present across this repo's
+# 4.3/4.5/4.7 matrix -- the guard is here so that being wrong about that degrades
+# to one tool reporting `unsupported` instead of the plugin failing to load.
+func _main_screen_root() -> Node:
+	if not EditorInterface.has_method("get_editor_main_screen"):
+		return null
+	return EditorInterface.call("get_editor_main_screen")
+
+
+# The container's children do NOT carry the tab names. Measured on 4.7, the five
+# children are named @CanvasItemEditor@10149, @Node3DEditor@10909, two
+# @WindowWrapper@... and @EditorAssetLibrary@... -- Godot's auto-generated node
+# names, which `set_main_screen_editor` does not accept. The tab name it DOES
+# accept ("2D", "3D", "Script", "Game", "AssetLib") is the EditorPlugin's name,
+# which is not on the control. So the label is derived from the control's class:
+const _MAIN_SCREEN_LABELS := {
+	"CanvasItemEditor": "2D",
+	"Node3DEditor": "3D",
+	"ScriptEditor": "Script",
+	"GameView": "Game",
+	"EditorAssetLibrary": "AssetLib",
+}
+
+
+func _main_screen_label(c: Node) -> String:
+	var cls := c.get_class()
+	if _MAIN_SCREEN_LABELS.has(cls):
+		return String(_MAIN_SCREEN_LABELS[cls])
+	# Script and Game are wrapped in a WindowWrapper (the "make floating" feature),
+	# so the identifying class is one level down. Measured: ['Window','ScriptEditor']
+	# and ['Window','GameView'].
+	for k in c.get_children():
+		var kcls := k.get_class()
+		if _MAIN_SCREEN_LABELS.has(kcls):
+			return String(_MAIN_SCREEN_LABELS[kcls])
+	# A third-party EditorPlugin main screen, or a future built-in this map predates.
+	# Its real tab name is the plugin's get_plugin_name(), which is not reachable from
+	# here -- so report something honest rather than inventing one. set_main_screen_editor
+	# is still given the caller's string verbatim, so such a tab remains switchable by
+	# name even though this list cannot spell it.
+	var nm := String(c.name)
+	return cls if nm.begins_with("@") else nm
+
+
+func _main_screen_state() -> Dictionary:
+	# The active tab is the one visible child; the editor shows exactly one at a time.
+	# Reported as null rather than guessed if somehow none is visible.
+	var mains := _main_screen_root()
+	var available: Array = []
+	var active: Variant = null
+	if mains == null:
+		return {"active": null, "available": available}
+	for c in mains.get_children():
+		var label := _main_screen_label(c)
+		available.append(label)
+		if c is Control and (c as Control).visible:
+			active = label
+	return {"active": active, "available": available}
+
+
+func _main_screen_get() -> Dictionary:
+	if _main_screen_root() == null:
+		return _err("unsupported", "main_screen_get requires EditorInterface.get_editor_main_screen (Godot 4.1+)")
+	return _ok(_main_screen_state())
+
+
+func _main_screen_set(params: Dictionary) -> Dictionary:
+	if not EditorInterface.has_method("set_main_screen_editor"):
+		return _err("unsupported", "main_screen_set requires EditorInterface.set_main_screen_editor")
+	var state := _main_screen_state()
+	var available: Array = state.get("available", [])
+	var want := String(params.get("name", ""))
+	if want == "":
+		return _err("bad_params", "name is required (one of: %s)" % ", ".join(PackedStringArray(available)))
+	# Resolve case-insensitively against the derived labels so "2d" works, but fall
+	# back to the caller's string verbatim when nothing matches. The label map cannot
+	# spell a third-party plugin's main screen (see _main_screen_label), and the
+	# engine's own lookup can -- so a name this addon does not recognise is still
+	# WORTH TRYING rather than rejected here.
+	var target := want
+	for nm in available:
+		if String(nm).to_lower() == want.to_lower():
+			target = String(nm)
+			break
+	EditorInterface.call("set_main_screen_editor", target)
+	# Verify by READ-BACK, not by trusting the call. set_main_screen_editor returns
+	# nothing and silently does nothing for a name it does not know, so this is the
+	# only way to tell a successful switch from a typo -- and it is what makes the
+	# verbatim fallback above safe. It also means the caller's next move (usually a
+	# screenshot) acts on what the editor actually did.
+	var after := _main_screen_state()
+	var now := String(after.get("active", ""))
+	if now.to_lower() != target.to_lower():
+		return _err("not_found", "No main-screen tab named \"%s\" — the editor is still on \"%s\". Available: %s" % [want, now, ", ".join(PackedStringArray(available))])
+	return _ok({"active": after.get("active"), "available": after.get("available"), "requested": target})
+
+
+func _classdb_get_class(params: Dictionary) -> Dictionary:
+	var cls := String(params.get("class_name", ""))
+	if cls == "" or not ClassDB.class_exists(cls):
+		return _err("not_found", "Class not found: %s" % cls)
+	var inherited := bool(params.get("include_inherited", false))
+	var no_inherit := not inherited
+	var methods: Array = []
+	for m in ClassDB.class_get_method_list(cls, no_inherit):
+		methods.append(String(m.get("name", "")))
+	var props: Array = []
+	for p in ClassDB.class_get_property_list(cls, no_inherit):
+		props.append(String(p.get("name", "")))
+	var signals: Array = []
+	for s in ClassDB.class_get_signal_list(cls, no_inherit):
+		signals.append(String(s.get("name", "")))
+	return _ok({
+		"class": cls,
+		"parent": ClassDB.get_parent_class(cls),
+		"can_instantiate": ClassDB.can_instantiate(cls),
+		"methods": methods,
+		"properties": props,
+		"signals": signals,
+	})
+
+
+# ------------------------------------------------- Group K: knowledge --------
+# ClassDB-backed reference/search. (The project-file index — project_search,
+# find_symbol, find_usages, example_snippet — is host-side in tools/knowledge.ts
+# and needs no bridge method.)
+
+func _type_name(info: Dictionary) -> String:
+	# Readable type for a PropertyInfo/arg dict: the concrete class for objects,
+	# else the Variant type name; untyped (TYPE_NIL, no class) reads as "Variant".
+	var cn := String(info.get("class_name", ""))
+	if cn != "":
+		return cn
+	var t := int(info.get("type", TYPE_NIL))
+	if t == TYPE_NIL:
+		return "Variant"
+	return type_string(t)
+
+
+func _doc_url(cls: String) -> String:
+	return "https://docs.godotengine.org/en/stable/classes/class_%s.html" % cls.to_lower()
+
+
+func _doc_member_url(cls: String, kind: String, member: String) -> String:
+	# Godot online-docs anchors look like #class-node-method-add-child.
+	if member == "":
+		return _doc_url(cls)
+	var anchor := "class-%s-%s-%s" % [cls.to_lower(), kind, member.replace("_", "-")]
+	return "%s#%s" % [_doc_url(cls), anchor]
+
+
+func _classdb_reference(params: Dictionary) -> Dictionary:
+	var cls := String(params.get("class_name", ""))
+	if cls == "" or not ClassDB.class_exists(cls):
+		return _err("not_found", "Class not found: %s" % cls)
+	var inherited := bool(params.get("include_inherited", false))
+	var no_inherit := not inherited
+	var filter := String(params.get("member", "")).strip_edges()
+	var methods: Array = []
+	for m in ClassDB.class_get_method_list(cls, no_inherit):
+		var nm := String(m.get("name", ""))
+		if filter != "" and nm.findn(filter) == -1:
+			continue
+		var margs: Array = []
+		for a in m.get("args", []):
+			margs.append({"name": String(a.get("name", "")), "type": _type_name(a)})
+		var ret: Dictionary = m.get("return", {})
+		var rt := _type_name(ret)
+		if String(ret.get("class_name", "")) == "" and int(ret.get("type", TYPE_NIL)) == TYPE_NIL:
+			rt = "void"
+		methods.append({"name": nm, "return_type": rt, "args": margs})
+	var sigs: Array = []
+	for s in ClassDB.class_get_signal_list(cls, no_inherit):
+		var sn := String(s.get("name", ""))
+		if filter != "" and sn.findn(filter) == -1:
+			continue
+		var sargs: Array = []
+		for a in s.get("args", []):
+			sargs.append({"name": String(a.get("name", "")), "type": _type_name(a)})
+		sigs.append({"name": sn, "args": sargs})
+	var props: Array = []
+	for p in ClassDB.class_get_property_list(cls, no_inherit):
+		var usage := int(p.get("usage", 0))
+		if usage & (PROPERTY_USAGE_CATEGORY | PROPERTY_USAGE_GROUP | PROPERTY_USAGE_SUBGROUP):
+			continue
+		var pn := String(p.get("name", ""))
+		if pn == "":
+			continue
+		if filter != "" and pn.findn(filter) == -1:
+			continue
+		props.append({"name": pn, "type": type_string(int(p.get("type", TYPE_NIL))), "class_name": String(p.get("class_name", ""))})
+	return _ok({
+		"class": cls,
+		"parent": ClassDB.get_parent_class(cls),
+		"can_instantiate": ClassDB.can_instantiate(cls),
+		"docs_url": _doc_url(cls),
+		"methods": methods,
+		"signals": sigs,
+		"properties": props,
+	})
+
+
+func _docs_scan_members(cls: String, q: String, kind: String, results: Array, limit: int) -> bool:
+	# Append member matches for one class; return true once `limit` is reached.
+	if kind == "any" or kind == "method":
+		for m in ClassDB.class_get_method_list(cls, true):
+			var nm := String(m.get("name", ""))
+			if nm.to_lower().find(q) != -1:
+				results.append({"class": cls, "member": nm, "kind": "method", "docs_url": _doc_member_url(cls, "method", nm)})
+				if results.size() >= limit:
+					return true
+	if kind == "any" or kind == "property":
+		for p in ClassDB.class_get_property_list(cls, true):
+			var usage := int(p.get("usage", 0))
+			if usage & (PROPERTY_USAGE_CATEGORY | PROPERTY_USAGE_GROUP | PROPERTY_USAGE_SUBGROUP):
+				continue
+			var pn := String(p.get("name", ""))
+			if pn != "" and pn.to_lower().find(q) != -1:
+				results.append({"class": cls, "member": pn, "kind": "property", "docs_url": _doc_member_url(cls, "property", pn)})
+				if results.size() >= limit:
+					return true
+	if kind == "any" or kind == "signal":
+		for s in ClassDB.class_get_signal_list(cls, true):
+			var sn := String(s.get("name", ""))
+			if sn.to_lower().find(q) != -1:
+				results.append({"class": cls, "member": sn, "kind": "signal", "docs_url": _doc_member_url(cls, "signal", sn)})
+				if results.size() >= limit:
+					return true
+	return false
+
+
+func _docs_search(params: Dictionary) -> Dictionary:
+	var raw_q := String(params.get("query", ""))
+	var q := raw_q.strip_edges().to_lower()
+	if q == "":
+		return _err("bad_request", "query must not be empty")
+	var kind := String(params.get("kind", "any"))
+	var scope := String(params.get("class_name", "")).strip_edges()
+	var limit := int(params.get("limit", 40))
+	if limit <= 0:
+		limit = 40
+	var deep := bool(params.get("deep", true))
+	var results: Array = []
+	var truncated := false
+
+	var classes: Array = Array(ClassDB.get_class_list())
+	classes.sort()
+
+	# Class-name matches (project-wide over the engine class list).
+	if kind == "any" or kind == "class":
+		for c in classes:
+			var cs := String(c)
+			if cs.to_lower().find(q) != -1:
+				results.append({"class": cs, "member": "", "kind": "class", "docs_url": _doc_url(cs)})
+				if results.size() >= limit:
+					truncated = true
+					break
+
+	# Member matches (bounded by `limit`).
+	if deep and not truncated and kind != "class":
+		var scan: Array = []
+		if scope != "":
+			if ClassDB.class_exists(scope):
+				scan = [scope]
+		else:
+			scan = classes
+		for c in scan:
+			if _docs_scan_members(String(c), q, kind, results, limit):
+				truncated = true
+				break
+
+	return _ok({
+		"query": raw_q,
+		"count": results.size(),
+		"truncated": truncated,
+		"results": results,
+	})
+
+
+## 🔴 311 — THE ENGINE PRESENTS NOTHING WHILE NO WINDOW IS VISIBLE, AND EVERY CAPTURE
+## SITE IN THIS ADDON USED TO ANSWER SUCCESS ANYWAY.
+##
+## Measured at 310 on a live Godot 4.7 (queue row
+## `editor-3d-capture-is-blank-on-a-developer-machine`, and the engine's own source):
+## `Main::iteration` calls `RenderingServer::draw` only while
+## `DisplayServer::can_any_window_draw()`, and the macOS DisplayServer answers that from
+## a per-window `is_visible` set from `NSWindowOcclusionStateVisible`. A window that is
+## off the active Space, hidden, minimised or completely covered stops the WHOLE engine
+## drawing — SubViewports included, because they are drawn in the same call.
+##
+## The two shapes that produces were both measured, and the SECOND is the dangerous one:
+## a viewport first shown in that state captures as transparent black at full size
+## (an unwritten render target, byte-identical across eight retries); a viewport drawn
+## earlier captures as its LAST frame, full colour, correctly sized, decoding cleanly,
+## and unchanged by a scene edit that must have altered it. Both were reported as
+## success. An assistant that edits a scene and screenshots it to check its work sees
+## the old scene and concludes the edit failed.
+##
+## 🔵 ONE CALL IS ENOUGH, AND A SECOND SAMPLE WOULD ADD NOTHING. `window_can_draw()` IS
+## the predicate the draw loop reads rather than a proxy for it, so confirming across a
+## frame with `Engine.get_frames_drawn()` would re-ask the same question of the same
+## flag. It is also the only shape available here: `_dispatch` is synchronous, and an
+## `await` would make every caller of every handler a coroutine.
+##
+## 🔵 AND IT IS DIFFERENT FROM THE TWO GUARDS THAT ALREADY EXIST. `viewport_not_active`
+## and `viewport_not_rendered` both ask whether the viewport is on screen INSIDE the
+## editor; neither can ask whether the editor itself is. This is that question, one
+## level up.
+func _window_drawing_refusal(subject: String, remedy_subject: String) -> Dictionary:
+	return _err("window_not_drawing",
+		("%s is not drawing, so there is no current frame to capture. Godot presents a "
+		+ "frame only while a window is visible: this one is minimised, on another "
+		+ "desktop or Space, completely covered by another window, or running headless. "
+		+ "Capturing now would return the last frame drawn before it was hidden — full "
+		+ "size, full colour, and with nothing in the image to mark it stale — or a "
+		+ "blank frame if this viewport had never been drawn to. Bring %s back on "
+		+ "screen and call again.") % [subject, remedy_subject])
+
+
+func _screenshot(params: Dictionary) -> Dictionary:
+	var which := String(params.get("viewport", "3d"))
+	if not DisplayServer.window_can_draw():
+		return _window_drawing_refusal("The editor window", "the editor window")
+	var vp: SubViewport = null
+	if which == "2d":
+		vp = EditorInterface.get_editor_viewport_2d()
+	else:
+		vp = EditorInterface.get_editor_viewport_3d(0)
+	if vp == null:
+		return _err("no_viewport", "Editor viewport '%s' is not available" % which)
+	var tex := vp.get_texture()
+	if tex == null:
+		return _err("no_texture", "Viewport has no texture yet (open the matching editor tab)")
+	var img := tex.get_image()
+	if img == null:
+		return _err("no_image", "Could not read viewport image")
+	var buf := img.save_png_to_buffer()
+	return _ok({
+		"mime": "image/png",
+		"base64": Marshalls.raw_to_base64(buf),
+		"width": img.get_width(),
+		"height": img.get_height(),
+		"viewport": which,
+	})
+
+
+# ------------------------------------------------- Group A: node depth -------
+
+func _descendants(node: Node) -> Array:
+	var out: Array = []
+	for c in node.get_children():
+		out.append(c)
+		out.append_array(_descendants(c))
+	return out
+
+
+func _node_duplicate(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	if node == root:
+		return _err("refused", "Cannot duplicate the scene root")
+	var parent := node.get_parent()
+	var dup: Node = node.duplicate()
+	if params.has("name"):
+		dup.name = String(params.get("name"))
+	var added := _commit_add(dup, parent, root, "Breakpoint: duplicate %s" % node.name, _descendants(dup))
+	added["type"] = dup.get_class()
+	return _ok(added)
+
+
+func _node_get_children(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	var children: Array = []
+	for c in node.get_children():
+		children.append({"name": String(c.name), "type": c.get_class(), "path": _path_of(root, c)})
+	return _ok({"path": _path_of(root, node), "children": children})
+
+
+func _node_find(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var start := _resolve(root, String(params.get("root_path", ".")))
+	if start == null:
+		return _err("bad_path", "Search root not found: %s" % params.get("root_path", "."))
+	var want_type := String(params.get("type", ""))
+	var name_has := String(params.get("name_contains", ""))
+	var limit := int(params.get("limit", 200))
+	var matches: Array = []
+	for n in _descendants(start):
+		if want_type != "" and not n.is_class(want_type):
+			continue
+		if name_has != "" and String(n.name).findn(name_has) == -1:
+			continue
+		matches.append({"name": String(n.name), "type": n.get_class(), "path": _path_of(root, n)})
+		if matches.size() >= limit:
+			break
+	return _ok({"matches": matches, "count": matches.size()})
+
+
+func _node_list_groups(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	var groups: Array = []
+	for g in node.get_groups():
+		groups.append(String(g))
+	return _ok({"path": _path_of(root, node), "groups": groups})
+
+
+func _node_add_to_group(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	var group := String(params.get("group", ""))
+	if group == "":
+		return _err("bad_params", "Missing 'group'")
+	if node.is_in_group(group):
+		return _ok({"path": _path_of(root, node), "group": group, "added": false})
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: add %s to group %s" % [node.name, group])
+	ur.add_do_method(node, "add_to_group", group, true)
+	ur.add_undo_method(node, "remove_from_group", group)
+	ur.commit_action()
+	return _ok({"path": _path_of(root, node), "group": group, "added": true})
+
+
+func _node_remove_from_group(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	var group := String(params.get("group", ""))
+	if group == "":
+		return _err("bad_params", "Missing 'group'")
+	if not node.is_in_group(group):
+		return _ok({"path": _path_of(root, node), "group": group, "removed": false})
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: remove %s from group %s" % [node.name, group])
+	ur.add_do_method(node, "remove_from_group", group)
+	ur.add_undo_method(node, "add_to_group", group, true)
+	ur.commit_action()
+	return _ok({"path": _path_of(root, node), "group": group, "removed": true})
+
+
+# ------------------------------------- Group A: node depth (batch 2) ---------
+
+func _node_instantiate_scene(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var parent := _resolve(root, String(params.get("parent_path", "")))
+	if parent == null:
+		return _err("bad_path", "Parent not found: %s" % params.get("parent_path", ""))
+	var scene_path := String(params.get("scene_path", ""))
+	if scene_path == "" or not ResourceLoader.exists(scene_path):
+		return _err("not_found", "Scene not found: %s" % scene_path)
+	var res := ResourceLoader.load(scene_path)
+	if res == null or not (res is PackedScene):
+		return _err("bad_type", "Not a PackedScene: %s" % scene_path)
+	var inst: Node = (res as PackedScene).instantiate(PackedScene.GEN_EDIT_STATE_INSTANCE)
+	if inst == null:
+		return _err("instantiate_failed", "Could not instantiate %s" % scene_path)
+	if params.has("name"):
+		inst.name = String(params.get("name"))
+	var added := _commit_add(inst, parent, root, "Breakpoint: instance scene %s" % scene_path)
+	added["type"] = inst.get_class()
+	added["scene"] = scene_path
+	return _ok(added)
+
+
+func _node_move_child(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	if node == root:
+		return _err("refused", "Cannot move the scene root")
+	var parent := node.get_parent()
+	var count := parent.get_child_count()
+	var to_index := int(params.get("to_index", node.get_index()))
+	if to_index < 0:
+		to_index = count + to_index
+	if to_index < 0 or to_index >= count:
+		return _err("bad_index", "to_index out of range 0..%d" % (count - 1))
+	var old_index := node.get_index()
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: move %s to %d" % [node.name, to_index])
+	ur.add_do_method(parent, "move_child", node, to_index)
+	ur.add_undo_method(parent, "move_child", node, old_index)
+	ur.commit_action()
+	return _ok({"path": _path_of(root, node), "index": node.get_index()})
+
+
+func _node_change_type(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	if node == root:
+		return _err("refused", "Cannot change the type of the scene root")
+	var type := String(params.get("type", ""))
+	if not ClassDB.can_instantiate(type):
+		return _err("bad_type", "Cannot instantiate class: %s" % type)
+	var old_type := node.get_class()
+	var replacement: Node = ClassDB.instantiate(type)
+	replacement.name = node.name
+	var new_props := {}
+	for np in replacement.get_property_list():
+		new_props[String(np.get("name", ""))] = true
+	for op in node.get_property_list():
+		var pname := String(op.get("name", ""))
+		if pname == "" or pname == "name" or pname == "owner" or pname == "script":
+			continue
+		if (int(op.get("usage", 0)) & PROPERTY_USAGE_STORAGE) == 0:
+			continue
+		if not new_props.has(pname):
+			continue
+		replacement.set(pname, node.get(pname))
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: change type %s -> %s" % [node.name, type])
+	ur.add_do_method(node, "replace_by", replacement, true)
+	ur.add_do_method(replacement, "set_owner", root)
+	ur.add_do_reference(replacement)
+	ur.add_undo_method(replacement, "replace_by", node, true)
+	ur.add_undo_method(node, "set_owner", root)
+	ur.add_undo_reference(node)
+	ur.commit_action()
+	return _ok({"path": _path_of(root, replacement), "name": String(replacement.name), "type": replacement.get_class(), "old_type": old_type})
+
+
+func _node_set_owner(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	if node == root:
+		return _err("refused", "The scene root cannot have an owner")
+	var owner_node: Node = root
+	if params.has("owner_path") and String(params.get("owner_path", "")) != "":
+		owner_node = _resolve(root, String(params.get("owner_path")))
+		if owner_node == null:
+			return _err("bad_path", "Owner not found: %s" % params.get("owner_path", ""))
+	var old_owner := node.owner
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: set owner of %s" % node.name)
+	ur.add_do_method(node, "set_owner", owner_node)
+	ur.add_undo_method(node, "set_owner", old_owner)
+	ur.commit_action()
+	var owner_out: Variant = (_path_of(root, node.owner) if node.owner else null)
+	return _ok({"path": _path_of(root, node), "owner": owner_out})
+
+
+## Toggle "Editable Children" on an instanced sub-scene. When enabled, property
+## overrides on the instance's INTERNAL nodes serialize into the owning scene on
+## save (otherwise the sub-scene is sealed and its internals revert on reload).
+## The flag lives on the owning scene's state, so it is set on the instance's
+## owner (the scene root that will save it), which is where is_editable_instance
+## reads it. This is what lets card_instance bake author-time slot data.
+func _node_set_editable_instance(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	if node == root:
+		return _err("refused", "The scene root is not an instance")
+	if node.scene_file_path == "":
+		return _err("refused", "Node is not an instanced sub-scene (no scene_file_path); editable-instance applies only to scene instances")
+	var owner_node: Node = node.owner
+	if owner_node == null:
+		return _err("refused", "Node has no owner; it is not saved into a scene, so editable-instance has nothing to record against")
+	var editable := bool(params.get("editable", true))
+	var old_editable := owner_node.is_editable_instance(node)
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: set editable-instance of %s" % node.name)
+	ur.add_do_method(owner_node, "set_editable_instance", node, editable)
+	ur.add_undo_method(owner_node, "set_editable_instance", node, old_editable)
+	ur.commit_action()
+	return _ok({
+		"path": _path_of(root, node),
+		"editable": owner_node.is_editable_instance(node),
+		"owner": _path_of(root, owner_node),
+	})
+
+
+func _node_call_method(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	var method := String(params.get("method", ""))
+	if method == "":
+		return _err("bad_params", "Missing 'method'")
+	if not node.has_method(method):
+		return _err("no_method", "%s has no method %s" % [node.get_class(), method])
+	var call_args: Array = []
+	for a in params.get("args", []):
+		call_args.append(Codec.decode(a))
+	var result: Variant = node.callv(method, call_args)
+	return _ok({"path": _path_of(root, node), "method": method, "result": Codec.encode(result)})
+
+
+func _node_get_path(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	var parent := node.get_parent()
+	var parent_out: Variant = null
+	if node != root and parent != null:
+		parent_out = _path_of(root, parent)
+	return _ok({
+		"path": _path_of(root, node),
+		"name": String(node.name),
+		"type": node.get_class(),
+		"index": node.get_index(),
+		"parent": parent_out,
+		"child_count": node.get_child_count(),
+	})
+
+
+func _node_list_properties(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	var props: Array = []
+	for p in node.get_property_list():
+		var usage := int(p.get("usage", 0))
+		if (usage & PROPERTY_USAGE_EDITOR) == 0:
+			continue
+		var ptype := int(p.get("type", 0))
+		if ptype == TYPE_NIL:
+			continue
+		props.append({
+			"name": String(p.get("name", "")),
+			"type": ptype,
+			"class_name": String(p.get("class_name", "")),
+			"usage": usage,
+		})
+	return _ok({"path": _path_of(root, node), "properties": props})
+
+
+# ---------------------------------------------- Group A: scene depth ---------
+
+func _scene_list_open() -> Dictionary:
+	var scenes: Array = []
+	for p in EditorInterface.get_open_scenes():
+		scenes.append(String(p))
+	var unsaved: Array = []
+	# EditorInterface.get_unsaved_scenes() is Godot 4.4+; a literal call is resolved at PARSE
+	# time and fails to compile the whole addon on 4.3. Guard with has_method + a dynamic
+	# call() defers the lookup to runtime. On <4.4 the unsaved set can't be enumerated, so we
+	# report that via unsaved_supported instead of implying "nothing is unsaved".
+	var unsaved_supported := EditorInterface.has_method("get_unsaved_scenes")
+	if unsaved_supported:
+		for p in EditorInterface.call("get_unsaved_scenes"):
+			unsaved.append(String(p))
+	var root := _edited_root()
+	var current: Variant = null
+	if root and root.scene_file_path != "":
+		current = root.scene_file_path
+	return {"scenes": scenes, "current": current, "unsaved": unsaved, "unsaved_supported": unsaved_supported}
+
+
+func _scene_reload(params: Dictionary) -> Dictionary:
+	var target := String(params.get("path", ""))
+	if target == "":
+		var root := _edited_root()
+		if root == null:
+			return _err("no_scene", "No scene is open")
+		target = root.scene_file_path
+	if target == "":
+		return _err("bad_params", "Current scene has no saved path yet")
+	if not ResourceLoader.exists(target):
+		return _err("not_found", "Scene not found: %s" % target)
+	EditorInterface.reload_scene_from_path(target)
+	return _ok({"reloaded": target})
+
+
+func _scene_close(params: Dictionary) -> Dictionary:
+	# EditorInterface.close_scene() is Godot 4.4+; a literal call is resolved at PARSE time and
+	# fails to compile the whole addon on 4.3. Guard with has_method + a dynamic call() defers
+	# the lookup to runtime, so the addon still loads (this tool just reports unsupported).
+	if not EditorInterface.has_method("close_scene"):
+		return _err("unsupported", "scene_close requires Godot 4.4+ (EditorInterface.close_scene is unavailable on this Godot version)")
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var current := root.scene_file_path
+	var target := String(params.get("path", ""))
+	if target != "" and target != current:
+		return _err("not_current", "Only the current scene (%s) can be closed; open %s first" % [current, target])
+	EditorInterface.call("close_scene")
+	return _ok({"closed": current})
+
+
+func _scene_get_dependencies(params: Dictionary) -> Dictionary:
+	var target := String(params.get("path", ""))
+	if target == "":
+		var root := _edited_root()
+		if root == null:
+			return _err("no_scene", "No scene is open")
+		target = root.scene_file_path
+	if target == "":
+		return _err("bad_params", "Current scene has no saved path yet")
+	if not ResourceLoader.exists(target):
+		return _err("not_found", "Scene not found: %s" % target)
+	# 🔴 THE ENTRY GODOT HANDS BACK IS NOT A PATH, AND FOR SOME DEPENDENCIES IT IS THE
+	# ONLY SPELLING THAT DOES NOT LOAD (session 169 §5). Measured on 4.7 against the
+	# example project, with controls:
+	#
+	#   res://main.tscn            -> "uid://ccgi4n26nbyku::::res://player.gd"   (2 segments)
+	#   res://demo/demo.tscn       -> "res://demo/demo_snowman.gd"               (1 segment)
+	#
+	# The shape is HETEROGENEOUS — it depends on whether the dependency has a `.uid`
+	# sidecar — so `dependencies` was an array a caller could not parse without already
+	# knowing the rule. Fed to resource_load verbatim, the two-segment form answers
+	# `not_found`, while BOTH of its halves load fine on their own. The tool was handing
+	# out the one spelling that works with nothing.
+	#
+	# This is #181's defect in a read-only tool: a value echoed from the engine and
+	# presented as an answer nobody had measured. Same fix as #181 — the field is made to
+	# mean what its description says, and nothing is destroyed: the engine's own encoding
+	# is preserved verbatim under `dependencies_raw`.
+	#
+	# 🔴 THE FALLBACK NEVER DROPS AN ENTRY. An unrecognised shape (no res:// or user://
+	# segment) is passed through whole rather than skipped: a splitter that silently
+	# discards what it does not understand would shrink the dependency list and look
+	# cleaner for it, which is this session's entire subject.
+	var deps: Array = []
+	var raw: Array = []
+	var uids: Array = []
+	for d in ResourceLoader.get_dependencies(target):
+		var entry := String(d)
+		var split := split_dependency_entry(entry)
+		raw.append(entry)
+		deps.append(split["path"])
+		uids.append(split["uid"])
+	return _ok({
+		"path": target,
+		"dependencies": deps,
+		"dependencies_raw": raw,
+		"dependency_uids": uids,
+	})
+
+
+## Split one ResourceLoader.get_dependencies entry into its loadable path and its UID.
+##
+## 🔴 A SEPARATE, PUBLIC FUNCTION ON PURPOSE. Inlined in the loop, two of its branches
+## were unreachable from any scene the example project contains — a mutation sweep proved
+## it (169 §7): making the splitter DROP unrecognised entries, and matching the UID prefix
+## as loosely as `begins_with("u")`, both SURVIVED with the suite fully green, because no
+## fixture produces an entry that exercises either path. The comment claiming "the
+## fallback never drops an entry" was itself an unasserted claim, which is this session's
+## whole subject. Pulled out here, every branch takes a synthetic input in one cheap
+## hermetic test.
+##
+## Returns {"path": String, "uid": String}. `uid` is "" when the entry carries none.
+## An entry with no recognisable path segment is returned WHOLE as the path: dropping it
+## would shrink the dependency list and look tidier for it.
+static func split_dependency_entry(entry: String) -> Dictionary:
+	var found_path := ""
+	var found_uid := ""
+	for s in entry.split("::::"):
+		var seg := String(s)
+		if seg.begins_with("res://") or seg.begins_with("user://"):
+			if found_path == "":
+				found_path = seg
+		elif seg.begins_with("uid://"):
+			if found_uid == "":
+				found_uid = seg
+	return {"path": found_path if found_path != "" else entry, "uid": found_uid}
+
+
+func _scene_pack(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var branch := _resolve(root, String(params.get("path", "")))
+	if branch == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	var to_path := String(params.get("to_path", ""))
+	if to_path == "" or not to_path.begins_with("res://"):
+		return _err("bad_params", "'to_path' must be a res:// path")
+	var dup: Node = branch.duplicate()
+	if dup == null:
+		return _err("duplicate_failed", "Could not duplicate branch")
+	for d in _descendants(dup):
+		d.owner = dup
+	var packed := PackedScene.new()
+	var e := packed.pack(dup)
+	if e != OK:
+		dup.free()
+		return _err("pack_failed", "PackedScene.pack() returned %d" % e)
+	var saved := _commit_save(packed, to_path, params, SAVE_NEW)
+	dup.free()
+	if saved.has("error"):
+		return saved["error"]
+	return _ok({"packed": to_path, "branch": _path_of(root, branch)}.merged(saved["fields"]))
+
+
+func _scene_save_as(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var to_path := String(params.get("path", ""))
+	if to_path == "" or not to_path.begins_with("res://"):
+		return _err("bad_params", "'path' must be a res:// path")
+	EditorInterface.save_scene_as(to_path)
+	return _ok({"saved_as": to_path})
+
+
+# ---------------------------------------------------- Group A: signals -------
+
+func _signal_list(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	var sigs: Array = []
+	for s in node.get_signal_list():
+		var arg_names: Array = []
+		for a in s.get("args", []):
+			arg_names.append(String(a.get("name", "")))
+		sigs.append({"name": String(s.get("name", "")), "args": arg_names})
+	return _ok({"path": _path_of(root, node), "signals": sigs})
+
+
+func _signal_list_connections(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	var only := String(params.get("signal", ""))
+	var conns: Array = []
+	for s in node.get_signal_list():
+		var sname := String(s.get("name", ""))
+		if only != "" and sname != only:
+			continue
+		for c in node.get_signal_connection_list(sname):
+			var cb: Callable = c.get("callable")
+			var target: Object = cb.get_object()
+			var tpath: Variant = null
+			if target is Node:
+				var tnode := target as Node
+				if tnode == root or root.is_ancestor_of(tnode):
+					tpath = _path_of(root, tnode)
+				else:
+					tpath = String(tnode.name)
+			conns.append({
+				"signal": sname,
+				"target": tpath,
+				"method": String(cb.get_method()),
+				"flags": int(c.get("flags", 0)),
+			})
+	return _ok({"path": _path_of(root, node), "connections": conns})
+
+
+func _signal_connect(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	var sig := String(params.get("signal", ""))
+	if sig == "" or not node.has_signal(sig):
+		return _err("no_signal", "%s has no signal %s" % [node.get_class(), sig])
+	var target := _resolve(root, String(params.get("target_path", "")))
+	if target == null:
+		return _err("bad_path", "Target not found: %s" % params.get("target_path", ""))
+	var method := String(params.get("method", ""))
+	if method == "":
+		return _err("bad_params", "Missing 'method'")
+	if not target.has_method(method):
+		return _err("no_method", "%s has no method %s" % [target.get_class(), method])
+	var flags := int(params.get("flags", 2))
+	var cb := Callable(target, method)
+	if node.is_connected(sig, cb):
+		return _ok({"signal": sig, "source": _path_of(root, node), "target": _path_of(root, target), "method": method, "flags": flags, "connected": false})
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: connect %s.%s -> %s.%s" % [node.name, sig, target.name, method])
+	ur.add_do_method(node, "connect", sig, cb, flags)
+	ur.add_undo_method(node, "disconnect", sig, cb)
+	ur.commit_action()
+	return _ok({"signal": sig, "source": _path_of(root, node), "target": _path_of(root, target), "method": method, "flags": flags, "connected": true})
+
+
+func _signal_disconnect(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	var sig := String(params.get("signal", ""))
+	if sig == "" or not node.has_signal(sig):
+		return _err("no_signal", "%s has no signal %s" % [node.get_class(), sig])
+	var target := _resolve(root, String(params.get("target_path", "")))
+	if target == null:
+		return _err("bad_path", "Target not found: %s" % params.get("target_path", ""))
+	var method := String(params.get("method", ""))
+	var cb := Callable(target, method)
+	if not node.is_connected(sig, cb):
+		return _ok({"signal": sig, "source": _path_of(root, node), "target": _path_of(root, target), "method": method, "disconnected": false})
+	var flags := 2
+	for c in node.get_signal_connection_list(sig):
+		var ecb: Callable = c.get("callable")
+		if ecb == cb:
+			flags = int(c.get("flags", 2))
+			break
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: disconnect %s.%s -> %s.%s" % [node.name, sig, target.name, method])
+	ur.add_do_method(node, "disconnect", sig, cb)
+	ur.add_undo_method(node, "connect", sig, cb, flags)
+	ur.commit_action()
+	return _ok({"signal": sig, "source": _path_of(root, node), "target": _path_of(root, target), "method": method, "disconnected": true})
+
+
+func _signal_add_user_signal(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	var sig := String(params.get("signal", ""))
+	if sig == "":
+		return _err("bad_params", "Missing 'signal'")
+	if node.has_signal(sig) or node.has_user_signal(sig):
+		return _err("exists", "Signal already exists: %s" % sig)
+	var arguments: Array = []
+	for a in params.get("args", []):
+		if typeof(a) == TYPE_DICTIONARY:
+			arguments.append({"name": String(a.get("name", "arg")), "type": int(a.get("type", TYPE_NIL))})
+		else:
+			arguments.append({"name": String(a), "type": TYPE_NIL})
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: add user signal %s.%s" % [node.name, sig])
+	ur.add_do_method(node, "add_user_signal", sig, arguments)
+	ur.add_undo_method(node, "remove_user_signal", sig)
+	ur.commit_action()
+	return _ok({"path": _path_of(root, node), "signal": sig, "added": true})
+
+
+func _signal_emit(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	var sig := String(params.get("signal", ""))
+	if sig == "" or (not node.has_signal(sig) and not node.has_user_signal(sig)):
+		return _err("no_signal", "%s has no signal %s" % [node.get_class(), sig])
+	var call_args: Array = [sig]
+	for a in params.get("args", []):
+		call_args.append(Codec.decode(a))
+	node.callv("emit_signal", call_args)
+	return _ok({"path": _path_of(root, node), "signal": sig, "emitted": true})
+
+
+# ------------------------------------------------- Group B: resources --------
+
+func _resource_class_ok(cls: String) -> bool:
+	return ClassDB.class_exists(cls) and ClassDB.is_parent_class(cls, "Resource") and ClassDB.can_instantiate(cls)
+
+
+func _resource_props(res: Resource) -> Array:
+	var props: Array = []
+	for p in res.get_property_list():
+		var usage := int(p.get("usage", 0))
+		if (usage & PROPERTY_USAGE_EDITOR) == 0:
+			continue
+		var ptype := int(p.get("type", 0))
+		if ptype == TYPE_NIL:
+			continue
+		props.append({
+			"name": String(p.get("name", "")),
+			"type": ptype,
+			"class_name": String(p.get("class_name", "")),
+			"usage": usage,
+		})
+	return props
+
+
+func _resource_create(params: Dictionary) -> Dictionary:
+	var cls := String(params.get("class_name", ""))
+	if cls == "":
+		return _err("bad_params", "Missing 'class_name'")
+	if not _resource_class_ok(cls):
+		return _err("bad_class", "Not an instantiable Resource class: %s" % cls)
+	var to_path := String(params.get("to_path", ""))
+	if not to_path.begins_with("res://"):
+		return _err("bad_params", "'to_path' must be a res:// path")
+	var res: Resource = ClassDB.instantiate(cls)
+	if res == null:
+		return _err("create_failed", "Could not instantiate %s" % cls)
+	for key in params.get("properties", {}):
+		res.set(String(key), Codec.decode(params["properties"][key]))
+	var saved := _commit_save(res, to_path, params, SAVE_NEW)
+	if saved.has("error"):
+		return saved["error"]
+	return _ok({"created": to_path, "type": cls}.merged(saved["fields"]))
+
+
+func _resource_load(params: Dictionary) -> Dictionary:
+	var path := String(params.get("path", ""))
+	if not ResourceLoader.exists(path):
+		return _err("not_found", "Resource not found: %s" % path)
+	var res := ResourceLoader.load(path)
+	if res == null:
+		return _err("load_failed", "Could not load resource: %s" % path)
+	return _ok({
+		"path": path,
+		"type": res.get_class(),
+		"resource_name": String(res.resource_name),
+		"properties": _resource_props(res),
+	})
+
+
+func _resource_save(params: Dictionary) -> Dictionary:
+	var from_path := String(params.get("from_path", ""))
+	if not ResourceLoader.exists(from_path):
+		return _err("not_found", "Resource not found: %s" % from_path)
+	var to_path := String(params.get("to_path", from_path))
+	if to_path == "":
+		to_path = from_path
+	if not to_path.begins_with("res://"):
+		return _err("bad_params", "'to_path' must be a res:// path")
+	var res := ResourceLoader.load(from_path)
+	if res == null:
+		return _err("load_failed", "Could not load resource: %s" % from_path)
+	var flags := int(params.get("flags", 0))
+	# 🔵 THE KIND IS DERIVED HERE AND NOWHERE ELSE: `to_path` DEFAULTS to `from_path`,
+	# so this one tool is a save-back when the caller named no destination and a
+	# create when they did. Reading it off the arguments at the site is the honest
+	# version; a constant would be wrong half the time.
+	var kind := SAVE_BACK if to_path == from_path else SAVE_NEW
+	var saved := _commit_save(res, to_path, params, kind, flags)
+	if saved.has("error"):
+		return saved["error"]
+	return _ok({"saved": to_path, "from": from_path}.merged(saved["fields"]))
+
+
+func _resource_duplicate(params: Dictionary) -> Dictionary:
+	var from_path := String(params.get("path", ""))
+	if not ResourceLoader.exists(from_path):
+		return _err("not_found", "Resource not found: %s" % from_path)
+	var to_path := String(params.get("to_path", ""))
+	if not to_path.begins_with("res://"):
+		return _err("bad_params", "'to_path' must be a res:// path")
+	var res := ResourceLoader.load(from_path)
+	if res == null:
+		return _err("load_failed", "Could not load resource: %s" % from_path)
+	var deep := bool(params.get("deep", false))
+	var dup := res.duplicate(deep)
+	if dup == null:
+		return _err("duplicate_failed", "Could not duplicate resource")
+	var saved := _commit_save(dup, to_path, params, SAVE_NEW)
+	if saved.has("error"):
+		return saved["error"]
+	return _ok({"duplicated": to_path, "from": from_path, "deep": deep}.merged(saved["fields"]))
+
+
+func _resource_get_property(params: Dictionary) -> Dictionary:
+	var path := String(params.get("path", ""))
+	if not ResourceLoader.exists(path):
+		return _err("not_found", "Resource not found: %s" % path)
+	var res := ResourceLoader.load(path)
+	if res == null:
+		return _err("load_failed", "Could not load resource: %s" % path)
+	var prop := String(params.get("property", ""))
+	if prop == "":
+		return _err("bad_params", "Missing 'property'")
+	return _ok({"path": path, "property": prop, "value": Codec.encode(res.get(prop))})
+
+
+func _resource_set_property(params: Dictionary) -> Dictionary:
+	var path := String(params.get("path", ""))
+	if not ResourceLoader.exists(path):
+		return _err("not_found", "Resource not found: %s" % path)
+	var res := ResourceLoader.load(path)
+	if res == null:
+		return _err("load_failed", "Could not load resource: %s" % path)
+	var prop := String(params.get("property", ""))
+	if prop == "":
+		return _err("bad_params", "Missing 'property'")
+	res.set(prop, Codec.decode(params.get("value")))
+	var saved := _commit_save(res, path, params, SAVE_BACK)
+	if saved.has("error"):
+		return saved["error"]
+	return _ok({"path": path, "property": prop, "value": Codec.encode(res.get(prop))})
+
+
+func _resource_get_import_settings(params: Dictionary) -> Dictionary:
+	var path := String(params.get("path", ""))
+	if path == "":
+		return _err("bad_params", "Missing 'path'")
+	# 🔴 168 (166 §5 D3), MEASURED against a live 4.7 editor: this used to test ONLY for
+	# the sidecar, so `res://player.gd` (a real file with no .import) and
+	# `res://no_such_file.png` (nothing at all) returned BYTE-IDENTICAL replies —
+	# {"imported": false, "importer": "", "settings": {}} — and a caller had no channel
+	# to tell "not imported" from "not there". A directory answered the same way.
+	# The vocabulary here is NOT invented: resource_load and resource_get_property were
+	# both probed for a missing path AND for a directory, and both already answer
+	# `not_found` / "Resource not found: %s" for each. This joins that convention rather
+	# than adding a third one. `imported: false` now means what it says — the file is
+	# really there and really has no .import sidecar.
+	if not FileAccess.file_exists(path):
+		return _err("not_found", "Resource not found: %s" % path)
+	var import_path := path + ".import"
+	if not FileAccess.file_exists(import_path):
+		return _ok({"path": path, "imported": false, "importer": "", "settings": {}})
+	var cfg := ConfigFile.new()
+	var e := cfg.load(import_path)
+	if e != OK:
+		return _err("load_failed", "Could not read import metadata: %s (%d)" % [import_path, e])
+	var importer := ""
+	if cfg.has_section_key("remap", "importer"):
+		importer = String(cfg.get_value("remap", "importer"))
+	var settings: Dictionary = {}
+	if cfg.has_section("params"):
+		for key in cfg.get_section_keys("params"):
+			settings[key] = Codec.encode(cfg.get_value("params", key))
+	return _ok({"path": path, "imported": true, "importer": importer, "settings": settings})
+
+
+func _resource_set_import_settings(params: Dictionary) -> Dictionary:
+	var path := String(params.get("path", ""))
+	if path == "":
+		return _err("bad_params", "Missing 'path'")
+	# 🔴 168: the same lie as D3, one tool over. A path that does not exist was refused
+	# with "No .import metadata for X (not an imported asset)" — a sentence that
+	# describes a file which EXISTS and is not imported. Measured: a directory got that
+	# message too. `not_imported` is now reserved for what it names.
+	if not FileAccess.file_exists(path):
+		return _err("not_found", "Resource not found: %s" % path)
+	var import_path := path + ".import"
+	if not FileAccess.file_exists(import_path):
+		return _err("not_imported", "No .import metadata for %s (not an imported asset)" % path)
+	var cfg := ConfigFile.new()
+	var e := cfg.load(import_path)
+	if e != OK:
+		return _err("load_failed", "Could not read import metadata: %s (%d)" % [import_path, e])
+	# 🔴 168 (166 §5 D4), MEASURED: `applied` lists every key the CALLER SENT, and
+	# `reimported` echoes the REQUEST parameter. Setting a key to the value it already
+	# held reported {"reimported": true, "settings": ["compress/mode"]} with the
+	# sidecar's bytes provably unmoved (sha256 before == after). A caller reading that
+	# reply cannot tell a real edit from a ceremonial one.
+	#
+	# `changed` is the missing channel, and it is deliberately a channel rather than a
+	# behaviour change: `settings: {}` with `reimport: true` is a legitimate FORCE-REIMPORT
+	# idiom (the source file moved under Godot's feet), so the reimport still runs and
+	# `reimported` still reports it honestly. What was missing was the ability to say
+	# "and nothing in the metadata actually moved" — which is now `changed: []`.
+	var applied: Array = []
+	var changed: Array = []
+	for key in params.get("settings", {}):
+		var k := String(key)
+		var new_value = Codec.decode(params["settings"][key])
+		var had := cfg.has_section_key("params", k)
+		var old_value = cfg.get_value("params", k) if had else null
+		cfg.set_value("params", k, new_value)
+		applied.append(k)
+		if not had or old_value != new_value:
+			changed.append(k)
+	e = cfg.save(import_path)
+	if e != OK:
+		return _err("save_failed", "Could not write import metadata (%d)" % e)
+	var reimport := bool(params.get("reimport", true))
+	if reimport:
+		var efs := EditorInterface.get_resource_filesystem()
+		efs.reimport_files(PackedStringArray([path]))
+	return _ok({"path": path, "reimported": reimport, "settings": applied, "changed": changed})
+
+
+# ----------------------------------------------- Group B: filesystem --------
+
+func _filesystem_list(params: Dictionary) -> Dictionary:
+	var path := String(params.get("path", "res://"))
+	if path == "":
+		path = "res://"
+	var dir := DirAccess.open(path)
+	if dir == null:
+		return _err("not_found", "Directory not found: %s" % path)
+	var dirs: Array = []
+	for d in dir.get_directories():
+		dirs.append(String(d))
+	var files: Array = []
+	for f in dir.get_files():
+		files.append(String(f))
+	return _ok({"path": path, "dirs": dirs, "files": files})
+
+
+func _filesystem_scan(_params: Dictionary) -> Dictionary:
+	EditorInterface.get_resource_filesystem().scan()
+	return _ok({"scanning": true})
+
+
+func _filesystem_move(params: Dictionary) -> Dictionary:
+	var from_path := String(params.get("from_path", ""))
+	var to_path := String(params.get("to_path", ""))
+	if not from_path.begins_with("res://") or not to_path.begins_with("res://"):
+		return _err("bad_params", "'from_path' and 'to_path' must be res:// paths")
+	var is_file := FileAccess.file_exists(from_path)
+	var is_dir := DirAccess.dir_exists_absolute(from_path)
+	if not is_file and not is_dir:
+		return _err("not_found", "Source not found: %s" % from_path)
+	if FileAccess.file_exists(to_path) or DirAccess.dir_exists_absolute(to_path):
+		return _err("exists", "Destination already exists: %s" % to_path)
+	var dir := DirAccess.open("res://")
+	if dir == null:
+		return _err("fs_error", "Could not open res://")
+	var e := dir.rename(from_path, to_path)
+	if e != OK:
+		return _err("move_failed", "rename() returned %d" % e)
+	# 🔴 173 §10.3 — THE THIRD CONFIRMED MEMBER OF THE ECHO-MISTAKEN-FOR-A-REPORT
+	# FAMILY (#181, #183, 172 D5). `dir.rename()`'s RETURN WAS DISCARDED HERE and
+	# `moved_import` was set to true whenever a sidecar merely EXISTED — so the field
+	# described the REQUEST ("there was an .import and I called rename") rather than the
+	# outcome. A sidecar rename that failed (destination taken, permissions, a
+	# case-only rename on a case-insensitive filesystem) left an ORPHANED .import beside
+	# a file that had moved, stripping the moved asset of its import settings on the next
+	# scan — and the report said `moved_import: true`.
+	#
+	# THREE OUTCOMES, TWO BOOLEANS, BOTH DERIVED FROM THE RETURN CODE. "No sidecar" and
+	# "a sidecar that would not move" are different events and the caller has to be able
+	# to tell them apart; one boolean can only say "not moved" for both. The move itself
+	# already succeeded, so a stranded sidecar is a PARTIAL, not a failure — returning
+	# _err here would say nothing happened, which is the same lie in the other direction.
+	var moved_import := false
+	var import_stranded := false
+	if is_file and FileAccess.file_exists(from_path + ".import"):
+		var ie := dir.rename(from_path + ".import", to_path + ".import")
+		moved_import = ie == OK
+		import_stranded = ie != OK
+	EditorInterface.get_resource_filesystem().scan()
+	return _ok({"moved": to_path, "from": from_path, "moved_import": moved_import, "import_stranded": import_stranded})
+
+
+func _filesystem_create_dir(params: Dictionary) -> Dictionary:
+	var path := String(params.get("path", ""))
+	if not path.begins_with("res://"):
+		return _err("bad_params", "'path' must be a res:// path")
+	if DirAccess.dir_exists_absolute(path):
+		return _ok({"created": path, "existed": true})
+	var e := DirAccess.make_dir_recursive_absolute(path)
+	if e != OK:
+		return _err("mkdir_failed", "make_dir_recursive_absolute() returned %d" % e)
+	# 🔴 173 §10.3, same family, one step milder: `created` was the REQUESTED path echoed
+	# back, and an OK return was never once confirmed against the filesystem. Re-read it,
+	# so `created` names a directory that is THERE rather than one that was asked for.
+	if not DirAccess.dir_exists_absolute(path):
+		return _err("mkdir_failed", "make_dir_recursive_absolute() returned OK but %s does not exist" % path)
+	EditorInterface.get_resource_filesystem().scan()
+	return _ok({"created": path, "existed": false})
+
+
+# ---------------------------------------------- Group J: asset generation ----
+## The editor-side of Group J. The host owns backend selection + the degrade /
+## command-delegation logic; the addon owns two jobs the host cannot do:
+##   * asset.gen_placeholder — mint a DETERMINISTIC in-engine procedural asset
+##     (a hashed-colour PNG, an AudioStreamWAV blip, a BoxMesh) and import it.
+##   * asset.import — register + (re)import a file a configured command backend
+##     just wrote, and report its imported class.
+## No model is ever called here; placeholders are pure functions of the prompt
+## hash, so a CI probe can assert them byte-stably.
+
+func _asset_import(params: Dictionary) -> Dictionary:
+	var path := String(params.get("path", ""))
+	if not path.begins_with("res://"):
+		return _err("bad_params", "'path' must be a res:// path")
+	if not FileAccess.file_exists(path):
+		return _err("not_found", "No file at %s" % path)
+	return _ok(_import_and_describe(path))
+
+
+## Make the editor aware of a just-written file, (re)import it when its format
+## goes through the import pipeline (image/audio/scene formats), and describe it.
+## Native resources (.tres/.res) load directly and are not reimported.
+func _import_and_describe(path: String) -> Dictionary:
+	var efs := EditorInterface.get_resource_filesystem()
+	efs.update_file(path)
+	var ext := path.get_extension().to_lower()
+	var importable := ["png", "jpg", "jpeg", "webp", "svg", "bmp", "tga", "exr", "hdr",
+		"wav", "ogg", "mp3", "obj", "gltf", "glb", "fbx", "dae"]
+	if importable.has(ext):
+		efs.reimport_files(PackedStringArray([path]))
+	var bytes := 0
+	var f := FileAccess.open(path, FileAccess.READ)
+	if f != null:
+		bytes = int(f.get_length())
+		f.close()
+	var imported_type := ""
+	if ResourceLoader.exists(path):
+		var res := ResourceLoader.load(path)
+		if res != null:
+			imported_type = res.get_class()
+	return {"path": path, "imported_type": imported_type, "bytes": bytes}
+
+
+func _asset_gen_placeholder(params: Dictionary) -> Dictionary:
+	var kind := String(params.get("kind", ""))
+	var to_path := String(params.get("to_path", ""))
+	if not to_path.begins_with("res://"):
+		return _err("bad_params", "'to_path' must be a res:// path")
+	var prompt := String(params.get("prompt", ""))
+	var seed_str := prompt if prompt != "" else kind
+	var seed_hash: int = abs(hash(seed_str))
+	var base_dir := to_path.get_base_dir()
+	if base_dir != "" and base_dir != "res://" and not DirAccess.dir_exists_absolute(base_dir):
+		DirAccess.make_dir_recursive_absolute(base_dir)
+	match kind:
+		"sprite", "texture", "icon":
+			var w := int(params.get("width", 0))
+			var h := int(params.get("height", 0))
+			if w <= 0:
+				w = 64 if kind == "sprite" else 128
+			if h <= 0:
+				h = w
+			w = clampi(w, 1, 1024)
+			h = clampi(h, 1, 1024)
+			var img := _gen_image(kind, seed_hash, w, h)
+			# Save a NATIVE ImageTexture resource (loads directly, no async import
+			# pipeline) — the placeholder must be usable synchronously. External
+			# formats (a real backend's .png) go through asset.import instead.
+			var tex := ImageTexture.create_from_image(img)
+			var saved_e := _commit_save(tex, to_path, params, SAVE_NEW)
+			if saved_e.has("error"):
+				return saved_e["error"]
+			var desc := _import_and_describe(to_path)
+			desc.merge(saved_e["fields"])
+			desc["kind"] = kind
+			desc["width"] = w
+			desc["height"] = h
+			desc["format"] = "ImageTexture"
+			return _ok(desc)
+		"audio_sfx":
+			var dur := clampi(int(params.get("duration_ms", 300)), 20, 5000)
+			var stream := _gen_audio(seed_hash, dur)
+			var saved_e2 := _commit_save(stream, to_path, params, SAVE_NEW)
+			if saved_e2.has("error"):
+				return saved_e2["error"]
+			var desc2 := _import_and_describe(to_path)
+			desc2.merge(saved_e2["fields"])
+			desc2["kind"] = kind
+			desc2["duration_ms"] = dur
+			desc2["format"] = "AudioStreamWAV"
+			return _ok(desc2)
+		"model":
+			var shape := String(params.get("shape", "box"))
+			var mesh := _gen_mesh(shape, seed_hash)
+			var saved_e3 := _commit_save(mesh, to_path, params, SAVE_NEW)
+			if saved_e3.has("error"):
+				return saved_e3["error"]
+			var desc3 := _import_and_describe(to_path)
+			desc3.merge(saved_e3["fields"])
+			desc3["kind"] = kind
+			desc3["shape"] = shape
+			desc3["format"] = mesh.get_class()
+			return _ok(desc3)
+		_:
+			return _err("bad_params", "Unknown kind '%s' (sprite|texture|icon|audio_sfx|model)" % kind)
+
+
+## Deterministic procedural image — colours derive from the prompt hash so the
+## same prompt always yields the same pixels (CI-assertable).
+func _gen_image(kind: String, seed_hash: int, w: int, h: int) -> Image:
+	var img := Image.create(w, h, false, Image.FORMAT_RGBA8)
+	var hue := float(seed_hash % 360) / 360.0
+	var base := Color.from_hsv(hue, 0.55, 0.9, 1.0)
+	var accent := Color.from_hsv(fmod(hue + 0.5, 1.0), 0.6, 0.95, 1.0)
+	match kind:
+		"texture":
+			var cell := maxi(4, w / 8)
+			for y in h:
+				for x in w:
+					var checker: Color = base if ((x / cell) + (y / cell)) % 2 == 0 else accent
+					img.set_pixel(x, y, checker)
+		"icon":
+			img.fill(Color(0, 0, 0, 0))
+			var cx := w / 2.0
+			var cy := h / 2.0
+			var rad := minf(cx, cy) - 1.0
+			for y in h:
+				for x in w:
+					var dist := Vector2(x + 0.5 - cx, y + 0.5 - cy).length()
+					if dist <= rad:
+						img.set_pixel(x, y, accent if dist > rad * 0.72 else base)
+		_:
+			img.fill(base)
+			var margin := maxi(1, w / 4)
+			for y in range(margin, h - margin):
+				for x in range(margin, w - margin):
+					img.set_pixel(x, y, accent)
+	return img
+
+
+## Deterministic decaying sine blip; frequency derives from the prompt hash.
+func _gen_audio(seed_hash: int, dur_ms: int) -> AudioStreamWAV:
+	var rate := 22050
+	var n := int(rate * dur_ms / 1000.0)
+	if n < 1:
+		n = 1
+	var freq := 220.0 + float(seed_hash % 660)
+	var data := PackedByteArray()
+	data.resize(n * 2)
+	for i in n:
+		var t := float(i) / float(rate)
+		var env := clampf(1.0 - float(i) / float(n), 0.0, 1.0)
+		var sample := sin(TAU * freq * t) * env * 0.6
+		data.encode_s16(i * 2, int(clampf(sample, -1.0, 1.0) * 32767.0))
+	var stream := AudioStreamWAV.new()
+	stream.format = AudioStreamWAV.FORMAT_16_BITS
+	stream.mix_rate = rate
+	stream.stereo = false
+	stream.data = data
+	return stream
+
+
+## Deterministic primitive mesh; size derives from the prompt hash.
+func _gen_mesh(shape: String, seed_hash: int) -> Mesh:
+	var s := 0.5 + float(seed_hash % 100) / 100.0
+	match shape:
+		"sphere":
+			var sm := SphereMesh.new()
+			sm.radius = s * 0.5
+			sm.height = s
+			return sm
+		"cylinder":
+			var cm := CylinderMesh.new()
+			cm.top_radius = s * 0.5
+			cm.bottom_radius = s * 0.5
+			cm.height = s
+			return cm
+		"prism":
+			var pm := PrismMesh.new()
+			pm.size = Vector3(s, s, s)
+			return pm
+		_:
+			var bm := BoxMesh.new()
+			bm.size = Vector3(s, s, s)
+			return bm
+
+
+# ------------------------------------------------------ Group C: Animation ----
+## Authoring over an in-scene AnimationPlayer. Animations live in the player's
+## AnimationLibrary resources; every mutation goes through EditorUndoRedoManager
+## (undoable, like the node_* tools), so nothing is written to disk here.
+
+func _as_anim_player(root: Node, path: String) -> AnimationPlayer:
+	var n := _resolve(root, path)
+	if n is AnimationPlayer:
+		return n
+	return null
+
+
+func _anim_of(player: AnimationPlayer, lib_name: String, anim_name: String) -> Animation:
+	if not player.has_animation_library(lib_name):
+		return null
+	var lib := player.get_animation_library(lib_name)
+	if lib == null or not lib.has_animation(anim_name):
+		return null
+	return lib.get_animation(anim_name)
+
+
+func _anim_track_type(s: String) -> int:
+	var m := {
+		"value": Animation.TYPE_VALUE,
+		"position_3d": Animation.TYPE_POSITION_3D,
+		"rotation_3d": Animation.TYPE_ROTATION_3D,
+		"scale_3d": Animation.TYPE_SCALE_3D,
+		"blend_shape": Animation.TYPE_BLEND_SHAPE,
+		"method": Animation.TYPE_METHOD,
+		"bezier": Animation.TYPE_BEZIER,
+		"audio": Animation.TYPE_AUDIO,
+		"animation": Animation.TYPE_ANIMATION,
+	}
+	return int(m.get(s, -1))
+
+
+func _anim_track_type_name(t: int) -> String:
+	var names := ["value", "position_3d", "rotation_3d", "scale_3d", "blend_shape", "method", "bezier", "audio", "animation"]
+	if t >= 0 and t < names.size():
+		return String(names[t])
+	return "unknown"
+
+
+func _anim_loop_mode(s: String) -> int:
+	var m := {"none": Animation.LOOP_NONE, "linear": Animation.LOOP_LINEAR, "pingpong": Animation.LOOP_PINGPONG}
+	return int(m.get(s, -1))
+
+
+func _anim_loop_name(mode: int) -> String:
+	var names := ["none", "linear", "pingpong"]
+	if mode >= 0 and mode < names.size():
+		return String(names[mode])
+	return "unknown"
+
+
+func _anim_player_create(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var parent := _resolve(root, String(params.get("parent_path", "")))
+	if parent == null:
+		return _err("bad_path", "Parent not found: %s" % params.get("parent_path", ""))
+	var node := AnimationPlayer.new()
+	node.name = String(params.get("name", "AnimationPlayer"))
+	node.add_animation_library("", AnimationLibrary.new())
+	var added := _commit_add(node, parent, root, "Breakpoint: add AnimationPlayer %s" % node.name)
+	added["type"] = "AnimationPlayer"
+	return _ok(added)
+
+
+func _anim_create(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var player := _as_anim_player(root, String(params.get("player_path", "")))
+	if player == null:
+		return _err("bad_path", "AnimationPlayer not found: %s" % params.get("player_path", ""))
+	var lib_name := String(params.get("library", ""))
+	var anim_name := String(params.get("name", ""))
+	if anim_name == "":
+		return _err("bad_params", "Missing 'name'")
+	if player.has_animation_library(lib_name) and player.get_animation_library(lib_name).has_animation(anim_name):
+		return _err("exists", "Animation already exists: %s" % anim_name)
+	var anim := Animation.new()
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: create animation %s" % anim_name)
+	var lib: AnimationLibrary
+	if player.has_animation_library(lib_name):
+		lib = player.get_animation_library(lib_name)
+	else:
+		lib = AnimationLibrary.new()
+		ur.add_do_method(player, "add_animation_library", lib_name, lib)
+		ur.add_do_reference(lib)
+		ur.add_undo_method(player, "remove_animation_library", lib_name)
+	ur.add_do_method(lib, "add_animation", anim_name, anim)
+	ur.add_do_reference(anim)
+	ur.add_undo_method(lib, "remove_animation", anim_name)
+	ur.commit_action()
+	return _ok({"player": _path_of(root, player), "library": lib_name, "name": anim_name})
+
+
+func _anim_delete(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var player := _as_anim_player(root, String(params.get("player_path", "")))
+	if player == null:
+		return _err("bad_path", "AnimationPlayer not found: %s" % params.get("player_path", ""))
+	var lib_name := String(params.get("library", ""))
+	var anim_name := String(params.get("name", ""))
+	var anim := _anim_of(player, lib_name, anim_name)
+	if anim == null:
+		return _err("not_found", "Animation not found: %s" % anim_name)
+	var lib := player.get_animation_library(lib_name)
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: delete animation %s" % anim_name)
+	ur.add_do_method(lib, "remove_animation", anim_name)
+	ur.add_undo_method(lib, "add_animation", anim_name, anim)
+	ur.add_undo_reference(anim)
+	ur.commit_action()
+	return _ok({"player": _path_of(root, player), "library": lib_name, "deleted": anim_name})
+
+
+func _anim_add_track(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var player := _as_anim_player(root, String(params.get("player_path", "")))
+	if player == null:
+		return _err("bad_path", "AnimationPlayer not found: %s" % params.get("player_path", ""))
+	var anim := _anim_of(player, String(params.get("library", "")), String(params.get("name", "")))
+	if anim == null:
+		return _err("not_found", "Animation not found: %s" % params.get("name", ""))
+	var ttype := _anim_track_type(String(params.get("type", "value")))
+	if ttype < 0:
+		return _err("bad_params", "Unknown track type: %s" % params.get("type", ""))
+	var track_path := String(params.get("path", ""))
+	if track_path == "":
+		return _err("bad_params", "Missing track 'path' (node or node:property the track drives)")
+	var idx := anim.get_track_count()
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: add %s track" % _anim_track_type_name(ttype))
+	ur.add_do_method(anim, "add_track", ttype, -1)
+	ur.add_do_method(anim, "track_set_path", idx, NodePath(track_path))
+	ur.add_undo_method(anim, "remove_track", idx)
+	ur.commit_action()
+	return _ok({"track": idx, "type": _anim_track_type_name(ttype), "path": track_path})
+
+
+func _anim_insert_key(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var player := _as_anim_player(root, String(params.get("player_path", "")))
+	if player == null:
+		return _err("bad_path", "AnimationPlayer not found: %s" % params.get("player_path", ""))
+	var anim := _anim_of(player, String(params.get("library", "")), String(params.get("name", "")))
+	if anim == null:
+		return _err("not_found", "Animation not found: %s" % params.get("name", ""))
+	var track := int(params.get("track", -1))
+	if track < 0 or track >= anim.get_track_count():
+		return _err("bad_track", "Track index out of range: %d" % track)
+	if not params.has("value"):
+		return _err("bad_params", "Missing 'value'")
+	var time := float(params.get("time", 0.0))
+	var value: Variant = Codec.decode(params.get("value"))
+	var transition := float(params.get("transition", 1.0))
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: insert key @ %s" % time)
+	ur.add_do_method(anim, "track_insert_key", track, time, value, transition)
+	ur.add_undo_method(anim, "track_remove_key_at_time", track, time)
+	ur.commit_action()
+	return _ok({"track": track, "time": time, "key_count": anim.track_get_key_count(track)})
+
+
+func _anim_remove_key(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var player := _as_anim_player(root, String(params.get("player_path", "")))
+	if player == null:
+		return _err("bad_path", "AnimationPlayer not found: %s" % params.get("player_path", ""))
+	var anim := _anim_of(player, String(params.get("library", "")), String(params.get("name", "")))
+	if anim == null:
+		return _err("not_found", "Animation not found: %s" % params.get("name", ""))
+	var track := int(params.get("track", -1))
+	if track < 0 or track >= anim.get_track_count():
+		return _err("bad_track", "Track index out of range: %d" % track)
+	var key := int(params.get("key", -1))
+	if key < 0 or key >= anim.track_get_key_count(track):
+		return _err("bad_key", "Key index out of range: %d" % key)
+	var time := anim.track_get_key_time(track, key)
+	var value: Variant = anim.track_get_key_value(track, key)
+	var transition := anim.track_get_key_transition(track, key)
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: remove key %d" % key)
+	ur.add_do_method(anim, "track_remove_key", track, key)
+	ur.add_undo_method(anim, "track_insert_key", track, time, value, transition)
+	ur.commit_action()
+	return _ok({"track": track, "removed_key": key, "time": time})
+
+
+func _anim_set_length(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var player := _as_anim_player(root, String(params.get("player_path", "")))
+	if player == null:
+		return _err("bad_path", "AnimationPlayer not found: %s" % params.get("player_path", ""))
+	var anim := _anim_of(player, String(params.get("library", "")), String(params.get("name", "")))
+	if anim == null:
+		return _err("not_found", "Animation not found: %s" % params.get("name", ""))
+	var length := float(params.get("length", -1.0))
+	if length <= 0.0:
+		return _err("bad_params", "'length' must be greater than 0")
+	var old := anim.length
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: set animation length")
+	ur.add_do_property(anim, "length", length)
+	ur.add_undo_property(anim, "length", old)
+	ur.commit_action()
+	return _ok({"length": length, "previous": old})
+
+
+func _anim_set_loop(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var player := _as_anim_player(root, String(params.get("player_path", "")))
+	if player == null:
+		return _err("bad_path", "AnimationPlayer not found: %s" % params.get("player_path", ""))
+	var anim := _anim_of(player, String(params.get("library", "")), String(params.get("name", "")))
+	if anim == null:
+		return _err("not_found", "Animation not found: %s" % params.get("name", ""))
+	var mode := _anim_loop_mode(String(params.get("mode", "")))
+	if mode < 0:
+		return _err("bad_params", "'mode' must be one of: none, linear, pingpong")
+	var old := anim.loop_mode
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: set animation loop mode")
+	ur.add_do_property(anim, "loop_mode", mode)
+	ur.add_undo_property(anim, "loop_mode", old)
+	ur.commit_action()
+	return _ok({"mode": _anim_loop_name(mode), "previous": _anim_loop_name(old)})
+
+
+func _anim_get_track_keys(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var player := _as_anim_player(root, String(params.get("player_path", "")))
+	if player == null:
+		return _err("bad_path", "AnimationPlayer not found: %s" % params.get("player_path", ""))
+	var anim := _anim_of(player, String(params.get("library", "")), String(params.get("name", "")))
+	if anim == null:
+		return _err("not_found", "Animation not found: %s" % params.get("name", ""))
+	var track := int(params.get("track", -1))
+	if track < 0 or track >= anim.get_track_count():
+		return _err("bad_track", "Track index out of range: %d" % track)
+	var keys: Array = []
+	for i in anim.track_get_key_count(track):
+		keys.append({
+			"index": i,
+			"time": anim.track_get_key_time(track, i),
+			"value": Codec.encode(anim.track_get_key_value(track, i)),
+			"transition": anim.track_get_key_transition(track, i),
+		})
+	return _ok({"track": track, "type": _anim_track_type_name(anim.track_get_type(track)), "path": String(anim.track_get_path(track)), "keys": keys})
+
+
+func _anim_list(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var player := _as_anim_player(root, String(params.get("player_path", "")))
+	if player == null:
+		return _err("bad_path", "AnimationPlayer not found: %s" % params.get("player_path", ""))
+	var out: Array = []
+	for lib_name in player.get_animation_library_list():
+		var lib := player.get_animation_library(lib_name)
+		if lib == null:
+			continue
+		for a in lib.get_animation_list():
+			var anim := lib.get_animation(a)
+			var full := String(a)
+			if String(lib_name) != "":
+				full = String(lib_name) + "/" + String(a)
+			out.append({
+				"name": full,
+				"library": String(lib_name),
+				"animation": String(a),
+				"length": anim.length,
+				"loop_mode": _anim_loop_name(anim.loop_mode),
+				"track_count": anim.get_track_count(),
+			})
+	return _ok({"player": _path_of(root, player), "animations": out})
+
+
+## AnimationTree authoring (Group C batch 2): create an AnimationTree node and edit
+## its tree_root graph (AnimationNodeBlendTree) or state machine (AnimationNodeStateMachine).
+## Undoable via EditorUndoRedoManager, ungated (in-scene, like node_* / batch-1 anim_*).
+
+func _as_anim_tree(root: Node, path: String) -> AnimationTree:
+	var n := _resolve(root, path)
+	if n is AnimationTree:
+		return n
+	return null
+
+
+func _anim_root_type_class(s: String) -> String:
+	match s:
+		"blend_tree":
+			return "AnimationNodeBlendTree"
+		"state_machine":
+			return "AnimationNodeStateMachine"
+		_:
+			return ""
+
+
+func _to_vec2(v) -> Vector2:
+	if v is Array and v.size() >= 2:
+		return Vector2(float(v[0]), float(v[1]))
+	return Vector2.ZERO
+
+
+func _sm_switch_mode(s: String) -> int:
+	var m := {"immediate": 0, "sync": 1, "at_end": 2}
+	return int(m.get(s, -1))
+
+
+func _sm_switch_name(mode: int) -> String:
+	var names := ["immediate", "sync", "at_end"]
+	if mode >= 0 and mode < names.size():
+		return String(names[mode])
+	return "unknown"
+
+
+func _sm_advance_mode(s: String) -> int:
+	var m := {"disabled": 0, "enabled": 1, "auto": 2}
+	return int(m.get(s, -1))
+
+
+func _sm_advance_name(mode: int) -> String:
+	var names := ["disabled", "enabled", "auto"]
+	if mode >= 0 and mode < names.size():
+		return String(names[mode])
+	return "unknown"
+
+
+## Resolve the target AnimationNodeStateMachine: tree_root itself when sm_name is
+## empty, or a nested state-machine node inside the tree_root graph.
+func _resolve_state_machine(tree: AnimationTree, sm_name: String):
+	var rootnode = tree.get("tree_root")
+	if rootnode == null:
+		return null
+	if sm_name == "":
+		if rootnode is AnimationNodeStateMachine:
+			return rootnode
+		return null
+	if not rootnode.has_method("has_node") or not rootnode.has_node(sm_name):
+		return null
+	var sub = rootnode.get_node(sm_name)
+	if sub is AnimationNodeStateMachine:
+		return sub
+	return null
+
+
+func _anim_tree_create(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var parent := _resolve(root, String(params.get("parent_path", "")))
+	if parent == null:
+		return _err("bad_path", "Parent not found: %s" % params.get("parent_path", ""))
+	var rt := String(params.get("root_type", "blend_tree"))
+	var rt_class := _anim_root_type_class(rt)
+	if rt_class == "":
+		return _err("bad_params", "'root_type' must be one of: blend_tree, state_machine")
+	var node := AnimationTree.new()
+	node.name = String(params.get("name", "AnimationTree"))
+	node.set("tree_root", ClassDB.instantiate(rt_class))
+	var anim_player_path := String(params.get("anim_player_path", ""))
+	if anim_player_path != "":
+		node.set("anim_player", NodePath(anim_player_path))
+	node.set("active", bool(params.get("active", false)))
+	var added := _commit_add(node, parent, root, "Breakpoint: add AnimationTree %s" % node.name)
+	added["type"] = "AnimationTree"
+	added["root_type"] = rt
+	added["anim_player"] = anim_player_path
+	added["active"] = bool(node.get("active"))
+	return _ok(added)
+
+
+func _anim_tree_add_node(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var tree := _as_anim_tree(root, String(params.get("tree_path", "")))
+	if tree == null:
+		return _err("bad_path", "AnimationTree not found: %s" % params.get("tree_path", ""))
+	var rootnode = tree.get("tree_root")
+	if rootnode == null or not rootnode.has_method("add_node"):
+		return _err("bad_root", "tree_root does not accept nodes (need AnimationNodeBlendTree or AnimationNodeStateMachine)")
+	var node_name := String(params.get("node_name", ""))
+	if node_name == "":
+		return _err("bad_params", "Missing 'node_name'")
+	if rootnode.has_node(node_name):
+		return _err("exists", "Node already exists in the graph: %s" % node_name)
+	var node_type := String(params.get("node_type", ""))
+	if node_type == "" or not ClassDB.can_instantiate(node_type) or not ClassDB.is_parent_class(node_type, "AnimationNode"):
+		return _err("bad_type", "'node_type' must be an instantiable AnimationNode subclass: %s" % node_type)
+	var sub = ClassDB.instantiate(node_type)
+	if params.has("animation") and sub is AnimationNodeAnimation:
+		sub.set("animation", StringName(String(params.get("animation"))))
+	var pos := _to_vec2(params.get("position", null))
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: add anim node %s" % node_name)
+	ur.add_do_method(rootnode, "add_node", node_name, sub, pos)
+	ur.add_do_reference(sub)
+	ur.add_undo_method(rootnode, "remove_node", node_name)
+	ur.commit_action()
+	return _ok({"tree": _path_of(root, tree), "node_name": node_name, "node_type": node_type, "position": [pos.x, pos.y]})
+
+
+func _anim_statemachine_add_state(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var tree := _as_anim_tree(root, String(params.get("tree_path", "")))
+	if tree == null:
+		return _err("bad_path", "AnimationTree not found: %s" % params.get("tree_path", ""))
+	var sm_name := String(params.get("state_machine", ""))
+	var sm = _resolve_state_machine(tree, sm_name)
+	if sm == null:
+		return _err("bad_root", "No AnimationNodeStateMachine at %s" % ("tree_root" if sm_name == "" else sm_name))
+	var state_name := String(params.get("state_name", ""))
+	if state_name == "":
+		return _err("bad_params", "Missing 'state_name'")
+	if sm.has_node(state_name):
+		return _err("exists", "State already exists: %s" % state_name)
+	var node_type := String(params.get("node_type", "AnimationNodeAnimation"))
+	if not ClassDB.can_instantiate(node_type) or not ClassDB.is_parent_class(node_type, "AnimationNode"):
+		return _err("bad_type", "'node_type' must be an instantiable AnimationNode subclass: %s" % node_type)
+	var state = ClassDB.instantiate(node_type)
+	var anim_name := String(params.get("animation", ""))
+	if anim_name != "" and state is AnimationNodeAnimation:
+		state.set("animation", StringName(anim_name))
+	var pos := _to_vec2(params.get("position", null))
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: add state %s" % state_name)
+	ur.add_do_method(sm, "add_node", state_name, state, pos)
+	ur.add_do_reference(state)
+	ur.add_undo_method(sm, "remove_node", state_name)
+	ur.commit_action()
+	return _ok({"tree": _path_of(root, tree), "state_machine": sm_name, "state_name": state_name, "node_type": node_type, "animation": anim_name, "position": [pos.x, pos.y]})
+
+
+func _anim_statemachine_add_transition(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var tree := _as_anim_tree(root, String(params.get("tree_path", "")))
+	if tree == null:
+		return _err("bad_path", "AnimationTree not found: %s" % params.get("tree_path", ""))
+	var sm_name := String(params.get("state_machine", ""))
+	var sm = _resolve_state_machine(tree, sm_name)
+	if sm == null:
+		return _err("bad_root", "No AnimationNodeStateMachine at %s" % ("tree_root" if sm_name == "" else sm_name))
+	var from_state := String(params.get("from_state", ""))
+	var to_state := String(params.get("to_state", ""))
+	if from_state == "" or to_state == "":
+		return _err("bad_params", "Missing 'from_state' or 'to_state'")
+	if from_state != "Start" and from_state != "End" and not sm.has_node(from_state):
+		return _err("not_found", "from_state not in state machine: %s" % from_state)
+	if to_state != "Start" and to_state != "End" and not sm.has_node(to_state):
+		return _err("not_found", "to_state not in state machine: %s" % to_state)
+	if sm.has_transition(from_state, to_state):
+		return _err("exists", "Transition already exists: %s -> %s" % [from_state, to_state])
+	var switch_s := String(params.get("switch_mode", "immediate"))
+	var switch_mode := _sm_switch_mode(switch_s)
+	if switch_mode < 0:
+		return _err("bad_params", "'switch_mode' must be one of: immediate, sync, at_end")
+	var advance_s := String(params.get("advance_mode", "enabled"))
+	var advance_mode := _sm_advance_mode(advance_s)
+	if advance_mode < 0:
+		return _err("bad_params", "'advance_mode' must be one of: disabled, enabled, auto")
+	var tr := AnimationNodeStateMachineTransition.new()
+	tr.set("xfade_time", float(params.get("xfade_time", 0.0)))
+	tr.set("switch_mode", switch_mode)
+	tr.set("advance_mode", advance_mode)
+	if String(params.get("advance_condition", "")) != "":
+		tr.set("advance_condition", StringName(String(params.get("advance_condition"))))
+	if params.has("priority"):
+		tr.set("priority", int(params.get("priority")))
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: add transition %s -> %s" % [from_state, to_state])
+	ur.add_do_method(sm, "add_transition", from_state, to_state, tr)
+	ur.add_do_reference(tr)
+	ur.add_undo_method(sm, "remove_transition", from_state, to_state)
+	ur.commit_action()
+	return _ok({"tree": _path_of(root, tree), "state_machine": sm_name, "from_state": from_state, "to_state": to_state, "xfade_time": float(tr.get("xfade_time")), "switch_mode": _sm_switch_name(int(tr.get("switch_mode"))), "advance_mode": _sm_advance_name(int(tr.get("advance_mode"))), "transition_count": sm.get_transition_count()})
+# --------------------------------------------------------- Group D: tileset --
+# Disk-backed TileSet authoring: load a .tres TileSet, mutate it, re-save.
+# All four are file-writing → gated on the host side.
+
+func _to_vec2i(v) -> Vector2i:
+	if v is Array and v.size() >= 2:
+		return Vector2i(int(v[0]), int(v[1]))
+	return Vector2i.ZERO
+
+
+func _to_packed_vec2(v) -> PackedVector2Array:
+	var out := PackedVector2Array()
+	if v is Array:
+		for p in v:
+			if p is Array and p.size() >= 2:
+				out.append(Vector2(float(p[0]), float(p[1])))
+	return out
+
+
+func _load_tileset(path: String):
+	if not ResourceLoader.exists(path):
+		return null
+	var res := ResourceLoader.load(path)
+	if res is TileSet:
+		return res
+	return null
+
+
+func _tileset_create(params: Dictionary) -> Dictionary:
+	var to_path := String(params.get("to_path", ""))
+	if not to_path.begins_with("res://"):
+		return _err("bad_params", "'to_path' must be a res:// path")
+	var ts := TileSet.new()
+	if params.has("tile_size"):
+		ts.set("tile_size", _to_vec2i(params.get("tile_size")))
+	var saved := _commit_save(ts, to_path, params, SAVE_NEW)
+	if saved.has("error"):
+		return saved["error"]
+	var tsz: Vector2i = ts.get("tile_size")
+	return _ok({"created": to_path, "tile_size": [tsz.x, tsz.y]}.merged(saved["fields"]))
+
+
+func _tileset_add_source(params: Dictionary) -> Dictionary:
+	var tileset_path := String(params.get("tileset_path", ""))
+	var ts = _load_tileset(tileset_path)
+	if ts == null:
+		return _err("not_found", "TileSet not found: %s" % tileset_path)
+	var texture_path := String(params.get("texture_path", ""))
+	if texture_path == "" or not ResourceLoader.exists(texture_path):
+		return _err("not_found", "Texture not found: %s" % texture_path)
+	var tex := ResourceLoader.load(texture_path)
+	if not (tex is Texture2D):
+		return _err("bad_texture", "Not a Texture2D: %s" % texture_path)
+	var atlas := TileSetAtlasSource.new()
+	atlas.set("texture", tex)
+	var region: Vector2i = ts.get("tile_size")
+	if params.has("texture_region_size"):
+		region = _to_vec2i(params.get("texture_region_size"))
+	atlas.set("texture_region_size", region)
+	if params.has("margins"):
+		atlas.set("margins", _to_vec2i(params.get("margins")))
+	if params.has("separation"):
+		atlas.set("separation", _to_vec2i(params.get("separation")))
+	var assigned: int = ts.add_source(atlas, int(params.get("source_id", -1)))
+	var saved := _commit_save(ts, tileset_path, params, SAVE_BACK)
+	if saved.has("error"):
+		return saved["error"]
+	return _ok({"tileset": tileset_path, "source_id": assigned, "texture": texture_path, "texture_region_size": [region.x, region.y], "source_count": ts.get_source_count()})
+
+
+func _tileset_add_tile(params: Dictionary) -> Dictionary:
+	var tileset_path := String(params.get("tileset_path", ""))
+	var ts = _load_tileset(tileset_path)
+	if ts == null:
+		return _err("not_found", "TileSet not found: %s" % tileset_path)
+	var sid := int(params.get("source_id", -1))
+	if not ts.has_source(sid):
+		return _err("not_found", "No source with id %d" % sid)
+	var src = ts.get_source(sid)
+	if not (src is TileSetAtlasSource):
+		return _err("bad_source", "Source %d is not a TileSetAtlasSource" % sid)
+	var coords := _to_vec2i(params.get("atlas_coords"))
+	if src.has_tile(coords):
+		return _err("exists", "Tile already exists at %s" % str(coords))
+	var size := Vector2i(1, 1)
+	if params.has("size"):
+		size = _to_vec2i(params.get("size"))
+	src.create_tile(coords, size)
+	var saved := _commit_save(ts, tileset_path, params, SAVE_BACK)
+	if saved.has("error"):
+		return saved["error"]
+	return _ok({"tileset": tileset_path, "source_id": sid, "atlas_coords": [coords.x, coords.y], "size": [size.x, size.y], "tiles_count": src.get_tiles_count()})
+
+
+func _tileset_set_tile_collision(params: Dictionary) -> Dictionary:
+	var tileset_path := String(params.get("tileset_path", ""))
+	var ts = _load_tileset(tileset_path)
+	if ts == null:
+		return _err("not_found", "TileSet not found: %s" % tileset_path)
+	var sid := int(params.get("source_id", -1))
+	if not ts.has_source(sid):
+		return _err("not_found", "No source with id %d" % sid)
+	var src = ts.get_source(sid)
+	if not (src is TileSetAtlasSource):
+		return _err("bad_source", "Source %d is not a TileSetAtlasSource" % sid)
+	var coords := _to_vec2i(params.get("atlas_coords"))
+	if not src.has_tile(coords):
+		return _err("not_found", "No tile at %s in source %d" % [str(coords), sid])
+	var layer := int(params.get("physics_layer", 0))
+	if layer < 0:
+		return _err("bad_params", "'physics_layer' must be >= 0")
+	var poly := _to_packed_vec2(params.get("polygon"))
+	if poly.size() < 3:
+		return _err("bad_params", "'polygon' needs at least 3 [x, y] points")
+	while ts.get_physics_layers_count() <= layer:
+		ts.add_physics_layer(-1)
+	var td: TileData = src.get_tile_data(coords, 0)
+	if td == null:
+		return _err("no_tile_data", "Could not get TileData for %s" % str(coords))
+	td.add_collision_polygon(layer)
+	var poly_index := td.get_collision_polygons_count(layer) - 1
+	td.set_collision_polygon_points(layer, poly_index, poly)
+	var one_way := bool(params.get("one_way", false))
+	if params.has("one_way"):
+		td.set_collision_polygon_one_way(layer, poly_index, one_way)
+	var saved := _commit_save(ts, tileset_path, params, SAVE_BACK)
+	if saved.has("error"):
+		return saved["error"]
+	return _ok({"tileset": tileset_path, "source_id": sid, "atlas_coords": [coords.x, coords.y], "physics_layer": layer, "polygon_index": poly_index, "points": poly.size(), "one_way": one_way})
+
+
+# ---------------------------------------------- Group D: tilemap (batch 2) --
+# In-scene TileMapLayer authoring + cell painting. Unlike the disk-backed
+# tileset_* family (which writes a .tres and is host-gated), these mutate a
+# TileMapLayer node in the edited scene and are undoable via
+# EditorUndoRedoManager — the ungated node_* model. Empty cells read back as
+# source_id -1 / atlas_coords (-1, -1) / alternative 0, which is exactly what
+# the undo path restores.
+
+func _as_tilemap_layer(root: Node, path: String) -> TileMapLayer:
+	var n := _resolve(root, path)
+	if n is TileMapLayer:
+		return n
+	return null
+
+
+func _tilemaplayer_create(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var parent := _resolve(root, String(params.get("parent_path", "")))
+	if parent == null:
+		return _err("bad_path", "Parent not found: %s" % params.get("parent_path", ""))
+	var layer := TileMapLayer.new()
+	layer.name = String(params.get("name", "TileMapLayer"))
+	var tileset_path := String(params.get("tileset_path", ""))
+	if tileset_path != "":
+		var ts = _load_tileset(tileset_path)
+		if ts == null:
+			return _err("not_found", "TileSet not found: %s" % tileset_path)
+		layer.tile_set = ts
+	var added := _commit_add(layer, parent, root, "Breakpoint: add TileMapLayer %s" % layer.name)
+	added["type"] = "TileMapLayer"
+	added["tile_set"] = tileset_path
+	return _ok(added)
+
+
+func _tilemap_set_cell(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var layer := _as_tilemap_layer(root, String(params.get("path", "")))
+	if layer == null:
+		return _err("bad_path", "TileMapLayer not found: %s" % params.get("path", ""))
+	var coords := _to_vec2i(params.get("coords"))
+	var source_id := int(params.get("source_id", -1))
+	var atlas := Vector2i.ZERO
+	if params.has("atlas_coords"):
+		atlas = _to_vec2i(params.get("atlas_coords"))
+	var alternative := int(params.get("alternative", 0))
+	var old_src := layer.get_cell_source_id(coords)
+	var old_atlas := layer.get_cell_atlas_coords(coords)
+	var old_alt := layer.get_cell_alternative_tile(coords)
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: set cell %s" % str(coords))
+	ur.add_do_method(layer, "set_cell", coords, source_id, atlas, alternative)
+	ur.add_undo_method(layer, "set_cell", coords, old_src, old_atlas, old_alt)
+	ur.commit_action()
+	return _ok({"path": _path_of(root, layer), "coords": [coords.x, coords.y], "source_id": source_id, "atlas_coords": [atlas.x, atlas.y], "alternative": alternative, "erased": source_id < 0})
+
+
+func _tilemap_set_cells_rect(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var layer := _as_tilemap_layer(root, String(params.get("path", "")))
+	if layer == null:
+		return _err("bad_path", "TileMapLayer not found: %s" % params.get("path", ""))
+	var r = params.get("rect")
+	if not (r is Array) or r.size() < 4:
+		return _err("bad_params", "'rect' must be [x, y, width, height]")
+	var rx := int(r[0])
+	var ry := int(r[1])
+	var rw := int(r[2])
+	var rh := int(r[3])
+	if rw <= 0 or rh <= 0:
+		return _err("bad_params", "'rect' width and height must be > 0")
+	var area := rw * rh
+	if area > 65536:
+		return _err("too_large", "rect covers %d cells (max 65536); split into multiple calls" % area)
+	var source_id := int(params.get("source_id", -1))
+	var atlas := Vector2i.ZERO
+	if params.has("atlas_coords"):
+		atlas = _to_vec2i(params.get("atlas_coords"))
+	var alternative := int(params.get("alternative", 0))
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: set cells rect %d,%d %dx%d" % [rx, ry, rw, rh])
+	for dy in range(rh):
+		for dx in range(rw):
+			var c := Vector2i(rx + dx, ry + dy)
+			var os := layer.get_cell_source_id(c)
+			var oa := layer.get_cell_atlas_coords(c)
+			var oal := layer.get_cell_alternative_tile(c)
+			ur.add_do_method(layer, "set_cell", c, source_id, atlas, alternative)
+			ur.add_undo_method(layer, "set_cell", c, os, oa, oal)
+	ur.commit_action()
+	return _ok({"path": _path_of(root, layer), "rect": [rx, ry, rw, rh], "cells": area, "source_id": source_id, "atlas_coords": [atlas.x, atlas.y], "alternative": alternative, "erased": source_id < 0})
+
+
+func _tilemap_get_cell(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var layer := _as_tilemap_layer(root, String(params.get("path", "")))
+	if layer == null:
+		return _err("bad_path", "TileMapLayer not found: %s" % params.get("path", ""))
+	var coords := _to_vec2i(params.get("coords"))
+	var src := layer.get_cell_source_id(coords)
+	var atlas := layer.get_cell_atlas_coords(coords)
+	var alt := layer.get_cell_alternative_tile(coords)
+	return _ok({"path": _path_of(root, layer), "coords": [coords.x, coords.y], "source_id": src, "atlas_coords": [atlas.x, atlas.y], "alternative": alt, "empty": src < 0})
+
+
+func _tilemap_clear(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var layer := _as_tilemap_layer(root, String(params.get("path", "")))
+	if layer == null:
+		return _err("bad_path", "TileMapLayer not found: %s" % params.get("path", ""))
+	var used := layer.get_used_cells()
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: clear TileMapLayer %s" % layer.name)
+	ur.add_do_method(layer, "clear")
+	for c in used:
+		var os := layer.get_cell_source_id(c)
+		var oa := layer.get_cell_atlas_coords(c)
+		var oal := layer.get_cell_alternative_tile(c)
+		ur.add_undo_method(layer, "set_cell", c, os, oa, oal)
+	ur.commit_action()
+	return _ok({"path": _path_of(root, layer), "cleared_cells": used.size()})
+
+
+# ---------------------------------------------- Group E: physics (batch 1) --
+# In-scene physics authoring: bodies (Static/Rigid/Character/Area, 2D+3D),
+# their collision shapes (CollisionShape2D/3D carrying a Shape resource), and
+# the collision_layer / collision_mask bitmasks. Every mutation goes through
+# EditorUndoRedoManager and is ungated — the in-scene node_* model.
+
+func _to_vec3(v) -> Vector3:
+	if v is Array and v.size() >= 3:
+		return Vector3(float(v[0]), float(v[1]), float(v[2]))
+	return Vector3.ZERO
+
+
+func _to_packed_vec3(v) -> PackedVector3Array:
+	var out := PackedVector3Array()
+	if v is Array:
+		for p in v:
+			if p is Array and p.size() >= 3:
+				out.append(Vector3(float(p[0]), float(p[1]), float(p[2])))
+	return out
+
+
+func _body_class(kind: String, dim3: bool) -> String:
+	if kind == "static":
+		return "StaticBody3D" if dim3 else "StaticBody2D"
+	if kind == "rigid":
+		return "RigidBody3D" if dim3 else "RigidBody2D"
+	if kind == "character":
+		return "CharacterBody3D" if dim3 else "CharacterBody2D"
+	if kind == "area":
+		return "Area3D" if dim3 else "Area2D"
+	return ""
+
+
+func _body_create(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var parent := _resolve(root, String(params.get("parent_path", "")))
+	if parent == null:
+		return _err("bad_path", "Parent not found: %s" % params.get("parent_path", ""))
+	var kind := String(params.get("type", ""))
+	var dim3 := String(params.get("dim", "2d")) == "3d"
+	var cls := _body_class(kind, dim3)
+	if cls == "":
+		return _err("bad_params", "Unknown body type '%s' (want static|rigid|character|area)" % kind)
+	if not ClassDB.can_instantiate(cls):
+		return _err("bad_type", "Cannot instantiate class: %s" % cls)
+	var node: Node = ClassDB.instantiate(cls)
+	node.name = String(params.get("name", cls))
+	var added := _commit_add(node, parent, root, "Breakpoint: add %s" % node.name)
+	added["type"] = cls
+	added["body"] = kind
+	added["dim"] = ("3d" if dim3 else "2d")
+	return _ok(added)
+
+
+func _make_collision_shape(kind: String, dim3: bool, params: Dictionary):
+	if kind == "rect":
+		if dim3:
+			var b := BoxShape3D.new()
+			b.size = _to_vec3(params.get("size", [1, 1, 1]))
+			return b
+		var r := RectangleShape2D.new()
+		r.size = _to_vec2(params.get("size", [32, 32]))
+		return r
+	if kind == "circle":
+		if dim3:
+			var s := SphereShape3D.new()
+			s.radius = float(params.get("radius", 0.5))
+			return s
+		var c := CircleShape2D.new()
+		c.radius = float(params.get("radius", 16.0))
+		return c
+	if kind == "capsule":
+		if dim3:
+			var cap3 := CapsuleShape3D.new()
+			cap3.radius = float(params.get("radius", 0.5))
+			cap3.height = float(params.get("height", 2.0))
+			return cap3
+		var cap := CapsuleShape2D.new()
+		cap.radius = float(params.get("radius", 16.0))
+		cap.height = float(params.get("height", 48.0))
+		return cap
+	if kind == "polygon":
+		if dim3:
+			var cp3 := ConvexPolygonShape3D.new()
+			cp3.points = _to_packed_vec3(params.get("points"))
+			return cp3
+		var cp := ConvexPolygonShape2D.new()
+		cp.points = _to_packed_vec2(params.get("points"))
+		return cp
+	return null
+
+
+func _collisionshape_add(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var parent := _resolve(root, String(params.get("parent_path", "")))
+	if parent == null:
+		return _err("bad_path", "Parent not found: %s" % params.get("parent_path", ""))
+	var kind := String(params.get("shape", ""))
+	if not (kind in ["rect", "circle", "capsule", "polygon"]):
+		return _err("bad_params", "Unknown shape '%s' (want rect|circle|capsule|polygon)" % kind)
+	var dim3 := String(params.get("dim", "2d")) == "3d"
+	if kind == "polygon":
+		if dim3 and _to_packed_vec3(params.get("points")).size() < 4:
+			return _err("bad_params", "'polygon' (3D) needs at least 4 points")
+		if not dim3 and _to_packed_vec2(params.get("points")).size() < 3:
+			return _err("bad_params", "'polygon' (2D) needs at least 3 points")
+	var shape_res = _make_collision_shape(kind, dim3, params)
+	if shape_res == null:
+		return _err("bad_params", "Could not build shape for '%s'" % kind)
+	var node: Node
+	if dim3:
+		var cs3 := CollisionShape3D.new()
+		cs3.set("shape", shape_res)
+		node = cs3
+	else:
+		var cs2 := CollisionShape2D.new()
+		cs2.set("shape", shape_res)
+		node = cs2
+	node.name = String(params.get("name", node.get_class()))
+	var added := _commit_add(node, parent, root, "Breakpoint: add %s" % node.name)
+	added["type"] = node.get_class()
+	added["shape"] = kind
+	added["shape_class"] = shape_res.get_class()
+	added["dim"] = ("3d" if dim3 else "2d")
+	return _ok(added)
+
+
+func _body_set_collision_layer(params: Dictionary) -> Dictionary:
+	return _body_set_collision_field(params, "collision_layer", "layer")
+
+
+func _body_set_collision_mask(params: Dictionary) -> Dictionary:
+	return _body_set_collision_field(params, "collision_mask", "mask")
+
+
+func _body_set_collision_field(params: Dictionary, field: String, key: String) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	if not (node is CollisionObject2D or node is CollisionObject3D):
+		return _err("bad_type", "%s is not a physics body/area (CollisionObject2D/3D)" % node.name)
+	if not params.has(key):
+		return _err("bad_params", "Missing '%s'" % key)
+	var new_value := int(params.get(key, 0))
+	if new_value < 0:
+		return _err("bad_params", "'%s' must be a non-negative bitmask" % key)
+	var old_value: int = node.get(field)
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: set %s.%s" % [node.name, field])
+	ur.add_do_property(node, field, new_value)
+	ur.add_undo_property(node, field, old_value)
+	ur.commit_action()
+	var result := {"path": _path_of(root, node)}
+	result[field] = new_value
+	return _ok(result)
+
+
+# ---------------------------------------------------------------- Group E batch 2 ----
+# Physics & collision, part 2: areas (monitoring / gravity zones), joints, collision
+# polygons, rigidbody tuning, per-body physics material — all in-scene node mutators,
+# undoable via EditorUndoRedoManager and ungated (the node_* model). _physics_set_gravity
+# writes ProjectSettings (no undo) and is gated host-side like project_set_setting.
+
+func _area_set_monitoring(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	if not (node is Area2D or node is Area3D):
+		return _err("bad_type", "%s is not an Area2D/3D" % node.name)
+	if not (params.has("monitoring") or params.has("monitorable")):
+		return _err("bad_params", "Provide 'monitoring' and/or 'monitorable'")
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: set %s monitoring" % node.name)
+	if params.has("monitoring"):
+		ur.add_do_property(node, "monitoring", bool(params.get("monitoring")))
+		ur.add_undo_property(node, "monitoring", node.get("monitoring"))
+	if params.has("monitorable"):
+		ur.add_do_property(node, "monitorable", bool(params.get("monitorable")))
+		ur.add_undo_property(node, "monitorable", node.get("monitorable"))
+	ur.commit_action()
+	return _ok({"path": _path_of(root, node), "monitoring": node.get("monitoring"), "monitorable": node.get("monitorable")})
+
+
+func _area_space_override(s: String) -> int:
+	var m := {"disabled": 0, "combine": 1, "combine_replace": 2, "replace": 3, "replace_combine": 4}
+	return int(m.get(s, -1))
+
+
+func _area_space_override_name(v: int) -> String:
+	var names := ["disabled", "combine", "combine_replace", "replace", "replace_combine"]
+	if v >= 0 and v < names.size():
+		return names[v]
+	return str(v)
+
+
+func _area_set_gravity(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	if not (node is Area2D or node is Area3D):
+		return _err("bad_type", "%s is not an Area2D/3D" % node.name)
+	if not (params.has("space_override") or params.has("gravity") or params.has("direction") or params.has("point")):
+		return _err("bad_params", "Provide at least one of space_override|gravity|direction|point")
+	var so := -1
+	if params.has("space_override"):
+		so = _area_space_override(String(params.get("space_override")))
+		if so < 0:
+			return _err("bad_params", "Unknown space_override '%s'" % params.get("space_override"))
+	var dim3 := node is Area3D
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: set %s gravity" % node.name)
+	if params.has("space_override"):
+		ur.add_do_property(node, "gravity_space_override", so)
+		ur.add_undo_property(node, "gravity_space_override", node.get("gravity_space_override"))
+	if params.has("gravity"):
+		ur.add_do_property(node, "gravity", float(params.get("gravity")))
+		ur.add_undo_property(node, "gravity", node.get("gravity"))
+	if params.has("direction"):
+		var dir = _to_vec3(params.get("direction")) if dim3 else _to_vec2(params.get("direction"))
+		ur.add_do_property(node, "gravity_direction", dir)
+		ur.add_undo_property(node, "gravity_direction", node.get("gravity_direction"))
+	if params.has("point"):
+		ur.add_do_property(node, "gravity_point", bool(params.get("point")))
+		ur.add_undo_property(node, "gravity_point", node.get("gravity_point"))
+	ur.commit_action()
+	var dv = node.get("gravity_direction")
+	var dir_out: Array = ([dv.x, dv.y, dv.z] if dim3 else [dv.x, dv.y])
+	return _ok({"path": _path_of(root, node), "space_override": _area_space_override_name(int(node.get("gravity_space_override"))), "gravity": float(node.get("gravity")), "direction": dir_out, "gravity_point": bool(node.get("gravity_point")), "dim": ("3d" if dim3 else "2d")})
+
+
+func _joint_class(kind: String, dim3: bool) -> String:
+	if dim3:
+		if kind == "pin":
+			return "PinJoint3D"
+		if kind == "hinge":
+			return "HingeJoint3D"
+		if kind == "slider":
+			return "SliderJoint3D"
+		if kind == "cone_twist":
+			return "ConeTwistJoint3D"
+		if kind == "generic6dof":
+			return "Generic6DOFJoint3D"
+		return ""
+	if kind == "pin":
+		return "PinJoint2D"
+	if kind == "groove":
+		return "GrooveJoint2D"
+	if kind == "spring":
+		return "DampedSpringJoint2D"
+	return ""
+
+
+func _joint_create(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var parent := _resolve(root, String(params.get("parent_path", "")))
+	if parent == null:
+		return _err("bad_path", "Parent not found: %s" % params.get("parent_path", ""))
+	var kind := String(params.get("type", ""))
+	var dim3 := String(params.get("dim", "2d")) == "3d"
+	var cls := _joint_class(kind, dim3)
+	if cls == "":
+		return _err("bad_params", "Unknown joint type '%s' for %s (2D: pin|groove|spring; 3D: pin|hinge|slider|cone_twist|generic6dof)" % [kind, ("3d" if dim3 else "2d")])
+	if not ClassDB.can_instantiate(cls):
+		return _err("bad_type", "Cannot instantiate class: %s" % cls)
+	var node: Node = ClassDB.instantiate(cls)
+	node.name = String(params.get("name", cls))
+	if params.has("node_a"):
+		node.set("node_a", NodePath(String(params.get("node_a"))))
+	if params.has("node_b"):
+		node.set("node_b", NodePath(String(params.get("node_b"))))
+	var added := _commit_add(node, parent, root, "Breakpoint: add %s" % node.name)
+	added["type"] = cls
+	added["joint"] = kind
+	added["dim"] = ("3d" if dim3 else "2d")
+	added["node_a"] = String(node.get("node_a"))
+	added["node_b"] = String(node.get("node_b"))
+	return _ok(added)
+
+
+func _joint_set_bodies(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	if not (node is Joint2D or node is Joint3D):
+		return _err("bad_type", "%s is not a Joint2D/3D" % node.name)
+	if not (params.has("node_a") or params.has("node_b")):
+		return _err("bad_params", "Provide 'node_a' and/or 'node_b'")
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: set %s bodies" % node.name)
+	if params.has("node_a"):
+		ur.add_do_property(node, "node_a", NodePath(String(params.get("node_a"))))
+		ur.add_undo_property(node, "node_a", node.get("node_a"))
+	if params.has("node_b"):
+		ur.add_do_property(node, "node_b", NodePath(String(params.get("node_b"))))
+		ur.add_undo_property(node, "node_b", node.get("node_b"))
+	ur.commit_action()
+	return _ok({"path": _path_of(root, node), "node_a": String(node.get("node_a")), "node_b": String(node.get("node_b"))})
+
+
+func _collisionpolygon_add(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var parent := _resolve(root, String(params.get("parent_path", "")))
+	if parent == null:
+		return _err("bad_path", "Parent not found: %s" % params.get("parent_path", ""))
+	var dim3 := String(params.get("dim", "2d")) == "3d"
+	var pts := _to_packed_vec2(params.get("points"))
+	if pts.size() < 3:
+		return _err("bad_params", "collisionpolygon needs at least 3 points")
+	var node: Node
+	if dim3:
+		var c3 := CollisionPolygon3D.new()
+		c3.set("polygon", pts)
+		if params.has("depth"):
+			c3.set("depth", float(params.get("depth")))
+		node = c3
+	else:
+		var c2 := CollisionPolygon2D.new()
+		c2.set("polygon", pts)
+		if params.has("build_mode"):
+			var bm := 1 if String(params.get("build_mode")) == "segments" else 0
+			c2.set("build_mode", bm)
+		node = c2
+	node.name = String(params.get("name", node.get_class()))
+	var added := _commit_add(node, parent, root, "Breakpoint: add %s" % node.name)
+	added["type"] = node.get_class()
+	added["dim"] = ("3d" if dim3 else "2d")
+	added["points"] = pts.size()
+	return _ok(added)
+
+
+func _rigidbody_set_properties(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	if not (node is RigidBody2D or node is RigidBody3D):
+		return _err("bad_type", "%s is not a RigidBody2D/3D" % node.name)
+	var provided: Array = []
+	for f in ["mass", "gravity_scale", "linear_damp", "angular_damp"]:
+		if params.has(f):
+			provided.append(f)
+	if provided.is_empty():
+		return _err("bad_params", "Provide at least one of mass|gravity_scale|linear_damp|angular_damp")
+	if params.has("mass") and float(params.get("mass")) <= 0.0:
+		return _err("bad_params", "'mass' must be > 0")
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: set %s physics props" % node.name)
+	for f in provided:
+		ur.add_do_property(node, f, float(params.get(f)))
+		ur.add_undo_property(node, f, node.get(f))
+	ur.commit_action()
+	return _ok({"path": _path_of(root, node), "mass": float(node.get("mass")), "gravity_scale": float(node.get("gravity_scale")), "linear_damp": float(node.get("linear_damp")), "angular_damp": float(node.get("angular_damp"))})
+
+
+func _body_set_physics_material(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	if not (node is StaticBody2D or node is StaticBody3D or node is RigidBody2D or node is RigidBody3D):
+		return _err("bad_type", "%s has no physics_material_override (need StaticBody/RigidBody 2D/3D)" % node.name)
+	var mat := PhysicsMaterial.new()
+	mat.friction = float(params.get("friction", 1.0))
+	mat.bounce = float(params.get("bounce", 0.0))
+	mat.rough = bool(params.get("rough", false))
+	mat.absorbent = bool(params.get("absorbent", false))
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: set %s physics material" % node.name)
+	ur.add_do_property(node, "physics_material_override", mat)
+	ur.add_undo_property(node, "physics_material_override", node.get("physics_material_override"))
+	ur.add_do_reference(mat)
+	ur.commit_action()
+	return _ok({"path": _path_of(root, node), "friction": mat.friction, "bounce": mat.bounce, "rough": mat.rough, "absorbent": mat.absorbent})
+
+
+func _physics_set_gravity(params: Dictionary) -> Dictionary:
+	var dim3 := String(params.get("dim", "2d")) == "3d"
+	var prefix := "physics/3d/" if dim3 else "physics/2d/"
+	if not (params.has("magnitude") or params.has("direction")):
+		return _err("bad_params", "Provide 'magnitude' and/or 'direction'")
+	if params.has("magnitude"):
+		ProjectSettings.set_setting(prefix + "default_gravity", float(params.get("magnitude")))
+	if params.has("direction"):
+		var dir = _to_vec3(params.get("direction")) if dim3 else _to_vec2(params.get("direction"))
+		ProjectSettings.set_setting(prefix + "default_gravity_vector", dir)
+	var saved := false
+	if bool(params.get("save", false)):
+		var e := ProjectSettings.save()
+		if e != OK:
+			return _err("save_failed", "ProjectSettings.save() returned %d" % e)
+		saved = true
+	var dv = ProjectSettings.get_setting(prefix + "default_gravity_vector", null)
+	var dir_out: Array = ([dv.x, dv.y, dv.z] if dim3 else [dv.x, dv.y])
+	return _ok({"dim": ("3d" if dim3 else "2d"), "magnitude": float(ProjectSettings.get_setting(prefix + "default_gravity", 0.0)), "direction": dir_out, "saved": saved})
+
+
+# ---------------------------------------------------------------- Group F batch 1 ----
+# VFX: GPU particles (2D/3D). All in-scene node/resource mutators, undoable via
+# EditorUndoRedoManager and ungated (the node_* model). particles_set_texture is
+# GPUParticles2D-only (3D has no texture; it draws meshes) and feature-detects.
+
+func _is_particles(node) -> bool:
+	return node is GPUParticles2D or node is GPUParticles3D
+
+
+func _to_color(v) -> Color:
+	if v is Array and v.size() >= 3:
+		var a: float = float(v[3]) if v.size() >= 4 else 1.0
+		return Color(float(v[0]), float(v[1]), float(v[2]), a)
+	return Color(1, 1, 1, 1)
+
+
+func _particles_create(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var parent := _resolve(root, String(params.get("parent_path", "")))
+	if parent == null:
+		return _err("bad_path", "Parent not found: %s" % params.get("parent_path", ""))
+	var dim3 := String(params.get("dim", "2d")) == "3d"
+	if params.has("amount") and int(params.get("amount")) <= 0:
+		return _err("bad_params", "'amount' must be > 0")
+	if params.has("lifetime") and float(params.get("lifetime")) <= 0.0:
+		return _err("bad_params", "'lifetime' must be > 0")
+	var node: Node
+	if dim3:
+		node = GPUParticles3D.new()
+	else:
+		node = GPUParticles2D.new()
+	node.name = String(params.get("name", node.get_class()))
+	if params.has("amount"):
+		node.set("amount", int(params.get("amount")))
+	if params.has("lifetime"):
+		node.set("lifetime", float(params.get("lifetime")))
+	if params.has("emitting"):
+		node.set("emitting", bool(params.get("emitting")))
+	var added := _commit_add(node, parent, root, "Breakpoint: add %s" % node.name)
+	added["type"] = node.get_class()
+	added["dim"] = ("3d" if dim3 else "2d")
+	added["amount"] = int(node.get("amount"))
+	added["lifetime"] = float(node.get("lifetime"))
+	added["emitting"] = bool(node.get("emitting"))
+	return _ok(added)
+
+
+func _particles_set_process_material(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	if not _is_particles(node):
+		return _err("bad_type", "%s is not a GPUParticles2D/3D" % node.name)
+	var mat := ParticleProcessMaterial.new()
+	if params.has("gravity"):
+		mat.gravity = _to_vec3(params.get("gravity"))
+	if params.has("direction"):
+		mat.direction = _to_vec3(params.get("direction"))
+	if params.has("spread"):
+		mat.spread = float(params.get("spread"))
+	if params.has("initial_velocity_min"):
+		mat.initial_velocity_min = float(params.get("initial_velocity_min"))
+	if params.has("initial_velocity_max"):
+		mat.initial_velocity_max = float(params.get("initial_velocity_max"))
+	if params.has("scale_min"):
+		mat.scale_min = float(params.get("scale_min"))
+	if params.has("scale_max"):
+		mat.scale_max = float(params.get("scale_max"))
+	if params.has("color"):
+		mat.color = _to_color(params.get("color"))
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: set %s process material" % node.name)
+	ur.add_do_property(node, "process_material", mat)
+	ur.add_undo_property(node, "process_material", node.get("process_material"))
+	ur.add_do_reference(mat)
+	ur.commit_action()
+	var g = mat.gravity
+	var d = mat.direction
+	var c = mat.color
+	return _ok({"path": _path_of(root, node), "gravity": [g.x, g.y, g.z], "direction": [d.x, d.y, d.z], "spread": mat.spread, "initial_velocity_min": mat.initial_velocity_min, "initial_velocity_max": mat.initial_velocity_max, "scale_min": mat.scale_min, "scale_max": mat.scale_max, "color": [c.r, c.g, c.b, c.a]})
+
+
+func _particles_set_amount(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	if not _is_particles(node):
+		return _err("bad_type", "%s is not a GPUParticles2D/3D" % node.name)
+	if not params.has("amount"):
+		return _err("bad_params", "Missing 'amount'")
+	var v := int(params.get("amount"))
+	if v <= 0:
+		return _err("bad_params", "'amount' must be > 0")
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: set %s amount" % node.name)
+	ur.add_do_property(node, "amount", v)
+	ur.add_undo_property(node, "amount", node.get("amount"))
+	ur.commit_action()
+	return _ok({"path": _path_of(root, node), "amount": int(node.get("amount"))})
+
+
+func _particles_set_lifetime(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	if not _is_particles(node):
+		return _err("bad_type", "%s is not a GPUParticles2D/3D" % node.name)
+	if not params.has("lifetime"):
+		return _err("bad_params", "Missing 'lifetime'")
+	var v := float(params.get("lifetime"))
+	if v <= 0.0:
+		return _err("bad_params", "'lifetime' must be > 0")
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: set %s lifetime" % node.name)
+	ur.add_do_property(node, "lifetime", v)
+	ur.add_undo_property(node, "lifetime", node.get("lifetime"))
+	ur.commit_action()
+	return _ok({"path": _path_of(root, node), "lifetime": float(node.get("lifetime"))})
+
+
+func _particles_set_emitting(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	if not _is_particles(node):
+		return _err("bad_type", "%s is not a GPUParticles2D/3D" % node.name)
+	if not params.has("emitting"):
+		return _err("bad_params", "Missing 'emitting'")
+	var v := bool(params.get("emitting"))
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: set %s emitting" % node.name)
+	ur.add_do_property(node, "emitting", v)
+	ur.add_undo_property(node, "emitting", node.get("emitting"))
+	ur.commit_action()
+	return _ok({"path": _path_of(root, node), "emitting": bool(node.get("emitting"))})
+
+
+func _particles_set_texture(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	if not (node is GPUParticles2D):
+		return _err("unsupported", "%s has no texture: only GPUParticles2D has one, and GPUParticles3D draws meshes instead. Pass the path of a GPUParticles2D node." % node.name)
+	var tex_path := String(params.get("texture_path", ""))
+	if tex_path == "" or not ResourceLoader.exists(tex_path):
+		return _err("not_found", "Texture not found: %s" % tex_path)
+	var res = ResourceLoader.load(tex_path)
+	if not (res is Texture2D):
+		return _err("bad_type", "%s is not a Texture2D" % tex_path)
+	var tex := res as Texture2D
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: set %s texture" % node.name)
+	ur.add_do_property(node, "texture", tex)
+	ur.add_undo_property(node, "texture", node.get("texture"))
+	ur.commit_action()
+	return _ok({"path": _path_of(root, node), "texture_path": tex_path})
+
+
+# -------------------------------------------------------------- shaders ------
+# VFX: shaders. shader_create / shader_set_code write .gdshader resources to disk
+# (host-gated, file-writing). shadermaterial_* mutate the edited scene's node
+# material (undoable, ungated, node_* model). ShaderMaterial targets
+# CanvasItem.material (2D / Control) or GeometryInstance3D.material_override (3D);
+# other nodes degrade to a clear unsupported. Shader / ShaderMaterial /
+# set_shader_parameter + the shader_parameter/<name> property path probed live on
+# Godot 4.7.
+
+func _material_prop(node) -> String:
+	if node is CanvasItem:
+		return "material"
+	if node is GeometryInstance3D:
+		return "material_override"
+	return ""
+
+
+func _shader_create(params: Dictionary) -> Dictionary:
+	var to_path := String(params.get("to_path", ""))
+	if not to_path.begins_with("res://"):
+		return _err("bad_params", "'to_path' must be a res:// path")
+	var sh := Shader.new()
+	if params.has("code"):
+		sh.code = String(params.get("code"))
+	var saved := _commit_save(sh, to_path, params, SAVE_NEW)
+	if saved.has("error"):
+		return saved["error"]
+	return _ok({"created": to_path, "type": "Shader", "code_length": sh.code.length()}.merged(saved["fields"]))
+
+
+func _shader_set_code(params: Dictionary) -> Dictionary:
+	var path := String(params.get("path", ""))
+	if not ResourceLoader.exists(path):
+		return _err("not_found", "Shader not found: %s" % path)
+	if not params.has("code"):
+		return _err("bad_params", "Missing 'code'")
+	var res = ResourceLoader.load(path)
+	if not (res is Shader):
+		return _err("bad_type", "%s is not a Shader" % path)
+	var sh := res as Shader
+	sh.code = String(params.get("code"))
+	var saved := _commit_save(sh, path, params, SAVE_BACK)
+	if saved.has("error"):
+		return saved["error"]
+	return _ok({"path": path, "code_length": sh.code.length()})
+
+
+func _shadermaterial_create(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	var prop := _material_prop(node)
+	if prop == "":
+		return _err("unsupported", "%s has no material slot. Pass a node that has one: any CanvasItem exposes CanvasItem.material, any GeometryInstance3D exposes GeometryInstance3D.material_override." % node.name)
+	var mat := ShaderMaterial.new()
+	var shader_path := String(params.get("shader_path", ""))
+	if shader_path != "":
+		if not ResourceLoader.exists(shader_path):
+			return _err("not_found", "Shader not found: %s" % shader_path)
+		var sres = ResourceLoader.load(shader_path)
+		if not (sres is Shader):
+			return _err("bad_type", "%s is not a Shader" % shader_path)
+		mat.shader = sres as Shader
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: set %s shader material" % node.name)
+	ur.add_do_property(node, prop, mat)
+	ur.add_undo_property(node, prop, node.get(prop))
+	ur.add_do_reference(mat)
+	ur.commit_action()
+	return _ok({"path": _path_of(root, node), "target_property": prop, "type": node.get_class(), "shader_path": shader_path})
+
+
+func _shadermaterial_set_shader(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	var prop := _material_prop(node)
+	if prop == "":
+		return _err("unsupported", "%s has no material slot. Pass a node that has one: any CanvasItem exposes CanvasItem.material, any GeometryInstance3D exposes GeometryInstance3D.material_override." % node.name)
+	var cur = node.get(prop)
+	if not (cur is ShaderMaterial):
+		return _err("bad_type", "%s has no ShaderMaterial (create one first)" % node.name)
+	var shader_path := String(params.get("shader_path", ""))
+	if not ResourceLoader.exists(shader_path):
+		return _err("not_found", "Shader not found: %s" % shader_path)
+	var sres = ResourceLoader.load(shader_path)
+	if not (sres is Shader):
+		return _err("bad_type", "%s is not a Shader" % shader_path)
+	var mat := cur as ShaderMaterial
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: set %s shader" % node.name)
+	ur.add_do_property(mat, "shader", sres as Shader)
+	ur.add_undo_property(mat, "shader", mat.shader)
+	ur.commit_action()
+	return _ok({"path": _path_of(root, node), "shader_path": shader_path})
+
+
+func _shadermaterial_set_param(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	var prop := _material_prop(node)
+	if prop == "":
+		return _err("unsupported", "%s has no material slot. Pass a node that has one: any CanvasItem exposes CanvasItem.material, any GeometryInstance3D exposes GeometryInstance3D.material_override." % node.name)
+	var cur = node.get(prop)
+	if not (cur is ShaderMaterial):
+		return _err("bad_type", "%s has no ShaderMaterial (create one first)" % node.name)
+	var pname := String(params.get("param", ""))
+	if pname == "":
+		return _err("bad_params", "Missing 'param'")
+	var mat := cur as ShaderMaterial
+	var value: Variant = Codec.decode(params.get("value"))
+	var key := "shader_parameter/" + pname
+	var old_value = mat.get(key)
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: set %s shader param %s" % [node.name, pname])
+	ur.add_do_property(mat, key, value)
+	ur.add_undo_property(mat, key, old_value)
+	ur.commit_action()
+	return _ok({"path": _path_of(root, node), "param": pname, "value": Codec.encode(mat.get(key))})
+
+# ---------------------------------------------------------------- Group F batch 3 ----
+# Audio. Two models. audio_player_create / audio_set_stream mutate the edited scene
+# (AudioStreamPlayer / AudioStreamPlayer2D / AudioStreamPlayer3D), undoable via
+# EditorUndoRedoManager and ungated (the node_* model). The four bus tools drive the
+# global AudioServer (project-wide, not scene-undoable) and are gated host-side like
+# physics_set_gravity; audio_set_bus_layout writes a .tres, a file-writer too.
+# AudioServer bus API + player stream/autoplay/volume_db/bus props probed live on Godot 4.7.
+
+func _is_audio_player(node) -> bool:
+	return node is AudioStreamPlayer or node is AudioStreamPlayer2D or node is AudioStreamPlayer3D
+
+
+func _audio_player_create(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var parent := _resolve(root, String(params.get("parent_path", "")))
+	if parent == null:
+		return _err("bad_path", "Parent not found: %s" % params.get("parent_path", ""))
+	var dim := String(params.get("dim", "none"))
+	var node: Node
+	if dim == "2d":
+		node = AudioStreamPlayer2D.new()
+	elif dim == "3d":
+		node = AudioStreamPlayer3D.new()
+	else:
+		node = AudioStreamPlayer.new()
+	node.name = String(params.get("name", node.get_class()))
+	if params.has("autoplay"):
+		node.set("autoplay", bool(params.get("autoplay")))
+	if params.has("volume_db"):
+		node.set("volume_db", float(params.get("volume_db")))
+	if params.has("bus"):
+		node.set("bus", String(params.get("bus")))
+	var stream_path := String(params.get("stream_path", ""))
+	if stream_path != "":
+		if not ResourceLoader.exists(stream_path):
+			return _err("not_found", "Stream not found: %s" % stream_path)
+		var sres = ResourceLoader.load(stream_path)
+		if not (sres is AudioStream):
+			return _err("bad_type", "%s is not an AudioStream" % stream_path)
+		node.set("stream", sres as AudioStream)
+	var added := _commit_add(node, parent, root, "Breakpoint: add %s" % node.name)
+	added["type"] = node.get_class()
+	added["dim"] = dim
+	added["autoplay"] = bool(node.get("autoplay"))
+	added["volume_db"] = float(node.get("volume_db"))
+	added["bus"] = String(node.get("bus"))
+	added["stream_path"] = stream_path
+	return _ok(added)
+
+
+func _audio_set_stream(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	if not _is_audio_player(node):
+		return _err("bad_type", "%s is not an AudioStreamPlayer/2D/3D" % node.name)
+	var stream_path := String(params.get("stream_path", ""))
+	if stream_path == "" or not ResourceLoader.exists(stream_path):
+		return _err("not_found", "Stream not found: %s" % stream_path)
+	var res = ResourceLoader.load(stream_path)
+	if not (res is AudioStream):
+		return _err("bad_type", "%s is not an AudioStream" % stream_path)
+	var stream := res as AudioStream
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: set %s stream" % node.name)
+	ur.add_do_property(node, "stream", stream)
+	ur.add_undo_property(node, "stream", node.get("stream"))
+	ur.commit_action()
+	return _ok({"path": _path_of(root, node), "stream_path": stream_path})
+
+
+func _audio_bus_add(params: Dictionary) -> Dictionary:
+	var at := int(params.get("at_position", -1))
+	AudioServer.add_bus(at)
+	var count := AudioServer.get_bus_count()
+	var idx: int = (count - 1) if at < 0 or at >= count else at
+	if params.has("name"):
+		AudioServer.set_bus_name(idx, String(params.get("name")))
+	if params.has("send"):
+		AudioServer.set_bus_send(idx, String(params.get("send")))
+	return _ok({"index": idx, "name": String(AudioServer.get_bus_name(idx)), "send": String(AudioServer.get_bus_send(idx)), "count": AudioServer.get_bus_count()})
+
+
+func _audio_bus_add_effect(params: Dictionary) -> Dictionary:
+	var bus := String(params.get("bus", ""))
+	var idx: int = AudioServer.get_bus_index(bus)
+	if idx < 0:
+		return _err("not_found", "Bus not found: %s" % bus)
+	var cls := String(params.get("effect", ""))
+	if cls == "" or not ClassDB.can_instantiate(cls) or not ClassDB.is_parent_class(cls, "AudioEffect"):
+		return _err("bad_params", "'effect' must be an instantiable AudioEffect class: %s" % cls)
+	var fx = ClassDB.instantiate(cls)
+	if not (fx is AudioEffect):
+		return _err("bad_type", "%s is not an AudioEffect" % cls)
+	var at := int(params.get("at_position", -1))
+	AudioServer.add_bus_effect(idx, fx, at)
+	return _ok({"bus": bus, "bus_index": idx, "effect": cls, "effect_count": AudioServer.get_bus_effect_count(idx)})
+
+
+func _audio_bus_set_volume(params: Dictionary) -> Dictionary:
+	var bus := String(params.get("bus", ""))
+	var idx: int = AudioServer.get_bus_index(bus)
+	if idx < 0:
+		return _err("not_found", "Bus not found: %s" % bus)
+	if not params.has("volume_db"):
+		return _err("bad_params", "Missing 'volume_db'")
+	AudioServer.set_bus_volume_db(idx, float(params.get("volume_db")))
+	return _ok({"bus": bus, "bus_index": idx, "volume_db": AudioServer.get_bus_volume_db(idx)})
+
+
+func _audio_set_bus_layout(params: Dictionary) -> Dictionary:
+	var to_path := String(params.get("to_path", "res://default_bus_layout.tres"))
+	if not to_path.begins_with("res://"):
+		return _err("bad_params", "'to_path' must be a res:// path")
+	var layout = AudioServer.generate_bus_layout()
+	var saved := _commit_save(layout, to_path, params, SAVE_NEW)
+	if saved.has("error"):
+		return saved["error"]
+	return _ok({"saved": to_path, "bus_count": AudioServer.get_bus_count()}.merged(saved["fields"]))
+
+
+# ---------------------------------------------------------------- Group G: UI / control / theming ----
+# control_* + container_add_child mutate the edited scene (Control nodes), undoable via
+# EditorUndoRedoManager and ungated (the node_* model). theme_* author a Theme resource (or its
+# entries) on disk via ResourceSaver and are host-gated file-writers like resource_* / shader_create.
+# Control anchors / set_anchors_and_offsets_preset / size flags / theme and Theme.set_color /
+# set_font / set_stylebox / set_constant were probed live on Godot 4.7 before design.
+
+func _control_create(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var parent := _resolve(root, String(params.get("parent_path", "")))
+	if parent == null:
+		return _err("bad_path", "Parent not found: %s" % params.get("parent_path", ""))
+	var type := String(params.get("type", "Control"))
+	if not ClassDB.can_instantiate(type):
+		return _err("bad_type", "Cannot instantiate class: %s" % type)
+	if not ClassDB.is_parent_class(type, "Control"):
+		return _err("bad_type", "%s is not a Control subclass" % type)
+	var node: Node = ClassDB.instantiate(type)
+	node.name = String(params.get("name", type))
+	if params.has("text") and _has_property(node, "text"):
+		node.set("text", String(params.get("text")))
+	var added := _commit_add(node, parent, root, "Breakpoint: add %s" % node.name)
+	added["type"] = type
+	return _ok(added)
+
+
+func _container_add_child(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var parent := _resolve(root, String(params.get("container_path", "")))
+	if parent == null:
+		return _err("bad_path", "Container not found: %s" % params.get("container_path", ""))
+	if not (parent is Container):
+		return _err("bad_type", "%s is not a Container" % parent.name)
+	var type := String(params.get("type", "Control"))
+	if not ClassDB.can_instantiate(type):
+		return _err("bad_type", "Cannot instantiate class: %s" % type)
+	if not ClassDB.is_parent_class(type, "Control"):
+		return _err("bad_type", "%s is not a Control subclass" % type)
+	var node: Node = ClassDB.instantiate(type)
+	node.name = String(params.get("name", type))
+	var added := _commit_add(node, parent, root, "Breakpoint: add %s to container" % node.name)
+	added["type"] = type
+	added["container"] = _path_of(root, parent)
+	return _ok(added)
+
+
+func _control_set_anchors(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	if not (node is Control):
+		return _err("bad_type", "%s is not a Control" % node.name)
+	var ctrl := node as Control
+	var sides := {"left": "anchor_left", "top": "anchor_top", "right": "anchor_right", "bottom": "anchor_bottom"}
+	var changed := []
+	for k in sides:
+		if params.has(k):
+			changed.append(k)
+	if changed.is_empty():
+		return _err("bad_params", "Provide at least one of left/top/right/bottom")
+	var olds := {}
+	for k in changed:
+		olds[k] = ctrl.get(sides[k])
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: set %s anchors" % ctrl.name)
+	for k in changed:
+		var prop: String = sides[k]
+		ur.add_do_property(ctrl, prop, float(params.get(k)))
+		ur.add_undo_property(ctrl, prop, olds[k])
+	ur.commit_action()
+	return _ok({
+		"path": _path_of(root, ctrl),
+		"anchors": {
+			"left": ctrl.anchor_left,
+			"top": ctrl.anchor_top,
+			"right": ctrl.anchor_right,
+			"bottom": ctrl.anchor_bottom,
+		},
+	})
+
+
+func _control_set_layout_preset(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	if not (node is Control):
+		return _err("bad_type", "%s is not a Control" % node.name)
+	var ctrl := node as Control
+	var preset := _layout_preset(params.get("preset"))
+	if preset < 0:
+		return _err("bad_params", "Unknown layout preset: %s" % params.get("preset"))
+	var resize_mode := int(params.get("resize_mode", 0))
+	var margin := int(params.get("margin", 0))
+	var props := ["anchor_left", "anchor_top", "anchor_right", "anchor_bottom", "offset_left", "offset_top", "offset_right", "offset_bottom"]
+	var olds := {}
+	for p in props:
+		olds[p] = ctrl.get(p)
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: layout preset on %s" % ctrl.name)
+	ur.add_do_method(ctrl, "set_anchors_and_offsets_preset", preset, resize_mode, margin)
+	for p in props:
+		ur.add_undo_property(ctrl, p, olds[p])
+	ur.commit_action()
+	return _ok({"path": _path_of(root, ctrl), "preset": preset, "preset_name": _layout_preset_name(preset)})
+
+
+func _control_set_size_flags(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	if not (node is Control):
+		return _err("bad_type", "%s is not a Control" % node.name)
+	var ctrl := node as Control
+	if not (params.has("horizontal") or params.has("vertical") or params.has("stretch_ratio")):
+		return _err("bad_params", "Provide at least one of horizontal/vertical/stretch_ratio")
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: set %s size flags" % ctrl.name)
+	if params.has("horizontal"):
+		var h_old := ctrl.size_flags_horizontal
+		ur.add_do_property(ctrl, "size_flags_horizontal", int(params.get("horizontal")))
+		ur.add_undo_property(ctrl, "size_flags_horizontal", h_old)
+	if params.has("vertical"):
+		var v_old := ctrl.size_flags_vertical
+		ur.add_do_property(ctrl, "size_flags_vertical", int(params.get("vertical")))
+		ur.add_undo_property(ctrl, "size_flags_vertical", v_old)
+	if params.has("stretch_ratio"):
+		var r_old := ctrl.size_flags_stretch_ratio
+		ur.add_do_property(ctrl, "size_flags_stretch_ratio", float(params.get("stretch_ratio")))
+		ur.add_undo_property(ctrl, "size_flags_stretch_ratio", r_old)
+	ur.commit_action()
+	return _ok({"path": _path_of(root, ctrl), "horizontal": ctrl.size_flags_horizontal, "vertical": ctrl.size_flags_vertical, "stretch_ratio": ctrl.size_flags_stretch_ratio})
+
+
+func _control_set_theme(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	if not (node is Control):
+		return _err("bad_type", "%s is not a Control" % node.name)
+	var ctrl := node as Control
+	var theme_path := String(params.get("theme_path", ""))
+	var theme_res: Theme = null
+	if theme_path != "":
+		if not ResourceLoader.exists(theme_path):
+			return _err("not_found", "Theme not found: %s" % theme_path)
+		var res = ResourceLoader.load(theme_path)
+		if not (res is Theme):
+			return _err("bad_type", "%s is not a Theme" % theme_path)
+		theme_res = res as Theme
+	var old_theme = ctrl.get("theme")
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: set %s theme" % ctrl.name)
+	ur.add_do_property(ctrl, "theme", theme_res)
+	ur.add_undo_property(ctrl, "theme", old_theme)
+	if theme_res != null:
+		ur.add_do_reference(theme_res)
+	ur.commit_action()
+	return _ok({"path": _path_of(root, ctrl), "theme_path": theme_path})
+
+
+func _theme_create(params: Dictionary) -> Dictionary:
+	var to_path := String(params.get("to_path", ""))
+	if not to_path.begins_with("res://"):
+		return _err("bad_params", "'to_path' must be a res:// path")
+	var theme := Theme.new()
+	var saved := _commit_save(theme, to_path, params, SAVE_NEW)
+	if saved.has("error"):
+		return saved["error"]
+	return _ok({"created": to_path, "type": "Theme"}.merged(saved["fields"]))
+
+
+func _theme_set_color(params: Dictionary) -> Dictionary:
+	var path := String(params.get("path", ""))
+	var theme = _theme_load(path)
+	if theme == null:
+		return _err("not_found", "Theme not found or not a Theme: %s" % path)
+	var iname := String(params.get("name", ""))
+	var ttype := String(params.get("theme_type", ""))
+	if iname == "" or ttype == "":
+		return _err("bad_params", "Missing 'name' or 'theme_type'")
+	var col := _to_color(params.get("color"))
+	theme.set_color(iname, ttype, col)
+	var saved := _commit_save(theme, path, params, SAVE_BACK)
+	if saved.has("error"):
+		return saved["error"]
+	return _ok({"path": path, "name": iname, "theme_type": ttype, "color": [col.r, col.g, col.b, col.a]})
+
+
+func _theme_set_font(params: Dictionary) -> Dictionary:
+	var path := String(params.get("path", ""))
+	var theme = _theme_load(path)
+	if theme == null:
+		return _err("not_found", "Theme not found or not a Theme: %s" % path)
+	var iname := String(params.get("name", ""))
+	var ttype := String(params.get("theme_type", ""))
+	if iname == "" or ttype == "":
+		return _err("bad_params", "Missing 'name' or 'theme_type'")
+	var font_path := String(params.get("font_path", ""))
+	if not ResourceLoader.exists(font_path):
+		return _err("not_found", "Font not found: %s" % font_path)
+	var fres = ResourceLoader.load(font_path)
+	if not (fres is Font):
+		return _err("bad_type", "%s is not a Font" % font_path)
+	theme.set_font(iname, ttype, fres as Font)
+	var saved := _commit_save(theme, path, params, SAVE_BACK)
+	if saved.has("error"):
+		return saved["error"]
+	return _ok({"path": path, "name": iname, "theme_type": ttype, "font_path": font_path})
+
+
+func _theme_set_stylebox(params: Dictionary) -> Dictionary:
+	var path := String(params.get("path", ""))
+	var theme = _theme_load(path)
+	if theme == null:
+		return _err("not_found", "Theme not found or not a Theme: %s" % path)
+	var iname := String(params.get("name", ""))
+	var ttype := String(params.get("theme_type", ""))
+	if iname == "" or ttype == "":
+		return _err("bad_params", "Missing 'name' or 'theme_type'")
+	var sb_path := String(params.get("stylebox_path", ""))
+	if not ResourceLoader.exists(sb_path):
+		return _err("not_found", "StyleBox not found: %s" % sb_path)
+	var sres = ResourceLoader.load(sb_path)
+	if not (sres is StyleBox):
+		return _err("bad_type", "%s is not a StyleBox" % sb_path)
+	theme.set_stylebox(iname, ttype, sres as StyleBox)
+	var saved := _commit_save(theme, path, params, SAVE_BACK)
+	if saved.has("error"):
+		return saved["error"]
+	return _ok({"path": path, "name": iname, "theme_type": ttype, "stylebox_path": sb_path})
+
+
+func _theme_set_constant(params: Dictionary) -> Dictionary:
+	var path := String(params.get("path", ""))
+	var theme = _theme_load(path)
+	if theme == null:
+		return _err("not_found", "Theme not found or not a Theme: %s" % path)
+	var iname := String(params.get("name", ""))
+	var ttype := String(params.get("theme_type", ""))
+	if iname == "" or ttype == "":
+		return _err("bad_params", "Missing 'name' or 'theme_type'")
+	if not params.has("value"):
+		return _err("bad_params", "Missing 'value'")
+	var val := int(params.get("value"))
+	theme.set_constant(iname, ttype, val)
+	var saved := _commit_save(theme, path, params, SAVE_BACK)
+	if saved.has("error"):
+		return saved["error"]
+	return _ok({"path": path, "name": iname, "theme_type": ttype, "value": val})
+
+
+func _theme_load(path: String):
+	if not ResourceLoader.exists(path):
+		return null
+	var res = ResourceLoader.load(path)
+	if res is Theme:
+		return res
+	return null
+
+
+func _has_property(obj: Object, prop: String) -> bool:
+	for p in obj.get_property_list():
+		if String(p.get("name", "")) == prop:
+			return true
+	return false
+
+
+func _layout_preset_names() -> Dictionary:
+	return {
+		"top_left": Control.PRESET_TOP_LEFT,
+		"top_right": Control.PRESET_TOP_RIGHT,
+		"bottom_left": Control.PRESET_BOTTOM_LEFT,
+		"bottom_right": Control.PRESET_BOTTOM_RIGHT,
+		"center_left": Control.PRESET_CENTER_LEFT,
+		"center_top": Control.PRESET_CENTER_TOP,
+		"center_right": Control.PRESET_CENTER_RIGHT,
+		"center_bottom": Control.PRESET_CENTER_BOTTOM,
+		"center": Control.PRESET_CENTER,
+		"left_wide": Control.PRESET_LEFT_WIDE,
+		"top_wide": Control.PRESET_TOP_WIDE,
+		"right_wide": Control.PRESET_RIGHT_WIDE,
+		"bottom_wide": Control.PRESET_BOTTOM_WIDE,
+		"vcenter_wide": Control.PRESET_VCENTER_WIDE,
+		"hcenter_wide": Control.PRESET_HCENTER_WIDE,
+		"full_rect": Control.PRESET_FULL_RECT,
+	}
+
+
+func _layout_preset(v) -> int:
+	if v is String:
+		var names := _layout_preset_names()
+		var key := String(v).to_lower()
+		if names.has(key):
+			return int(names[key])
+		return -1
+	if v is float or v is int:
+		var iv := int(v)
+		if iv >= 0 and iv <= 15:
+			return iv
+		return -1
+	return -1
+
+
+func _layout_preset_name(preset: int) -> String:
+	var names := _layout_preset_names()
+	for k in names:
+		if int(names[k]) == preset:
+			return k
+	return str(preset)
+
+
+# ---------------------------------------------------------------- Group H: 3D & navigation ----
+# meshinstance / mesh / light / camera / csg / navregion / navagent tools mutate the edited scene
+# (3D nodes), undoable via EditorUndoRedoManager and ungated (the node_* model). primitive_mesh /
+# environment author a resource on disk via ResourceSaver and are host-gated file-writers like
+# resource_* / theme_create. Mesh / Light3D / Camera3D / CSG / NavigationRegion3D /
+# NavigationAgent3D and the PrimitiveMesh / Environment / Sky APIs were probed live on Godot 4.7.
+
+func _meshinstance_create(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var parent := _resolve(root, String(params.get("parent_path", "")))
+	if parent == null:
+		return _err("bad_path", "Parent not found: %s" % params.get("parent_path", ""))
+	var mesh_path := String(params.get("mesh_path", ""))
+	var mesh_res: Mesh = null
+	if mesh_path != "":
+		if not ResourceLoader.exists(mesh_path):
+			return _err("not_found", "Mesh not found: %s" % mesh_path)
+		var res = ResourceLoader.load(mesh_path)
+		if not (res is Mesh):
+			return _err("bad_type", "%s is not a Mesh" % mesh_path)
+		mesh_res = res as Mesh
+	var node := MeshInstance3D.new()
+	node.name = String(params.get("name", "MeshInstance3D"))
+	if mesh_res != null:
+		node.mesh = mesh_res
+	var added := _commit_add(node, parent, root, "Breakpoint: add %s" % node.name)
+	added["type"] = "MeshInstance3D"
+	added["mesh_path"] = mesh_path
+	return _ok(added)
+
+
+func _mesh_set_surface_material(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	if not (node is MeshInstance3D):
+		return _err("bad_type", "%s is not a MeshInstance3D" % node.name)
+	var mi := node as MeshInstance3D
+	var material_path := String(params.get("material_path", ""))
+	if material_path == "":
+		return _err("bad_params", "Missing 'material_path'")
+	if not ResourceLoader.exists(material_path):
+		return _err("not_found", "Material not found: %s" % material_path)
+	var mres = ResourceLoader.load(material_path)
+	if not (mres is Material):
+		return _err("bad_type", "%s is not a Material" % material_path)
+	var mat := mres as Material
+	var surface := int(params.get("surface", -1))
+	if surface >= 0:
+		var count := mi.get_surface_override_material_count()
+		if surface >= count:
+			return _err("bad_params", "surface %d out of range (0..%d)" % [surface, count - 1])
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: set %s material" % mi.name)
+	if surface < 0:
+		var old_mat = mi.material_override
+		ur.add_do_property(mi, "material_override", mat)
+		ur.add_undo_property(mi, "material_override", old_mat)
+	else:
+		var old_sm = mi.get_surface_override_material(surface)
+		ur.add_do_method(mi, "set_surface_override_material", surface, mat)
+		ur.add_undo_method(mi, "set_surface_override_material", surface, old_sm)
+	ur.add_do_reference(mat)
+	ur.commit_action()
+	return _ok({"path": _path_of(root, mi), "material_path": material_path, "surface": surface})
+
+
+func _primitive_mesh_create(params: Dictionary) -> Dictionary:
+	var to_path := String(params.get("to_path", ""))
+	if not to_path.begins_with("res://"):
+		return _err("bad_params", "'to_path' must be a res:// path")
+	var shape := String(params.get("shape", "box")).to_lower()
+	var classes := {"box": "BoxMesh", "sphere": "SphereMesh", "cylinder": "CylinderMesh", "plane": "PlaneMesh", "capsule": "CapsuleMesh", "prism": "PrismMesh", "torus": "TorusMesh", "quad": "QuadMesh"}
+	if not classes.has(shape):
+		return _err("bad_params", "Unknown primitive shape: %s (box/sphere/cylinder/plane/capsule/prism/torus/quad)" % shape)
+	var cls := String(classes[shape])
+	var mesh: Mesh = ClassDB.instantiate(cls)
+	if mesh == null:
+		return _err("create_failed", "Could not instantiate %s" % cls)
+	var saved := _commit_save(mesh, to_path, params, SAVE_NEW)
+	if saved.has("error"):
+		return saved["error"]
+	return _ok({"created": to_path, "type": cls, "shape": shape}.merged(saved["fields"]))
+
+
+func _light_create(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var parent := _resolve(root, String(params.get("parent_path", "")))
+	if parent == null:
+		return _err("bad_path", "Parent not found: %s" % params.get("parent_path", ""))
+	var kind := String(params.get("kind", "omni")).to_lower()
+	var classes := {"dir": "DirectionalLight3D", "directional": "DirectionalLight3D", "omni": "OmniLight3D", "spot": "SpotLight3D"}
+	if not classes.has(kind):
+		return _err("bad_params", "Unknown light kind: %s (use dir/omni/spot)" % kind)
+	var cls := String(classes[kind])
+	var node: Node = ClassDB.instantiate(cls)
+	node.name = String(params.get("name", cls))
+	var added := _commit_add(node, parent, root, "Breakpoint: add %s" % node.name)
+	added["type"] = cls
+	added["kind"] = kind
+	return _ok(added)
+
+
+func _camera_create(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var parent := _resolve(root, String(params.get("parent_path", "")))
+	if parent == null:
+		return _err("bad_path", "Parent not found: %s" % params.get("parent_path", ""))
+	var node := Camera3D.new()
+	node.name = String(params.get("name", "Camera3D"))
+	if bool(params.get("current", false)):
+		node.current = true
+	var added := _commit_add(node, parent, root, "Breakpoint: add %s" % node.name)
+	added["type"] = "Camera3D"
+	added["current"] = node.current
+	return _ok(added)
+
+
+func _environment_create(params: Dictionary) -> Dictionary:
+	var to_path := String(params.get("to_path", ""))
+	if not to_path.begins_with("res://"):
+		return _err("bad_params", "'to_path' must be a res:// path")
+	var bg := String(params.get("background", "clear_color")).to_lower()
+	var modes := {"clear_color": Environment.BG_CLEAR_COLOR, "color": Environment.BG_COLOR, "sky": Environment.BG_SKY, "canvas": Environment.BG_CANVAS}
+	if not modes.has(bg):
+		return _err("bad_params", "Unknown background: %s (clear_color/color/sky/canvas)" % bg)
+	var env := Environment.new()
+	env.background_mode = int(modes[bg])
+	if params.has("ambient_color"):
+		env.ambient_light_color = _to_color(params.get("ambient_color"))
+	var saved := _commit_save(env, to_path, params, SAVE_NEW)
+	if saved.has("error"):
+		return saved["error"]
+	return _ok({"created": to_path, "type": "Environment", "background_mode": bg}.merged(saved["fields"]))
+
+
+func _environment_set_sky(params: Dictionary) -> Dictionary:
+	var path := String(params.get("path", ""))
+	if not ResourceLoader.exists(path):
+		return _err("not_found", "Environment not found: %s" % path)
+	var res = ResourceLoader.load(path)
+	if not (res is Environment):
+		return _err("bad_type", "%s is not an Environment" % path)
+	var env := res as Environment
+	var mat_kind := String(params.get("sky_material", "procedural")).to_lower()
+	var sky := Sky.new()
+	match mat_kind:
+		"procedural":
+			sky.sky_material = ProceduralSkyMaterial.new()
+		"physical":
+			sky.sky_material = PhysicalSkyMaterial.new()
+		"panorama":
+			sky.sky_material = PanoramaSkyMaterial.new()
+		_:
+			return _err("bad_params", "Unknown sky_material: %s (procedural/physical/panorama)" % mat_kind)
+	env.sky = sky
+	env.background_mode = Environment.BG_SKY
+	var saved := _commit_save(env, path, params, SAVE_BACK)
+	if saved.has("error"):
+		return saved["error"]
+	return _ok({"path": path, "background_mode": "sky", "sky_material": mat_kind})
+
+
+func _csg_create(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var parent := _resolve(root, String(params.get("parent_path", "")))
+	if parent == null:
+		return _err("bad_path", "Parent not found: %s" % params.get("parent_path", ""))
+	var shape := String(params.get("shape", "box")).to_lower()
+	var classes := {"box": "CSGBox3D", "sphere": "CSGSphere3D", "cylinder": "CSGCylinder3D", "torus": "CSGTorus3D", "polygon": "CSGPolygon3D", "mesh": "CSGMesh3D", "combiner": "CSGCombiner3D"}
+	if not classes.has(shape):
+		return _err("bad_params", "Unknown CSG shape: %s (box/sphere/cylinder/torus/polygon/mesh/combiner)" % shape)
+	var cls := String(classes[shape])
+	if not ClassDB.can_instantiate(cls):
+		return _err("bad_type", "Cannot instantiate class: %s" % cls)
+	var node: Node = ClassDB.instantiate(cls)
+	node.name = String(params.get("name", cls))
+	var added := _commit_add(node, parent, root, "Breakpoint: add %s" % node.name)
+	added["type"] = cls
+	added["shape"] = shape
+	return _ok(added)
+
+
+func _navregion_create(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var parent := _resolve(root, String(params.get("parent_path", "")))
+	if parent == null:
+		return _err("bad_path", "Parent not found: %s" % params.get("parent_path", ""))
+	var node := NavigationRegion3D.new()
+	node.name = String(params.get("name", "NavigationRegion3D"))
+	if bool(params.get("with_navmesh", true)):
+		node.navigation_mesh = NavigationMesh.new()
+	var added := _commit_add(node, parent, root, "Breakpoint: add %s" % node.name)
+	added["type"] = "NavigationRegion3D"
+	added["has_navmesh"] = node.navigation_mesh != null
+	return _ok(added)
+
+
+func _navagent_configure(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var parent := _resolve(root, String(params.get("parent_path", "")))
+	if parent == null:
+		return _err("bad_path", "Parent not found: %s" % params.get("parent_path", ""))
+	var node := NavigationAgent3D.new()
+	node.name = String(params.get("name", "NavigationAgent3D"))
+	if params.has("radius"):
+		node.radius = float(params.get("radius"))
+	if params.has("height"):
+		node.height = float(params.get("height"))
+	if params.has("max_speed"):
+		node.max_speed = float(params.get("max_speed"))
+	if params.has("path_desired_distance"):
+		node.path_desired_distance = float(params.get("path_desired_distance"))
+	if params.has("target_desired_distance"):
+		node.target_desired_distance = float(params.get("target_desired_distance"))
+	if params.has("avoidance_enabled"):
+		node.avoidance_enabled = bool(params.get("avoidance_enabled"))
+	var added := _commit_add(node, parent, root, "Breakpoint: add %s" % node.name)
+	added["type"] = "NavigationAgent3D"
+	added["config"] = {"radius": node.radius, "height": node.height, "max_speed": node.max_speed, "path_desired_distance": node.path_desired_distance, "target_desired_distance": node.target_desired_distance, "avoidance_enabled": node.avoidance_enabled}
+	return _ok(added)
+
+
+# ------------------------------------------------ Group I: input/config/testing ----
+
+func _keycode_of(v) -> int:
+	if v is String:
+		return OS.find_keycode_from_string(String(v))
+	return int(v)
+
+
+func _make_input_event(spec: Dictionary) -> InputEvent:
+	var t := String(spec.get("type", "")).to_lower()
+	match t:
+		"key":
+			var ek := InputEventKey.new()
+			if spec.has("physical_keycode"):
+				ek.physical_keycode = _keycode_of(spec.get("physical_keycode"))
+			else:
+				ek.keycode = _keycode_of(spec.get("keycode"))
+			return ek
+		"mouse_button":
+			var emb := InputEventMouseButton.new()
+			emb.button_index = int(spec.get("button_index", 1))
+			return emb
+		"joy_button":
+			var ejb := InputEventJoypadButton.new()
+			ejb.button_index = int(spec.get("button_index", 0))
+			return ejb
+		"joy_motion":
+			var ejm := InputEventJoypadMotion.new()
+			ejm.axis = int(spec.get("axis", 0))
+			ejm.axis_value = float(spec.get("axis_value", 1.0))
+			return ejm
+	return null
+
+
+func _inputmap_add_action(params: Dictionary) -> Dictionary:
+	var aname := String(params.get("name", ""))
+	if aname == "":
+		return _err("bad_params", "Missing 'name'")
+	var key := "input/" + aname
+	var deadzone := float(params.get("deadzone", 0.5))
+	ProjectSettings.set_setting(key, {"deadzone": deadzone, "events": []})
+	var saved := false
+	if bool(params.get("save", false)):
+		var e := ProjectSettings.save()
+		if e != OK:
+			return _err("save_failed", "ProjectSettings.save() returned %d" % e)
+		saved = true
+	return _ok({"action": aname, "deadzone": deadzone, "saved": saved})
+
+
+func _inputmap_add_event(params: Dictionary) -> Dictionary:
+	var aname := String(params.get("name", ""))
+	if aname == "":
+		return _err("bad_params", "Missing 'name'")
+	var key := "input/" + aname
+	if not ProjectSettings.has_setting(key):
+		return _err("not_found", "Input action not found: %s" % aname)
+	var spec = params.get("event")
+	if not (spec is Dictionary):
+		return _err("bad_params", "Missing or invalid 'event' object")
+	var ev := _make_input_event(spec)
+	if ev == null:
+		return _err("bad_params", "Unsupported event (use type key/mouse_button/joy_button/joy_motion)")
+	var action = ProjectSettings.get_setting(key)
+	if not (action is Dictionary):
+		return _err("bad_type", "Input action %s is malformed" % aname)
+	var events: Array = action.get("events", [])
+	events.append(ev)
+	action["events"] = events
+	ProjectSettings.set_setting(key, action)
+	var saved := false
+	if bool(params.get("save", false)):
+		var e := ProjectSettings.save()
+		if e != OK:
+			return _err("save_failed", "ProjectSettings.save() returned %d" % e)
+		saved = true
+	return _ok({"action": aname, "event_count": events.size(), "event_class": ev.get_class(), "saved": saved})
+
+
+func _inputmap_list(_params: Dictionary) -> Dictionary:
+	var actions: Array = []
+	for prop in ProjectSettings.get_property_list():
+		var pn := String(prop.get("name", ""))
+		if not pn.begins_with("input/"):
+			continue
+		var an := pn.substr(6)
+		if an == "":
+			continue
+		var action = ProjectSettings.get_setting(pn)
+		var deadzone := 0.5
+		var evlist: Array = []
+		if action is Dictionary:
+			deadzone = float(action.get("deadzone", 0.5))
+			for ev in action.get("events", []):
+				if ev is InputEvent:
+					evlist.append({"class": ev.get_class(), "text": ev.as_text()})
+				else:
+					evlist.append({"class": "unknown", "text": str(ev)})
+		actions.append({"name": an, "deadzone": deadzone, "events": evlist})
+	return _ok({"count": actions.size(), "actions": actions})
+
+
+func _inputmap_erase_action(params: Dictionary) -> Dictionary:
+	var aname := String(params.get("name", ""))
+	if aname == "":
+		return _err("bad_params", "Missing 'name'")
+	var key := "input/" + aname
+	var existed := ProjectSettings.has_setting(key)
+	if existed:
+		ProjectSettings.set_setting(key, null)
+	var saved := false
+	if bool(params.get("save", false)):
+		var e := ProjectSettings.save()
+		if e != OK:
+			return _err("save_failed", "ProjectSettings.save() returned %d" % e)
+		saved = true
+	return _ok({"erased": existed, "action": aname, "saved": saved})
+
+
+func _project_add_autoload(params: Dictionary) -> Dictionary:
+	var aname := String(params.get("name", ""))
+	var apath := String(params.get("path", ""))
+	if aname == "" or apath == "":
+		return _err("bad_params", "Missing 'name' or 'path'")
+	if not (ResourceLoader.exists(apath) or FileAccess.file_exists(apath)):
+		return _err("not_found", "Autoload path not found: %s" % apath)
+	var enabled := bool(params.get("enabled", true))
+	var value := ("*" if enabled else "") + apath
+	ProjectSettings.set_setting("autoload/" + aname, value)
+	var saved := false
+	if bool(params.get("save", false)):
+		var e := ProjectSettings.save()
+		if e != OK:
+			return _err("save_failed", "ProjectSettings.save() returned %d" % e)
+		saved = true
+	return _ok({"autoload": aname, "path": apath, "enabled": enabled, "saved": saved})
+
+
+func _project_remove_autoload(params: Dictionary) -> Dictionary:
+	var aname := String(params.get("name", ""))
+	if aname == "":
+		return _err("bad_params", "Missing 'name'")
+	var key := "autoload/" + aname
+	var existed := ProjectSettings.has_setting(key)
+	if existed:
+		ProjectSettings.set_setting(key, null)
+	var saved := false
+	if bool(params.get("save", false)):
+		var e := ProjectSettings.save()
+		if e != OK:
+			return _err("save_failed", "ProjectSettings.save() returned %d" % e)
+		saved = true
+	return _ok({"removed": existed, "autoload": aname, "saved": saved})
+
+
+func _project_add_export_preset(params: Dictionary) -> Dictionary:
+	var pname := String(params.get("name", ""))
+	var platform := String(params.get("platform", ""))
+	if pname == "" or platform == "":
+		return _err("bad_params", "Missing 'name' or 'platform'")
+	var cfg_path := "res://export_presets.cfg"
+	var cfg := ConfigFile.new()
+	cfg.load(cfg_path)
+	var idx := 0
+	while cfg.has_section("preset." + str(idx)):
+		idx += 1
+	var section := "preset." + str(idx)
+	cfg.set_value(section, "name", pname)
+	cfg.set_value(section, "platform", platform)
+	cfg.set_value(section, "runnable", bool(params.get("runnable", true)))
+	cfg.set_value(section, "dedicated_server", false)
+	cfg.set_value(section, "custom_features", "")
+	cfg.set_value(section, "export_filter", "all_resources")
+	cfg.set_value(section, "include_filter", "")
+	cfg.set_value(section, "exclude_filter", "")
+	cfg.set_value(section, "export_path", String(params.get("export_path", "")))
+	cfg.set_value(section, "encryption_include_filters", "")
+	cfg.set_value(section, "encryption_exclude_filters", "")
+	cfg.set_value(section, "encrypt_pck", false)
+	cfg.set_value(section, "encrypt_directory", false)
+	cfg.set_value(section + ".options", "custom_template/debug", "")
+	cfg.set_value(section + ".options", "custom_template/release", "")
+	var e := cfg.save(cfg_path)
+	if e != OK:
+		return _err("save_failed", "ConfigFile.save() returned %d" % e)
+	return _ok({"preset": pname, "platform": platform, "index": idx, "path": cfg_path})
+
+
+func _project_set_main_scene(params: Dictionary) -> Dictionary:
+	var spath := String(params.get("path", ""))
+	if spath == "":
+		return _err("bad_params", "Missing 'path'")
+	if not ResourceLoader.exists(spath):
+		return _err("not_found", "Scene not found: %s" % spath)
+	if not (spath.ends_with(".tscn") or spath.ends_with(".scn")):
+		return _err("bad_params", "Main scene must be a .tscn/.scn: %s" % spath)
+	ProjectSettings.set_setting("application/run/main_scene", spath)
+	var saved := false
+	if bool(params.get("save", false)):
+		var e := ProjectSettings.save()
+		if e != OK:
+			return _err("save_failed", "ProjectSettings.save() returned %d" % e)
+		saved = true
+	return _ok({"main_scene": spath, "saved": saved})
+
+
+func _project_list_settings(params: Dictionary) -> Dictionary:
+	var prefix := String(params.get("prefix", ""))
+	var out: Array = []
+	for prop in ProjectSettings.get_property_list():
+		var pn := String(prop.get("name", ""))
+		if pn == "":
+			continue
+		if prefix != "" and not pn.begins_with(prefix):
+			continue
+		if not ProjectSettings.has_setting(pn):
+			continue
+		out.append({"name": pn, "value": Codec.encode(ProjectSettings.get_setting(pn))})
+	return _ok({"prefix": prefix, "count": out.size(), "settings": out})
+
+
+func _editorsettings_get_set(params: Dictionary) -> Dictionary:
+	var sname := String(params.get("name", ""))
+	if sname == "":
+		return _err("bad_params", "Missing 'name'")
+	var es := EditorInterface.get_editor_settings()
+	if es == null:
+		return _err("unsupported", "EditorSettings unavailable")
+	if params.has("value"):
+		es.set_setting(sname, Codec.decode(params.get("value")))
+		return _ok({"name": sname, "value": Codec.encode(es.get_setting(sname)), "mode": "set"})
+	if not es.has_setting(sname):
+		return _err("not_found", "Editor setting not found: %s" % sname)
+	return _ok({"name": sname, "value": Codec.encode(es.get_setting(sname)), "mode": "get"})
+
+
+func _test_detect(_params: Dictionary) -> Dictionary:
+	var frameworks := [
+		{"name": "gut", "dir": "res://addons/gut", "cfg": "res://addons/gut/plugin.cfg"},
+		{"name": "gdunit4", "dir": "res://addons/gdUnit4", "cfg": "res://addons/gdUnit4/plugin.cfg"},
+	]
+	for fw in frameworks:
+		if DirAccess.dir_exists_absolute(fw["dir"]):
+			var version := ""
+			var cfg := ConfigFile.new()
+			if cfg.load(fw["cfg"]) == OK:
+				version = String(cfg.get_value("plugin", "version", ""))
+			return _ok({"framework": fw["name"], "path": fw["dir"], "version": version})
+	return _ok({"framework": "none", "path": "", "version": ""})
+
+
+func _is_test_script(fname: String) -> bool:
+	if not fname.ends_with(".gd"):
+		return false
+	return fname.begins_with("test_") or fname.ends_with("_test.gd")
+
+
+func _collect_tests(dir_path: String, out: Array) -> void:
+	var d := DirAccess.open(dir_path)
+	if d == null:
+		return
+	d.list_dir_begin()
+	var entry := d.get_next()
+	while entry != "":
+		if entry != "." and entry != "..":
+			var full := dir_path.path_join(entry)
+			if d.current_is_dir():
+				_collect_tests(full, out)
+			elif _is_test_script(entry):
+				out.append(full)
+		entry = d.get_next()
+	d.list_dir_end()
+
+
+func _test_list(params: Dictionary) -> Dictionary:
+	var dir_path := String(params.get("dir", "res://test"))
+	var tests: Array = []
+	if DirAccess.dir_exists_absolute(dir_path):
+		_collect_tests(dir_path, tests)
+	return _ok({"dir": dir_path, "count": tests.size(), "tests": tests})
+
+
+# ------------------------------------------------ Group M: netcode scaffolding ----
+# Node authoring (undoable, EditorUndoRedoManager) for Godot 4's built-in
+# high-level multiplayer, plus a shared GDScript writer for the host-built codegen
+# tools. We host nothing — these only add nodes / scripts / config to the project.
+
+
+func _mp_add_spawner(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var parent := _resolve(root, String(params.get("parent_path", "")))
+	if parent == null:
+		return _err("bad_path", "Parent not found: %s" % params.get("parent_path", ""))
+	var spawner := MultiplayerSpawner.new()
+	spawner.name = String(params.get("name", "MultiplayerSpawner"))
+	var spawn_path_str := String(params.get("spawn_path", ""))
+	if spawn_path_str != "":
+		spawner.spawn_path = NodePath(spawn_path_str)
+	var added_scenes: Array = []
+	for s in params.get("spawnable_scenes", []):
+		var sp := String(s)
+		if sp.begins_with("res://"):
+			spawner.add_spawnable_scene(sp)
+			added_scenes.append(sp)
+	var added := _commit_add(spawner, parent, root, "Breakpoint: add %s" % spawner.name)
+	added["type"] = "MultiplayerSpawner"
+	added["spawn_path"] = String(spawner.spawn_path)
+	added["spawnable_scenes"] = added_scenes
+	return _ok(added)
+
+
+func _mp_add_synchronizer(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var parent := _resolve(root, String(params.get("parent_path", "")))
+	if parent == null:
+		return _err("bad_path", "Parent not found: %s" % params.get("parent_path", ""))
+	var sync := MultiplayerSynchronizer.new()
+	sync.name = String(params.get("name", "MultiplayerSynchronizer"))
+	var root_path_str := String(params.get("root_path", ""))
+	if root_path_str != "":
+		sync.root_path = NodePath(root_path_str)
+	var mode_str := String(params.get("replication_mode", "always"))
+	var mode := SceneReplicationConfig.REPLICATION_MODE_ALWAYS
+	if mode_str == "on_change":
+		mode = SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE
+	elif mode_str == "never":
+		mode = SceneReplicationConfig.REPLICATION_MODE_NEVER
+	var added_props: Array = []
+	var props: Array = params.get("properties", [])
+	if props.size() > 0:
+		var cfg := SceneReplicationConfig.new()
+		for p in props:
+			var np := NodePath(String(p))
+			cfg.add_property(np)
+			cfg.property_set_replication_mode(np, mode)
+			added_props.append(String(p))
+		sync.replication_config = cfg
+	var added := _commit_add(sync, parent, root, "Breakpoint: add %s" % sync.name)
+	added["type"] = "MultiplayerSynchronizer"
+	added["root_path"] = String(sync.root_path)
+	added["properties"] = added_props
+	return _ok(added)
+
+
+func _mp_set_authority(params: Dictionary) -> Dictionary:
+	var root := _edited_root()
+	if root == null:
+		return _err("no_scene", "No scene is open")
+	var node := _resolve(root, String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	var peer_id := int(params.get("peer_id", 1))
+	var recursive := bool(params.get("recursive", true))
+	var previous := node.get_multiplayer_authority()
+	var ur := _plugin.get_undo_redo()
+	ur.create_action("Breakpoint: set authority %s -> %d" % [node.name, peer_id])
+	ur.add_do_method(node, "set_multiplayer_authority", peer_id, recursive)
+	ur.add_undo_method(node, "set_multiplayer_authority", previous, recursive)
+	ur.commit_action()
+	return _ok({"path": _path_of(root, node), "peer_id": peer_id, "previous": previous, "recursive": recursive})
+
+
+## Write a host-built GDScript to a res:// .gd path through the editor's FileAccess
+## and rescan, so the codegen tools (enet/webrtc peer, @rpc wiring, lobby) land a
+## file the editor immediately sees. `require_class` feature-detects (WebRTC): an
+## absent class returns status:"unsupported" with nothing written.
+func _mp_write_script(params: Dictionary) -> Dictionary:
+	var to_path := String(params.get("to_path", ""))
+	if not to_path.begins_with("res://") or not to_path.ends_with(".gd"):
+		return _err("bad_params", "'to_path' must be a res:// .gd path")
+	var require_class := String(params.get("require_class", ""))
+	if require_class != "" and not ClassDB.can_instantiate(require_class):
+		return _ok({"status": "unsupported", "path": null, "required_class": require_class})
+	var overwrite := bool(params.get("overwrite", false))
+	var existed := FileAccess.file_exists(to_path)
+	if existed and not overwrite:
+		return _err("exists", "File already exists (pass overwrite): %s" % to_path)
+	var base_dir := to_path.get_base_dir()
+	if base_dir != "" and base_dir != "res://" and not DirAccess.dir_exists_absolute(base_dir):
+		DirAccess.make_dir_recursive_absolute(base_dir)
+	var content := String(params.get("content", ""))
+	var f := FileAccess.open(to_path, FileAccess.WRITE)
+	if f == null:
+		return _err("write_failed", "Could not open %s for writing (error %d)" % [to_path, FileAccess.get_open_error()])
+	f.store_string(content)
+	f.close()
+	var efs := EditorInterface.get_resource_filesystem()
+	efs.update_file(to_path)
+	efs.scan()
+	# 🆕 284 — `replaced` JOINS `created`, IT DOES NOT REPLACE IT. This reply has carried
+	# `created: false` since the scaffold family was built, which is a fifth spelling of
+	# the one question 284 unified — and callers branch on it, so it stays. What is added
+	# is the field every other destination-writing tool now answers with, present only
+	# when it happened, so one convention covers the whole surface.
+	var out := {"status": "written", "path": to_path, "bytes": content.to_utf8_buffer().size(), "created": not existed}
+	if existed:
+		out["replaced"] = true
+	return _ok(out)
+
+
+## Detect which known game-backend SDKs are installed in this project. Each is
+## matched by any of: an autoload of a known name, a known addon directory under
+## res://addons, or a known global class_name. Read-only — the backend_* / *_scaffold
+## codegen tools feature-detect off this so they degrade ("install <SDK> first")
+## instead of generating a dead call. We host nothing; we only wire the installed SDK.
+func _backend_detect(_params: Dictionary) -> Dictionary:
+	# sdk id -> { autoloads: [names], addon: res://path, classes: [class_names] }
+	var known := {
+		"silentwolf": {"autoloads": ["SilentWolf"], "addon": "res://addons/silent_wolf", "classes": []},
+		"nakama": {"autoloads": ["Nakama"], "addon": "res://addons/com.heroiclabs.nakama", "classes": ["Nakama"]},
+		"playfab": {"autoloads": ["PlayFab", "PlayFabManager"], "addon": "res://addons/godot-playfab", "classes": ["PlayFabManager"]},
+		"photon": {"autoloads": ["Photon"], "addon": "res://addons/photon", "classes": []},
+	}
+	# Gather the project's registered global class names (guarded — older builds).
+	var global_classes := {}
+	if ProjectSettings.has_method("get_global_class_list"):
+		for gc in ProjectSettings.get_global_class_list():
+			global_classes[String(gc.get("class", ""))] = true
+	var backends: Array = []
+	var detected: Array = []
+	for sdk in known.keys():
+		var sig: Dictionary = known[sdk]
+		var found_autoload := ""
+		for a in sig["autoloads"]:
+			if ProjectSettings.has_setting("autoload/" + String(a)):
+				found_autoload = String(a)
+				break
+		var addon_dir := String(sig["addon"])
+		var has_addon := DirAccess.dir_exists_absolute(addon_dir)
+		var found_class := ""
+		for c in sig["classes"]:
+			if global_classes.has(String(c)):
+				found_class = String(c)
+				break
+		var method := ""
+		if found_autoload != "":
+			method = "autoload"
+		elif has_addon:
+			method = "addon"
+		elif found_class != "":
+			method = "class"
+		var installed := method != ""
+		if installed:
+			detected.append(String(sdk))
+		backends.append({
+			"sdk": String(sdk),
+			"installed": installed,
+			"method": (method if method != "" else null),
+			"autoload": (found_autoload if found_autoload != "" else null),
+			"addon_dir": (addon_dir if has_addon else null),
+			"class_name": (found_class if found_class != "" else null),
+		})
+	return _ok({"backends": backends, "detected": detected})
