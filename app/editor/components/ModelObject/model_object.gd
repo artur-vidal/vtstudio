@@ -1,0 +1,64 @@
+class_name ModelObject
+extends MapObject
+## Miniatura de um modelo 3D carregado em tempo de execução. Herda o arrasto do MapObject.
+##
+## O modelo é escalado para caber em `target_size` e posicionado com o centro da base
+## na origem do objeto. A colisão é uma caixa (AABB) que cobre o modelo inteiro.
+
+## Maior dimensão do modelo depois de escalado, em unidades do mundo
+@export var target_size: float = 2.0
+
+## Raiz do modelo carregado (filha de um pivot interno)
+var model: Node3D
+
+
+## Monta o objeto a partir do modelo carregado. Pode ser chamado antes de entrar na
+## árvore. Devolve false se o modelo não tem geometria; nesse caso, descarte o objeto.
+func setup(model_root: Node3D) -> bool:
+	var pivot := Node3D.new()
+	pivot.name = 'Visual'
+	add_child(pivot)
+	pivot.add_child(model_root)
+	model = model_root
+
+	var parts: Array[AABB] = []
+	_collect_bounds(model_root, Transform3D.IDENTITY, parts)
+	if parts.is_empty():
+		return false
+
+	var bounds := parts[0]
+	for part in parts:
+		bounds = bounds.merge(part)
+
+	var largest := maxf(bounds.size.x, maxf(bounds.size.y, bounds.size.z))
+	if largest <= 0.0001:
+		return false
+
+	var factor := target_size / largest
+	var center := bounds.get_center()
+	pivot.scale = Vector3.ONE * factor
+	# Centro da base na origem do objeto: o modelo fica "de pé" sobre o chão
+	pivot.position = Vector3(-center.x, -bounds.position.y, -center.z) * factor
+
+	var shape := BoxShape3D.new()
+	shape.size = bounds.size * factor
+	var collision := CollisionShape3D.new()
+	collision.name = 'CollisionShape3D'
+	collision.shape = shape
+	collision.position = Vector3(0.0, shape.size.y / 2.0, 0.0)
+	add_child(collision)
+	return true
+
+
+## Junta as caixas de todas as malhas, no espaço do pai do modelo. Não usa
+## global_transform porque o modelo ainda pode estar fora da árvore.
+func _collect_bounds(node: Node, parent_transform: Transform3D, out: Array[AABB]) -> void:
+	var current := parent_transform
+	if node is Node3D:
+		current = parent_transform * (node as Node3D).transform
+	if node is GeometryInstance3D:
+		var local := (node as GeometryInstance3D).get_aabb()
+		if local.size != Vector3.ZERO:
+			out.append(current * local)
+	for child in node.get_children():
+		_collect_bounds(child, current, out)
