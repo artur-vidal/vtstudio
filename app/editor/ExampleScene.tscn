@@ -2,6 +2,8 @@
 
 [ext_resource type="PackedScene" uid="uid://2lf6ir5c2sd2" path="res://editor/components/NavigationCamera/NavigationCamera.tscn" id="1_ff3ga"]
 [ext_resource type="PackedScene" uid="uid://do1dp8dx6h41" path="res://editor/components/MapObject/MapObject.tscn" id="2_k7dwc"]
+[ext_resource type="Script" uid="uid://c16xy484cjfwt" path="res://editor/components/MiniatureSpawner/miniature_spawner.gd" id="3_d2pi1"]
+[ext_resource type="Script" uid="uid://banbv7d3dxu0q" path="res://editor/components/MiniatureLoaderUI/miniature_loader_ui.gd" id="4_8vv83"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_lnx2f"]
 sky_top_color = Color(0.47955805, 0.5640533, 0.6820065, 1)
@@ -41,3 +43,15 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.7519255, 14.913958)
 
 [node name="MapObject" parent="Cena Principal" unique_id=2113961865 instance=ExtResource("2_k7dwc")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+
+[node name="MiniatureSpawner" type="Node" parent="Cena Principal" unique_id=1817935035]
+script = ExtResource("3_d2pi1")
+ground_height = 0.05
+max_spawn_distance = 15.0
+
+[node name="MiniatureLoaderUI" type="CanvasLayer" parent="." unique_id=1531929411]
+script = ExtResource("4_8vv83")
+
+[connection signal="miniature_spawned" from="Cena Principal/MiniatureSpawner" to="MiniatureLoaderUI" method="show_loaded"]
+[connection signal="spawn_failed" from="Cena Principal/MiniatureSpawner" to="MiniatureLoaderUI" method="show_failed"]
+[connection signal="files_chosen" from="MiniatureLoaderUI" to="Cena Principal/MiniatureSpawner" method="spawn_files"]
