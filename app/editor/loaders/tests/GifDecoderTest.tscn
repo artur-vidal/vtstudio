@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://dw2n7m7l3pbwj"]
+
+[ext_resource type="Script" uid="uid://c63vbfcqknyf5" path="res://editor/loaders/tests/gif_decoder_test.gd" id="1_3qgn4"]
+
+[node name="GifDecoderTest" type="Node" unique_id=1282233669]
+script = ExtResource("1_3qgn4")
