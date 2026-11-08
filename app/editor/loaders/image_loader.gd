@@ -3,7 +3,8 @@ extends RefCounted
 ## Carrega imagens do sistema de arquivos em tempo de execução. Lê os formatos que o
 ## Image.load_from_file do Godot suporta e, além deles, GIF (animado ou não) via GifDecoder.
 ##
-## Seguro para rodar em outra thread: só cria Images, nunca texturas.
+## Seguro para rodar em outra thread: só cria Images, nunca texturas. Enquanto roda,
+## `get_progress()` pode ser consultado de outra thread.
 
 ## Formatos lidos pelo próprio Godot
 const NATIVE_EXTENSIONS: PackedStringArray = ['png', 'jpg', 'jpeg', 'webp', 'bmp', 'tga', 'svg', 'exr', 'hdr', 'dds', 'ktx']
@@ -11,6 +12,9 @@ const GIF_EXTENSION: String = 'gif'
 
 ## Mensagem do último erro. Fica vazia quando o carregamento dá certo.
 var error: String = ''
+
+var _decoder: GifDecoder = null
+var _native_progress: float = 0.0
 
 
 static func supported_extensions() -> PackedStringArray:
@@ -21,9 +25,19 @@ static func is_supported(path: String) -> bool:
 	return path.get_extension().to_lower() in supported_extensions()
 
 
+## Progresso do carregamento, de 0.0 a 1.0. Só imagens GIF têm etapas intermediárias;
+## as demais vão direto de 0 a 1.
+func get_progress() -> float:
+	if _decoder != null:
+		return _decoder.progress
+	return _native_progress
+
+
 ## Devolve a imagem (um quadro, ou vários no caso de GIF animado) ou null se falhar.
 func load_file(path: String) -> MiniatureImage:
 	error = ''
+	_decoder = null
+	_native_progress = 0.0
 	if not is_supported(path):
 		error = 'Formato não suportado: .%s' % path.get_extension()
 		return null
@@ -34,9 +48,12 @@ func load_file(path: String) -> MiniatureImage:
 	else:
 		result = _load_native(path)
 
-	if result != null:
+	# Mipmaps evitam serrilhado com a miniatura longe da câmera. Em GIF animado ficam de
+	# fora: multiplicam o tempo e a memória por todos os quadros e quase não aparecem.
+	if result != null and not result.is_animated():
 		for frame in result.frames:
 			_prepare(frame)
+	_native_progress = 1.0
 	return result
 
 
@@ -59,14 +76,13 @@ func _load_gif(path: String) -> MiniatureImage:
 		error = 'Não foi possível ler o arquivo: %s' % error_string(FileAccess.get_open_error())
 		return null
 
-	var decoder := GifDecoder.new()
-	var result := decoder.decode(bytes)
+	_decoder = GifDecoder.new()
+	var result := _decoder.decode(bytes)
 	if result == null:
-		error = decoder.error
+		error = _decoder.error
 	return result
 
 
-## Mipmaps evitam serrilhado quando a miniatura fica longe da câmera
 func _prepare(image: Image) -> void:
 	if not image.is_compressed() and not image.has_mipmaps():
 		image.generate_mipmaps()

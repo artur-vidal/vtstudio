@@ -12,6 +12,10 @@ extends Node
 signal miniature_spawned(miniature: MapObject, path: String)
 ## Emitido quando um arquivo não pôde virar miniatura
 signal spawn_failed(path: String, message: String)
+## Emitido quando a miniatura foi criada, mas com um problema (ex.: textura de FBX não encontrada)
+signal spawn_warning(path: String, message: String)
+## Progresso (0.0 a 1.0) de uma imagem que está sendo carregada em segundo plano
+signal load_progress(path: String, fraction: float)
 
 ## Onde as miniaturas são adicionadas. Se vazio, usa o pai deste nó.
 @export var container_path: NodePath
@@ -31,6 +35,13 @@ var _jobs: Array[Dictionary] = []
 
 func _ready() -> void:
 	set_process(false)
+
+
+## Espera as imagens que ainda estão carregando, para não destruir uma Thread em execução
+func _exit_tree() -> void:
+	for job in _jobs:
+		(job['thread'] as Thread).wait_to_finish()
+	_jobs.clear()
 
 
 static func supported_extensions() -> PackedStringArray:
@@ -77,25 +88,43 @@ func _spawn_model(path: String, point: Vector3) -> void:
 		spawn_failed.emit(path, 'O modelo não tem geometria visível')
 		return
 	_place(miniature, path, point)
+	for warning in loader.warnings:
+		spawn_warning.emit(path, warning)
 
 
-## A leitura e a decodificação vão para outra thread; o objeto é montado em _process
+## A leitura e a decodificação vão para uma Thread própria; o objeto é montado em _process.
+## (Thread e não WorkerThreadPool: o decodificador de GIF usa o pool para trabalhar em
+## paralelo e esperaria por ele de dentro dele.)
 func _spawn_image(path: String, point: Vector3) -> void:
-	var job: Dictionary = {'path': path, 'point': point, 'loader': ImageLoader.new(), 'image': null}
-	job['task'] = WorkerThreadPool.add_task(
-			func() -> void: job['image'] = job['loader'].load_file(path),
-			false, 'Carregando %s' % path.get_file())
+	var thread := Thread.new()
+	var job: Dictionary = {
+		'path': path,
+		'point': point,
+		'loader': ImageLoader.new(),
+		'image': null,
+		'thread': thread,
+		'last_progress': 0.0,
+	}
+	thread.start(func() -> void: job['image'] = job['loader'].load_file(path))
 	_jobs.append(job)
+	load_progress.emit(path, 0.0)
 	set_process(true)
 
 
 func _process(_delta: float) -> void:
 	for i in range(_jobs.size() - 1, -1, -1):
 		var job := _jobs[i]
-		var task_id: int = job['task']
-		if not WorkerThreadPool.is_task_completed(task_id):
+		var thread: Thread = job['thread']
+		var path: String = job['path']
+
+		if thread.is_alive():
+			var fraction: float = (job['loader'] as ImageLoader).get_progress()
+			if not is_equal_approx(fraction, job['last_progress']):
+				job['last_progress'] = fraction
+				load_progress.emit(path, fraction)
 			continue
-		WorkerThreadPool.wait_for_task_completion(task_id)
+
+		thread.wait_to_finish()
 		_jobs.remove_at(i)
 		_finish_image(job)
 	if _jobs.is_empty():

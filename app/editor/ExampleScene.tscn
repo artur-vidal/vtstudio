@@ -52,6 +52,8 @@ max_spawn_distance = 15.0
 [node name="MiniatureLoaderUI" type="CanvasLayer" parent="." unique_id=1531929411]
 script = ExtResource("4_8vv83")
 
+[connection signal="load_progress" from="Cena Principal/MiniatureSpawner" to="MiniatureLoaderUI" method="show_progress"]
 [connection signal="miniature_spawned" from="Cena Principal/MiniatureSpawner" to="MiniatureLoaderUI" method="show_loaded"]
 [connection signal="spawn_failed" from="Cena Principal/MiniatureSpawner" to="MiniatureLoaderUI" method="show_failed"]
+[connection signal="spawn_warning" from="Cena Principal/MiniatureSpawner" to="MiniatureLoaderUI" method="show_warning"]
 [connection signal="files_chosen" from="MiniatureLoaderUI" to="Cena Principal/MiniatureSpawner" method="spawn_files"]
