@@ -8,12 +8,16 @@ extends RefCounted
 ##   var model := loader.load_file('C:/modelos/personagem.glb')
 ##   if model == null:
 ##       push_warning(loader.error)
+##   for warning in loader.warnings:
+##       print(warning)
 
 const GLTF_EXTENSIONS: PackedStringArray = ['glb', 'gltf']
 const FBX_EXTENSIONS: PackedStringArray = ['fbx']
 
 ## Mensagem do último erro. Fica vazia quando o carregamento dá certo.
 var error: String = ''
+## Avisos do último carregamento que bem-sucedido (ex.: textura de um FBX não encontrada)
+var warnings: PackedStringArray = PackedStringArray()
 
 
 static func supported_extensions() -> PackedStringArray:
@@ -28,6 +32,7 @@ static func is_supported(path: String) -> bool:
 ## O chamador é dono do nó devolvido.
 func load_file(path: String) -> Node3D:
 	error = ''
+	warnings = PackedStringArray()
 	if not is_supported(path):
 		error = 'Formato não suportado: .%s' % path.get_extension()
 		return null
@@ -41,6 +46,12 @@ func load_file(path: String) -> Node3D:
 	var is_fbx := path.get_extension().to_lower() in FBX_EXTENSIONS
 	var document: GLTFDocument = FBXDocument.new() if is_fbx else GLTFDocument.new()
 	var state: GLTFState = FBXState.new() if is_fbx else GLTFState.new()
+
+	# O FBX guarda caminhos absolutos da máquina de quem o criou: corrige antes de ler
+	if is_fbx:
+		var resolver := FbxTextureResolver.new()
+		bytes = resolver.resolve(bytes, path)
+		warnings = resolver.warnings
 
 	# Buffers e texturas externos (.gltf + .bin/.png) são procurados na pasta do arquivo.
 	# O Godot trata o 2º argumento como um caminho de ARQUIVO e tira o último nome para
