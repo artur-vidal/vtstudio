@@ -1,0 +1,201 @@
+[gd_scene format=3 uid="uid://5jv1hdgw625r"]
+
+[ext_resource type="Texture2D" uid="uid://ckdhqmluadyul" path="res://assets/images/background/Background.png" id="1_8etau"]
+[ext_resource type="FontFile" uid="uid://dwhrhbcuu4ruw" path="res://assets/fonts/Fondamento/Fondamento-Regular.ttf" id="2_v6nk2"]
+[ext_resource type="FontFile" uid="uid://tagvraybmw0d" path="res://assets/fonts/Outfit/static/Outfit-SemiBold.ttf" id="3_d88wr"]
+[ext_resource type="PackedScene" uid="uid://gcopp6rysbwg" path="res://assets/components/textfield/TextField.tscn" id="4_v6nk2"]
+[ext_resource type="PackedScene" uid="uid://brotkrsfn8tyt" path="res://assets/components/icone/icon.tscn" id="5_d88wr"]
+[ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://assets/components/botao/Botao.tscn" id="6_fp4ph"]
+[ext_resource type="Theme" uid="uid://c2q3rcmq2d5vv" path="res://assets/components/themes/icone/IconeVermelho.tres" id="6_q37kg"]
+[ext_resource type="Theme" uid="uid://bkdw5caiuqbxt" path="res://assets/components/themes/button/ButtonVermelho-Outline.tres" id="7_4oipt"]
+[ext_resource type="Texture2D" uid="uid://cceq6vmhp7tw8" path="res://assets/images/Portrait_Placeholder.png" id="7_n2u4j"]
+[ext_resource type="PackedScene" uid="uid://jj1hffbx4inr" path="res://assets/components/navBar/NavBar.tscn" id="10_7280t"]
+[ext_resource type="Theme" uid="uid://ccntfg5km537x" path="res://assets/components/themes/button/ButtonDourado-Outline.tres" id="10_fp4ph"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_uoobx"]
+texture = ExtResource("1_8etau")
+axis_stretch_vertical = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8jiyc"]
+bg_color = Color(0.9882353, 0.9882353, 1, 1)
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_vvlk8"]
+color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+grow_begin = 15.0
+
+[node name="EditarPerfil" type="Control" unique_id=595673793]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=1648529729]
+custom_minimum_size = Vector2(412, 917)
+custom_maximum_size = Vector2(412, 917)
+layout_mode = 0
+offset_right = 412.0
+offset_bottom = 917.0
+theme_override_styles/panel = SubResource("StyleBoxTexture_uoobx")
+
+[node name="Separação tela" type="VBoxContainer" parent="PanelContainer" unique_id=1012630450]
+layout_mode = 2
+
+[node name="Header" type="HBoxContainer" parent="PanelContainer/Separação tela" unique_id=867257747]
+custom_minimum_size = Vector2(412, 140)
+custom_maximum_size = Vector2(412, 140)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/Separação tela/Header" unique_id=432938247]
+layout_mode = 2
+theme_override_constants/margin_left = 100
+theme_override_constants/margin_right = 80
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=776058191]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_colors/default_color = Color(0.007843138, 0.007843138, 0.007843138, 1)
+theme_override_fonts/normal_font = ExtResource("2_v6nk2")
+theme_override_font_sizes/normal_font_size = 32
+text = "Editar"
+fit_content = true
+scroll_active = false
+
+[node name="Fundo branco" type="PanelContainer" parent="PanelContainer/Separação tela" unique_id=1663889649]
+custom_minimum_size = Vector2(1152, 629)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_8jiyc")
+
+[node name="Separação" type="VBoxContainer" parent="PanelContainer/Separação tela/Fundo branco" unique_id=978334813]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="Margem" type="MarginContainer" parent="PanelContainer/Separação tela/Fundo branco/Separação" unique_id=535379596]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+
+[node name="Opções" type="VBoxContainer" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem" unique_id=734019709]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/separation = 8
+
+[node name="HSeparator" type="HSeparator" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=605585625]
+custom_minimum_size = Vector2(412, 0)
+custom_maximum_size = Vector2(412, -1)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxLine_vvlk8")
+
+[node name="Opção" type="HBoxContainer" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=329275810]
+layout_mode = 2
+theme_override_constants/separation = 64
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opção" unique_id=48210694]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+theme_override_fonts/normal_font = ExtResource("3_d88wr")
+theme_override_font_sizes/normal_font_size = 28
+text = "Nome"
+fit_content = true
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TextField" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opção" unique_id=535203837 instance=ExtResource("4_v6nk2")]
+layout_mode = 2
+placeholder_text = "Atual nome"
+alignment = 1
+
+[node name="HSeparator2" type="HSeparator" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=1324568864]
+custom_minimum_size = Vector2(412, 0)
+custom_maximum_size = Vector2(412, -1)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxLine_vvlk8")
+
+[node name="Opção2" type="HBoxContainer" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=920993513]
+layout_mode = 2
+theme_override_constants/separation = 132
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opção2" unique_id=1012123088]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+theme_override_fonts/normal_font = ExtResource("3_d88wr")
+theme_override_font_sizes/normal_font_size = 28
+text = "Foto de perfil"
+fit_content = true
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PanelContainer" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opção2" unique_id=1726400785 instance=ExtResource("5_d88wr")]
+clip_children = 1
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+theme = ExtResource("6_q37kg")
+textura = ExtResource("7_n2u4j")
+tamanho = "Medium"
+cor = "Vermelho"
+
+[node name="HSeparator3" type="HSeparator" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=108473732]
+custom_minimum_size = Vector2(412, 0)
+custom_maximum_size = Vector2(412, -1)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxLine_vvlk8")
+
+[node name="Opção3" type="HBoxContainer" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=733530143]
+layout_mode = 2
+theme_override_constants/separation = 74
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opção3" unique_id=456181504]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+theme_override_fonts/normal_font = ExtResource("3_d88wr")
+theme_override_font_sizes/normal_font_size = 28
+text = "Alterar senha"
+fit_content = true
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BotaoDourado" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opção3" unique_id=151969610 instance=ExtResource("6_fp4ph")]
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 4
+theme = ExtResource("7_4oipt")
+text = "Alterar"
+expand_icon = true
+cor = "Vermelho-Outline"
+
+[node name="HSeparator4" type="HSeparator" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=128878214]
+custom_minimum_size = Vector2(412, 0)
+custom_maximum_size = Vector2(412, -1)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxLine_vvlk8")
+
+[node name="Opção4" type="HBoxContainer" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=1414760602]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 16
+
+[node name="BotaoDourado" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opção4" unique_id=968987705 instance=ExtResource("6_fp4ph")]
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 4
+theme = ExtResource("10_fp4ph")
+text = "Voltar"
+expand_icon = true
+
+[node name="BotaoDourado2" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opção4" unique_id=1866609625 instance=ExtResource("6_fp4ph")]
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 4
+theme = ExtResource("7_4oipt")
+text = "Sair"
+expand_icon = true
+cor = "Vermelho-Outline"
+
+[node name="NavBar" parent="PanelContainer/Separação tela" unique_id=1337153430 instance=ExtResource("10_7280t")]
+layout_mode = 2
