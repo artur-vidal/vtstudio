@@ -1,0 +1,181 @@
+[gd_scene format=3 uid="uid://btxooi1piy40o"]
+
+[ext_resource type="Texture2D" uid="uid://ckdhqmluadyul" path="res://assets/images/background/Background.png" id="1_f7evt"]
+[ext_resource type="FontFile" uid="uid://dwhrhbcuu4ruw" path="res://assets/fonts/Fondamento/Fondamento-Regular.ttf" id="2_1ku80"]
+[ext_resource type="FontFile" uid="uid://boh5tn7ickl64" path="res://assets/fonts/Outfit/static/Outfit-Bold.ttf" id="3_c8e58"]
+[ext_resource type="PackedScene" uid="uid://dgiyf8adwj63m" path="res://assets/components/dropdown/Dropdown.tscn" id="4_gsjpb"]
+[ext_resource type="PackedScene" uid="uid://bx6ggb3yi2rb5" path="res://assets/components/switch/Switch.tscn" id="5_7h1sl"]
+[ext_resource type="PackedScene" uid="uid://jj1hffbx4inr" path="res://assets/components/navBar/NavBar.tscn" id="5_7ubof"]
+[ext_resource type="Theme" uid="uid://c8njdcs0vkj45" path="res://assets/components/themes/switch/Switch_Large.tres" id="6_rm1ml"]
+[ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://assets/components/botao/Botao.tscn" id="7_m0450"]
+[ext_resource type="Theme" uid="uid://bkdw5caiuqbxt" path="res://assets/components/themes/button/ButtonVermelho-Outline.tres" id="8_j1jir"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_7h1sl"]
+texture = ExtResource("1_f7evt")
+axis_stretch_vertical = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rm1ml"]
+bg_color = Color(0.9882353, 0.9882353, 1, 1)
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_m0450"]
+color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+grow_begin = 15.0
+
+[node name="Acessibilidade" type="Control" unique_id=908286703]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=649346937]
+custom_minimum_size = Vector2(412, 917)
+custom_maximum_size = Vector2(412, 917)
+layout_mode = 0
+offset_right = 412.0
+offset_bottom = 917.0
+theme_override_styles/panel = SubResource("StyleBoxTexture_7h1sl")
+
+[node name="Separação tela" type="VBoxContainer" parent="PanelContainer" unique_id=942527572]
+layout_mode = 2
+
+[node name="Header" type="HBoxContainer" parent="PanelContainer/Separação tela" unique_id=414069801]
+custom_minimum_size = Vector2(412, 140)
+custom_maximum_size = Vector2(412, 140)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/Separação tela/Header" unique_id=710604512]
+layout_mode = 2
+theme_override_constants/margin_left = 80
+theme_override_constants/margin_right = 80
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=1143587288]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_colors/default_color = Color(0.007843138, 0.007843138, 0.007843138, 1)
+theme_override_fonts/normal_font = ExtResource("2_1ku80")
+theme_override_font_sizes/normal_font_size = 32
+text = "Acessibilidade"
+fit_content = true
+scroll_active = false
+
+[node name="Fundo branco" type="PanelContainer" parent="PanelContainer/Separação tela" unique_id=1065961838]
+custom_minimum_size = Vector2(1152, 629)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_rm1ml")
+
+[node name="Separação" type="VBoxContainer" parent="PanelContainer/Separação tela/Fundo branco" unique_id=517309352]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="Margem" type="MarginContainer" parent="PanelContainer/Separação tela/Fundo branco/Separação" unique_id=1057199530]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+
+[node name="Opções" type="VBoxContainer" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem" unique_id=1304599016]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/separation = 8
+
+[node name="HSeparator" type="HSeparator" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=955939350]
+custom_minimum_size = Vector2(412, 0)
+custom_maximum_size = Vector2(412, -1)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxLine_m0450")
+
+[node name="Opcao" type="VBoxContainer" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=451442248]
+layout_mode = 2
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opcao" unique_id=561047811]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_colors/default_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+theme_override_fonts/normal_font = ExtResource("3_c8e58")
+theme_override_font_sizes/normal_font_size = 16
+text = "Tamanho da fonte"
+fit_content = true
+
+[node name="Dropdown" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opcao" unique_id=538495497 instance=ExtResource("4_gsjpb")]
+custom_minimum_size = Vector2(220, 0)
+custom_maximum_size = Vector2(320, -1)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+selected = 2
+fit_to_longest_item = false
+popup/item_0/text = "8px"
+popup/item_1/text = "12px"
+popup/item_2/text = "16px"
+popup/item_3/text = "24px"
+
+[node name="HSeparator2" type="HSeparator" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=1525071324]
+custom_minimum_size = Vector2(412, 0)
+custom_maximum_size = Vector2(412, -1)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxLine_m0450")
+
+[node name="Opcao2" type="HBoxContainer" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=843160462]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 157
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opcao2" unique_id=1773245588]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_colors/default_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+theme_override_fonts/normal_font = ExtResource("3_c8e58")
+theme_override_font_sizes/normal_font_size = 22
+text = "Alto contraste"
+fit_content = true
+
+[node name="Switch" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opcao2" unique_id=406740346 instance=ExtResource("5_7h1sl")]
+layout_mode = 2
+theme = ExtResource("6_rm1ml")
+tamanho = "Large"
+
+[node name="HSeparator3" type="HSeparator" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=493035753]
+custom_minimum_size = Vector2(412, 0)
+custom_maximum_size = Vector2(412, -1)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxLine_m0450")
+
+[node name="Opcao3" type="HBoxContainer" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=995987248]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 70
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opcao3" unique_id=745639359]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_colors/default_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+theme_override_fonts/normal_font = ExtResource("3_c8e58")
+theme_override_font_sizes/normal_font_size = 22
+text = "Modo daltonismo"
+fit_content = true
+
+[node name="BotaoDourado" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opcao3" unique_id=151969610 instance=ExtResource("7_m0450")]
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 4
+theme = ExtResource("8_j1jir")
+text = "Mudar"
+cor = "Vermelho-Outline"
+
+[node name="HSeparator4" type="HSeparator" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=1653326986]
+custom_minimum_size = Vector2(412, 0)
+custom_maximum_size = Vector2(412, -1)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxLine_m0450")
+
+[node name="NavBar" parent="PanelContainer/Separação tela" unique_id=1337153430 instance=ExtResource("5_7ubof")]
+layout_mode = 2

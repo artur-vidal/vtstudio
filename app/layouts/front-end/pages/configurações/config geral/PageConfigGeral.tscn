@@ -2,9 +2,6 @@
 
 [ext_resource type="Texture2D" uid="uid://ckdhqmluadyul" path="res://assets/images/background/Background.png" id="1_j0xlm"]
 [ext_resource type="FontFile" uid="uid://dwhrhbcuu4ruw" path="res://assets/fonts/Fondamento/Fondamento-Regular.ttf" id="2_ufu7e"]
-[ext_resource type="PackedScene" uid="uid://brotkrsfn8tyt" path="res://assets/components/icone/icon.tscn" id="3_hk1fp"]
-[ext_resource type="Theme" uid="uid://c2q3rcmq2d5vv" path="res://assets/components/themes/icone/IconeVermelho.tres" id="4_bwsco"]
-[ext_resource type="Texture2D" uid="uid://cceq6vmhp7tw8" path="res://assets/images/Portrait_Placeholder.png" id="5_in26c"]
 [ext_resource type="FontFile" uid="uid://tagvraybmw0d" path="res://assets/fonts/Outfit/static/Outfit-SemiBold.ttf" id="6_qd612"]
 [ext_resource type="PackedScene" uid="uid://bx6ggb3yi2rb5" path="res://assets/components/switch/Switch.tscn" id="7_3u3m0"]
 [ext_resource type="Theme" uid="uid://c8njdcs0vkj45" path="res://assets/components/themes/switch/Switch_Large.tres" id="8_btu53"]
@@ -55,7 +52,7 @@ alignment = 1
 
 [node name="MarginContainer" type="MarginContainer" parent="PanelContainer/Separação tela/Header" unique_id=1879944153]
 layout_mode = 2
-theme_override_constants/margin_left = 120
+theme_override_constants/margin_left = 100
 theme_override_constants/margin_right = 80
 
 [node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=1467815580]
@@ -65,18 +62,9 @@ size_flags_vertical = 4
 theme_override_colors/default_color = Color(0.007843138, 0.007843138, 0.007843138, 1)
 theme_override_fonts/normal_font = ExtResource("2_ufu7e")
 theme_override_font_sizes/normal_font_size = 32
-text = "Config"
+text = "Configurações"
 fit_content = true
 scroll_active = false
-
-[node name="PanelContainer" parent="PanelContainer/Separação tela/Header" unique_id=1726400785 instance=ExtResource("3_hk1fp")]
-clip_children = 2
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-theme = ExtResource("4_bwsco")
-textura = ExtResource("5_in26c")
-cor = "Vermelho"
 
 [node name="Fundo branco" type="PanelContainer" parent="PanelContainer/Separação tela" unique_id=1483518809]
 custom_minimum_size = Vector2(1152, 629)
