@@ -1,0 +1,214 @@
+[gd_scene format=3 uid="uid://d23isffsfoqyu"]
+
+[ext_resource type="Texture2D" uid="uid://ckdhqmluadyul" path="res://assets/images/background/Background.png" id="1_j0xlm"]
+[ext_resource type="FontFile" uid="uid://dwhrhbcuu4ruw" path="res://assets/fonts/Fondamento/Fondamento-Regular.ttf" id="2_ufu7e"]
+[ext_resource type="FontFile" uid="uid://tagvraybmw0d" path="res://assets/fonts/Outfit/static/Outfit-SemiBold.ttf" id="6_qd612"]
+[ext_resource type="PackedScene" uid="uid://bx6ggb3yi2rb5" path="res://assets/components/switch/Switch.tscn" id="7_3u3m0"]
+[ext_resource type="Theme" uid="uid://c8njdcs0vkj45" path="res://assets/components/themes/switch/Switch_Large.tres" id="8_btu53"]
+[ext_resource type="PackedScene" uid="uid://jj1hffbx4inr" path="res://assets/components/navBar/NavBar.tscn" id="9_42a5k"]
+[ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://assets/components/botao/Botao.tscn" id="9_in26c"]
+[ext_resource type="Theme" uid="uid://bkdw5caiuqbxt" path="res://assets/components/themes/button/ButtonVermelho-Outline.tres" id="10_qd612"]
+[ext_resource type="Texture2D" uid="uid://c6n2mnmcxp6hu" path="res://assets/images/google.png" id="11_3u3m0"]
+[ext_resource type="PackedScene" uid="uid://dhdmig1wfbjjw" path="res://assets/components/checkBox/CheckBox.tscn" id="12_btu53"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_stco2"]
+texture = ExtResource("1_j0xlm")
+axis_stretch_vertical = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ape1x"]
+bg_color = Color(0.9882353, 0.9882353, 1, 1)
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_cqbs0"]
+color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+grow_begin = 15.0
+
+[node name="PageConfigGeral" type="Control" unique_id=438205134]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=40695079]
+custom_minimum_size = Vector2(412, 917)
+custom_maximum_size = Vector2(412, 917)
+layout_mode = 0
+offset_right = 412.0
+offset_bottom = 917.0
+theme_override_styles/panel = SubResource("StyleBoxTexture_stco2")
+
+[node name="Separação tela" type="VBoxContainer" parent="PanelContainer" unique_id=1509506889]
+layout_mode = 2
+
+[node name="Header" type="HBoxContainer" parent="PanelContainer/Separação tela" unique_id=1245734425]
+custom_minimum_size = Vector2(412, 140)
+custom_maximum_size = Vector2(412, 140)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/Separação tela/Header" unique_id=1879944153]
+layout_mode = 2
+theme_override_constants/margin_left = 100
+theme_override_constants/margin_right = 80
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=1467815580]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_colors/default_color = Color(0.007843138, 0.007843138, 0.007843138, 1)
+theme_override_fonts/normal_font = ExtResource("2_ufu7e")
+theme_override_font_sizes/normal_font_size = 32
+text = "Configurações"
+fit_content = true
+scroll_active = false
+
+[node name="Fundo branco" type="PanelContainer" parent="PanelContainer/Separação tela" unique_id=1483518809]
+custom_minimum_size = Vector2(1152, 629)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_ape1x")
+
+[node name="Separação" type="VBoxContainer" parent="PanelContainer/Separação tela/Fundo branco" unique_id=670666442]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="Margem" type="MarginContainer" parent="PanelContainer/Separação tela/Fundo branco/Separação" unique_id=1350434525]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+
+[node name="Opções" type="VBoxContainer" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem" unique_id=1984431979]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/separation = 8
+
+[node name="HSeparator" type="HSeparator" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=1986496804]
+custom_minimum_size = Vector2(412, 0)
+custom_maximum_size = Vector2(412, -1)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxLine_cqbs0")
+
+[node name="Opção" type="HBoxContainer" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=1705093306]
+layout_mode = 2
+theme_override_constants/separation = 132
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opção" unique_id=113985713]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+theme_override_fonts/normal_font = ExtResource("6_qd612")
+theme_override_font_sizes/normal_font_size = 28
+text = "Modo Escuro"
+fit_content = true
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Switch" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opção" unique_id=406740346 instance=ExtResource("7_3u3m0")]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = ExtResource("8_btu53")
+tamanho = "Large"
+
+[node name="HSeparator2" type="HSeparator" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=1802523668]
+custom_minimum_size = Vector2(412, 0)
+custom_maximum_size = Vector2(412, -1)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxLine_cqbs0")
+
+[node name="Opção2" type="HBoxContainer" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=350562518]
+layout_mode = 2
+theme_override_constants/separation = 132
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opção2" unique_id=1016858336]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+theme_override_fonts/normal_font = ExtResource("6_qd612")
+theme_override_font_sizes/normal_font_size = 28
+text = "Notificações"
+fit_content = true
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Switch" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opção2" unique_id=1539536915 instance=ExtResource("7_3u3m0")]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = ExtResource("8_btu53")
+tamanho = "Large"
+
+[node name="HSeparator3" type="HSeparator" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=1922013881]
+custom_minimum_size = Vector2(412, 0)
+custom_maximum_size = Vector2(412, -1)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxLine_cqbs0")
+
+[node name="Opção3" type="HBoxContainer" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=351648929]
+layout_mode = 2
+theme_override_constants/separation = 74
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opção3" unique_id=1498046591]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+theme_override_fonts/normal_font = ExtResource("6_qd612")
+theme_override_font_sizes/normal_font_size = 28
+text = "Conta google"
+fit_content = true
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BotaoDourado" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opção3" unique_id=151969610 instance=ExtResource("9_in26c")]
+custom_minimum_size = Vector2(144, 42)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 4
+theme = ExtResource("10_qd612")
+text = "Gerenciar"
+icon = ExtResource("11_3u3m0")
+expand_icon = true
+tamanho = "Medium"
+cor = "Vermelho-Outline"
+
+[node name="HSeparator4" type="HSeparator" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=704766958]
+custom_minimum_size = Vector2(412, 0)
+custom_maximum_size = Vector2(412, -1)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxLine_cqbs0")
+
+[node name="Opção4" type="HBoxContainer" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=981600257]
+layout_mode = 2
+theme_override_constants/separation = 72
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opção4" unique_id=615240006]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+theme_override_fonts/normal_font = ExtResource("6_qd612")
+theme_override_font_sizes/normal_font_size = 28
+text = "Manter conta pública"
+fit_content = true
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CheckBox" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opção4" unique_id=2007701302 instance=ExtResource("12_btu53")]
+layout_mode = 2
+
+[node name="HSeparator5" type="HSeparator" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=684950165]
+custom_minimum_size = Vector2(412, 0)
+custom_maximum_size = Vector2(412, -1)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxLine_cqbs0")
+
+[node name="BotaoDourado" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=492642328 instance=ExtResource("9_in26c")]
+custom_minimum_size = Vector2(144, 42)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 6
+theme = ExtResource("10_qd612")
+text = "Acessibilidade"
+tamanho = "Medium"
+cor = "Vermelho-Outline"
+
+[node name="NavBar" parent="PanelContainer/Separação tela" unique_id=1337153430 instance=ExtResource("9_42a5k")]
+layout_mode = 2

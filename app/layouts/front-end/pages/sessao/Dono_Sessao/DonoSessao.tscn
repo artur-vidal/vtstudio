@@ -1,0 +1,276 @@
+[gd_scene format=3 uid="uid://c22bs3hnp8hpr"]
+
+[ext_resource type="Texture2D" uid="uid://1y287ilvq2xa" path="res://assets/images/Vector.png" id="1_ft7ul"]
+[ext_resource type="FontFile" uid="uid://dwhrhbcuu4ruw" path="res://assets/fonts/Fondamento/Fondamento-Regular.ttf" id="2_bpd8g"]
+[ext_resource type="Texture2D" uid="uid://r76kxhpnhhpu" path="res://assets/images/PlaceHolder-image.png" id="3_n4y52"]
+[ext_resource type="Texture2D" uid="uid://bpkp47igxp2om" path="res://assets/images/Faixa.png" id="4_4twww"]
+[ext_resource type="FontFile" uid="uid://boh5tn7ickl64" path="res://assets/fonts/Outfit/static/Outfit-Bold.ttf" id="5_s3r8d"]
+[ext_resource type="FontFile" uid="uid://iyvms52ed4p4" path="res://assets/fonts/Outfit/static/Outfit-Regular.ttf" id="6_qkxn6"]
+[ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://assets/components/botao/Botao.tscn" id="7_oe1xp"]
+[ext_resource type="Theme" uid="uid://bwp2tkasans1b" path="res://assets/components/themes/button/ButtonDourado.tres" id="8_rs7yg"]
+[ext_resource type="Theme" uid="uid://bbubev3ycaqjc" path="res://assets/components/themes/button/ButtonVermelho.tres" id="9_wkbrv"]
+[ext_resource type="PackedScene" uid="uid://jj1hffbx4inr" path="res://assets/components/navBar/NavBar.tscn" id="10_tw7nx"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yn1r1"]
+bg_color = Color(0.6117647, 0.10980392, 0.18039216, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cqbs0"]
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_47x7n"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+
+[node name="Sessao" type="Control" unique_id=1960111465]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=69189091]
+custom_minimum_size = Vector2(412, 917)
+custom_maximum_size = Vector2(412, 917)
+layout_mode = 0
+offset_right = 412.0
+offset_bottom = 917.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_yn1r1")
+
+[node name="Separação tela" type="VBoxContainer" parent="PanelContainer" unique_id=1978131469]
+layout_mode = 2
+theme_override_constants/separation = 9
+
+[node name="Header" type="HBoxContainer" parent="PanelContainer/Separação tela" unique_id=1193920179]
+custom_minimum_size = Vector2(412, 140)
+custom_maximum_size = Vector2(412, 140)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/Separação tela/Header" unique_id=1766656250]
+layout_mode = 2
+theme_override_constants/margin_left = 100
+theme_override_constants/margin_right = 80
+
+[node name="Vector" type="Sprite2D" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=392304978]
+position = Vector2(29, 66.5)
+scale = Vector2(1.5, 1.4583334)
+texture = ExtResource("1_ft7ul")
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=1778323439]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("2_bpd8g")
+theme_override_font_sizes/normal_font_size = 32
+text = "Detalhes projeto"
+fit_content = true
+scroll_active = false
+
+[node name="Contéudo" type="VBoxContainer" parent="PanelContainer/Separação tela" unique_id=160556338]
+custom_minimum_size = Vector2(412, 620)
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Foto" type="PanelContainer" parent="PanelContainer/Separação tela/Contéudo" unique_id=916317201]
+clip_children = 1
+custom_minimum_size = Vector2(320, 220)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_cqbs0")
+
+[node name="TextureRect" type="TextureRect" parent="PanelContainer/Separação tela/Contéudo/Foto" unique_id=912648732]
+layout_mode = 2
+texture = ExtResource("3_n4y52")
+expand_mode = 3
+stretch_mode = 4
+
+[node name="Título" type="PanelContainer" parent="PanelContainer/Separação tela/Contéudo" unique_id=1391734753]
+custom_minimum_size = Vector2(320, 60)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_47x7n")
+
+[node name="TextureRect" type="TextureRect" parent="PanelContainer/Separação tela/Contéudo/Título" unique_id=1500777463]
+layout_mode = 2
+texture = ExtResource("4_4twww")
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Contéudo/Título" unique_id=1596708148]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("2_bpd8g")
+theme_override_font_sizes/normal_font_size = 32
+text = "Nome sessão"
+fit_content = true
+
+[node name="Informações" type="GridContainer" parent="PanelContainer/Separação tela/Contéudo" unique_id=292594442]
+custom_minimum_size = Vector2(320, 120)
+custom_maximum_size = Vector2(320, 320)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/h_separation = 16
+columns = 2
+
+[node name="Pessoas" type="VBoxContainer" parent="PanelContainer/Separação tela/Contéudo/Informações" unique_id=684036268]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Mestre" type="VBoxContainer" parent="PanelContainer/Separação tela/Contéudo/Informações/Pessoas" unique_id=2011220267]
+layout_mode = 2
+
+[node name="Título" type="RichTextLabel" parent="PanelContainer/Separação tela/Contéudo/Informações/Pessoas/Mestre" unique_id=1115117300]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("5_s3r8d")
+theme_override_font_sizes/normal_font_size = 24
+text = "Mestre:"
+fit_content = true
+
+[node name="Nome" type="RichTextLabel" parent="PanelContainer/Separação tela/Contéudo/Informações/Pessoas/Mestre" unique_id=616263455]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("6_qkxn6")
+theme_override_font_sizes/normal_font_size = 20
+text = "Insira Nome"
+fit_content = true
+
+[node name="Players" type="VBoxContainer" parent="PanelContainer/Separação tela/Contéudo/Informações/Pessoas" unique_id=1531774065]
+layout_mode = 2
+
+[node name="Título" type="RichTextLabel" parent="PanelContainer/Separação tela/Contéudo/Informações/Pessoas/Players" unique_id=943515627]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("5_s3r8d")
+theme_override_font_sizes/normal_font_size = 24
+text = "Players:"
+fit_content = true
+
+[node name="Nome" type="RichTextLabel" parent="PanelContainer/Separação tela/Contéudo/Informações/Pessoas/Players" unique_id=1258884397]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("6_qkxn6")
+theme_override_font_sizes/normal_font_size = 20
+text = "Insira Nome"
+fit_content = true
+
+[node name="Nome2" type="RichTextLabel" parent="PanelContainer/Separação tela/Contéudo/Informações/Pessoas/Players" unique_id=302114329]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("6_qkxn6")
+theme_override_font_sizes/normal_font_size = 20
+text = "Insira Nome"
+fit_content = true
+
+[node name="Nome3" type="RichTextLabel" parent="PanelContainer/Separação tela/Contéudo/Informações/Pessoas/Players" unique_id=727781854]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("6_qkxn6")
+theme_override_font_sizes/normal_font_size = 20
+text = "Insira Nome"
+fit_content = true
+
+[node name="Nome4" type="RichTextLabel" parent="PanelContainer/Separação tela/Contéudo/Informações/Pessoas/Players" unique_id=662951637]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("6_qkxn6")
+theme_override_font_sizes/normal_font_size = 20
+text = "Insira Nome"
+fit_content = true
+
+[node name="Infos" type="VBoxContainer" parent="PanelContainer/Separação tela/Contéudo/Informações" unique_id=173683535]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Sessao" type="VBoxContainer" parent="PanelContainer/Separação tela/Contéudo/Informações/Infos" unique_id=1040779875]
+layout_mode = 2
+
+[node name="Título" type="RichTextLabel" parent="PanelContainer/Separação tela/Contéudo/Informações/Infos/Sessao" unique_id=214700247]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("5_s3r8d")
+theme_override_font_sizes/normal_font_size = 24
+text = "Última sessão:"
+fit_content = true
+
+[node name="Nome" type="RichTextLabel" parent="PanelContainer/Separação tela/Contéudo/Informações/Infos/Sessao" unique_id=426232474]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("6_qkxn6")
+theme_override_font_sizes/normal_font_size = 20
+text = "dd/mm/yyyy"
+fit_content = true
+
+[node name="Edicao" type="VBoxContainer" parent="PanelContainer/Separação tela/Contéudo/Informações/Infos" unique_id=1886199966]
+layout_mode = 2
+
+[node name="Título" type="RichTextLabel" parent="PanelContainer/Separação tela/Contéudo/Informações/Infos/Edicao" unique_id=604281897]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("5_s3r8d")
+theme_override_font_sizes/normal_font_size = 24
+text = "Última edição:"
+fit_content = true
+
+[node name="Nome" type="RichTextLabel" parent="PanelContainer/Separação tela/Contéudo/Informações/Infos/Edicao" unique_id=920159970]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("6_qkxn6")
+theme_override_font_sizes/normal_font_size = 20
+text = "dd/mm/yyyy"
+fit_content = true
+
+[node name="Armazenamento" type="VBoxContainer" parent="PanelContainer/Separação tela/Contéudo/Informações/Infos" unique_id=1847595101]
+layout_mode = 2
+
+[node name="Título" type="RichTextLabel" parent="PanelContainer/Separação tela/Contéudo/Informações/Infos/Armazenamento" unique_id=2096896852]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("5_s3r8d")
+theme_override_font_sizes/normal_font_size = 24
+text = "Armazenamento:"
+fit_content = true
+
+[node name="Nome" type="RichTextLabel" parent="PanelContainer/Separação tela/Contéudo/Informações/Infos/Armazenamento" unique_id=28569058]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("6_qkxn6")
+theme_override_font_sizes/normal_font_size = 20
+text = "XXgb - X% do 
+disco local"
+fit_content = true
+
+[node name="Botoes" type="HBoxContainer" parent="PanelContainer/Separação tela/Contéudo" unique_id=1373310098]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/separation = 16
+
+[node name="BotaoDourado" parent="PanelContainer/Separação tela/Contéudo/Botoes" unique_id=151969610 instance=ExtResource("7_oe1xp")]
+custom_minimum_size = Vector2(144, 60)
+layout_mode = 2
+theme = ExtResource("8_rs7yg")
+text = "Hospedar Sessão"
+tamanho = "Large"
+cor = "Dourado"
+
+[node name="BotaoDourado2" parent="PanelContainer/Separação tela/Contéudo/Botoes" unique_id=755081471 instance=ExtResource("7_oe1xp")]
+custom_minimum_size = Vector2(144, 60)
+layout_mode = 2
+theme = ExtResource("9_wkbrv")
+text = "Entrar"
+tamanho = "Large"
+cor = "Vermelho"
+
+[node name="NavBar" parent="PanelContainer/Separação tela" unique_id=1337153430 instance=ExtResource("10_tw7nx")]
+layout_mode = 2

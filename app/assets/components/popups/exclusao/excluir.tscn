@@ -1,0 +1,58 @@
+[gd_scene format=3 uid="uid://c317n2gy6tosv"]
+
+[ext_resource type="Texture2D" uid="uid://dftp10fngix3i" path="res://assets/images/aviso.png" id="1_mirl8"]
+[ext_resource type="FontFile" uid="uid://iyvms52ed4p4" path="res://assets/fonts/Outfit/static/Outfit-Regular.ttf" id="2_sy6bg"]
+[ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://assets/components/botao/Botao.tscn" id="3_cgf5v"]
+[ext_resource type="Theme" uid="uid://bbubev3ycaqjc" path="res://assets/components/themes/button/ButtonVermelho.tres" id="4_1tcox"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i1ghu"]
+bg_color = Color(0.9764706, 0.9411765, 0.7019608, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(0, 0, 0, 0.47058824)
+shadow_size = 4
+shadow_offset = Vector2(4, 6)
+
+[node name="ExcluirAmigo" type="PanelContainer" unique_id=124572489]
+custom_minimum_size = Vector2(220, 260)
+custom_maximum_size = Vector2(220, 280)
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_i1ghu")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=2032402528]
+layout_mode = 2
+theme_override_constants/margin_top = 160
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=1736181541]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Aviso" type="Sprite2D" parent="MarginContainer/VBoxContainer" unique_id=1219052517]
+position = Vector2(109, -75)
+texture = ExtResource("1_mirl8")
+
+[node name="RichTextLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer" unique_id=616805899]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_colors/default_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+theme_override_fonts/normal_font = ExtResource("2_sy6bg")
+text = "Deseja excluir este \"insira exclusão\"?"
+fit_content = true
+scroll_active = false
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BotaoDourado" parent="MarginContainer/VBoxContainer" unique_id=151969610 instance=ExtResource("3_cgf5v")]
+custom_minimum_size = Vector2(220, 42)
+custom_maximum_size = Vector2(220, 60)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 10
+theme = ExtResource("4_1tcox")
+text = "Excluir"
+tamanho = "Medium"
+cor = "Vermelho"

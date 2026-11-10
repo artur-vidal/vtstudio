@@ -25,6 +25,8 @@ BreakpointRuntimeBridge="*uid://0f1r7gj8vj6x"
 
 [display]
 
+window/size/viewport_width=412
+window/size/viewport_height=917
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 

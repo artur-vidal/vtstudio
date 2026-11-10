@@ -1,0 +1,205 @@
+[gd_scene format=3 uid="uid://b10wdjg8ufkv0"]
+
+[ext_resource type="Texture2D" uid="uid://ckdhqmluadyul" path="res://assets/images/background/Background.png" id="1_vxwkb"]
+[ext_resource type="FontFile" uid="uid://dwhrhbcuu4ruw" path="res://assets/fonts/Fondamento/Fondamento-Regular.ttf" id="2_oqpke"]
+[ext_resource type="PackedScene" uid="uid://brotkrsfn8tyt" path="res://assets/components/icone/icon.tscn" id="3_gypal"]
+[ext_resource type="Theme" uid="uid://c2q3rcmq2d5vv" path="res://assets/components/themes/icone/IconeVermelho.tres" id="4_wchwk"]
+[ext_resource type="Texture2D" uid="uid://cceq6vmhp7tw8" path="res://assets/images/Portrait_Placeholder.png" id="5_oevhm"]
+[ext_resource type="FontFile" uid="uid://boh5tn7ickl64" path="res://assets/fonts/Outfit/static/Outfit-Bold.ttf" id="6_sdaki"]
+[ext_resource type="PackedScene" uid="uid://jj1hffbx4inr" path="res://assets/components/navBar/NavBar.tscn" id="7_22ene"]
+[ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://assets/components/botao/Botao.tscn" id="7_fgqwr"]
+[ext_resource type="Theme" uid="uid://ccntfg5km537x" path="res://assets/components/themes/button/ButtonDourado-Outline.tres" id="8_uob8s"]
+[ext_resource type="Theme" uid="uid://bkdw5caiuqbxt" path="res://assets/components/themes/button/ButtonVermelho-Outline.tres" id="9_tg7su"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_u7bvn"]
+texture = ExtResource("1_vxwkb")
+axis_stretch_vertical = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cqbs0"]
+bg_color = Color(0.9882353, 0.9882353, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_47x7n"]
+bg_color = Color(0.46666667, 0.09019608, 0.14117648, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qxw2s"]
+bg_color = Color(0.45490196, 0.45882353, 0.47058824, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_cqbs0"]
+color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+
+[node name="PageAssinatura" type="Control" unique_id=1918764558]
+layout_mode = 3
+anchor_right = 0.358
+anchor_bottom = 1.4180001
+offset_right = -0.41601563
+offset_bottom = 0.1359253
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=444959238]
+custom_minimum_size = Vector2(412, 917)
+custom_maximum_size = Vector2(412, 917)
+layout_mode = 0
+offset_right = 412.0
+offset_bottom = 917.0
+theme_override_styles/panel = SubResource("StyleBoxTexture_u7bvn")
+
+[node name="Separação tela" type="VBoxContainer" parent="PanelContainer" unique_id=367315060]
+layout_mode = 2
+
+[node name="Header" type="HBoxContainer" parent="PanelContainer/Separação tela" unique_id=937305483]
+custom_minimum_size = Vector2(412, 140)
+custom_maximum_size = Vector2(412, 140)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/Separação tela/Header" unique_id=1206766428]
+layout_mode = 2
+theme_override_constants/margin_left = 120
+theme_override_constants/margin_right = 80
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=718286826]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_colors/default_color = Color(0.007843138, 0.007843138, 0.007843138, 1)
+theme_override_fonts/normal_font = ExtResource("2_oqpke")
+theme_override_font_sizes/normal_font_size = 32
+text = "Assinatura"
+fit_content = true
+scroll_active = false
+
+[node name="PanelContainer" parent="PanelContainer/Separação tela/Header" unique_id=1726400785 instance=ExtResource("3_gypal")]
+clip_children = 2
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = ExtResource("4_wchwk")
+textura = ExtResource("5_oevhm")
+cor = "Vermelho"
+
+[node name="Fundo branco" type="PanelContainer" parent="PanelContainer/Separação tela" unique_id=980305044]
+custom_minimum_size = Vector2(1152, 629)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_cqbs0")
+
+[node name="Margem no topo" type="MarginContainer" parent="PanelContainer/Separação tela/Fundo branco" unique_id=829713271]
+layout_mode = 2
+theme_override_constants/margin_top = 16
+
+[node name="Separação" type="VBoxContainer" parent="PanelContainer/Separação tela/Fundo branco/Margem no topo" unique_id=1957909036]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="Premium" type="PanelContainer" parent="PanelContainer/Separação tela/Fundo branco/Margem no topo/Separação" unique_id=1202989010]
+custom_minimum_size = Vector2(280, 220)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_47x7n")
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/Separação tela/Fundo branco/Margem no topo/Separação/Premium" unique_id=1639924537]
+layout_mode = 2
+theme_override_constants/margin_top = 8
+
+[node name="Divisão" type="VBoxContainer" parent="PanelContainer/Separação tela/Fundo branco/Margem no topo/Separação/Premium/MarginContainer" unique_id=1392332934]
+layout_mode = 2
+
+[node name="Título" type="RichTextLabel" parent="PanelContainer/Separação tela/Fundo branco/Margem no topo/Separação/Premium/MarginContainer/Divisão" unique_id=1420394853]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_colors/default_color = Color(0.8352941, 0.7490196, 0.5254902, 1)
+theme_override_fonts/normal_font = ExtResource("2_oqpke")
+theme_override_font_sizes/normal_font_size = 28
+text = "Premium"
+fit_content = true
+
+[node name="Texto" type="RichTextLabel" parent="PanelContainer/Separação tela/Fundo branco/Margem no topo/Separação/Premium/MarginContainer/Divisão" unique_id=1612550397]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("6_sdaki")
+text = "- Número ilimitado de sessões
+- Comportilhamento de sessões
+- Importar assets
+- Adicionar amigos
+- Visualizar todas as sessões 
+dispóniveis"
+fit_content = true
+
+[node name="Base" type="PanelContainer" parent="PanelContainer/Separação tela/Fundo branco/Margem no topo/Separação" unique_id=1975256375]
+custom_minimum_size = Vector2(280, 220)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_qxw2s")
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/Separação tela/Fundo branco/Margem no topo/Separação/Base" unique_id=1994830644]
+layout_mode = 2
+theme_override_constants/margin_top = 8
+
+[node name="Divisão" type="VBoxContainer" parent="PanelContainer/Separação tela/Fundo branco/Margem no topo/Separação/Base/MarginContainer" unique_id=385799895]
+layout_mode = 2
+
+[node name="Título" type="RichTextLabel" parent="PanelContainer/Separação tela/Fundo branco/Margem no topo/Separação/Base/MarginContainer/Divisão" unique_id=1793803440]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("2_oqpke")
+theme_override_font_sizes/normal_font_size = 28
+text = "Base"
+fit_content = true
+
+[node name="Texto" type="RichTextLabel" parent="PanelContainer/Separação tela/Fundo branco/Margem no topo/Separação/Base/MarginContainer/Divisão" unique_id=861739035]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_colors/default_color = Color(0.8039216, 0.73333335, 0.5529412, 1)
+theme_override_fonts/normal_font = ExtResource("6_sdaki")
+text = "- Criar sua conta
+- Não pode criar mapas
+- Entrar em sessões via código"
+fit_content = true
+
+[node name="HSeparator" type="HSeparator" parent="PanelContainer/Separação tela/Fundo branco/Margem no topo/Separação" unique_id=1827120339]
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxLine_cqbs0")
+
+[node name="Botões" type="GridContainer" parent="PanelContainer/Separação tela/Fundo branco/Margem no topo/Separação" unique_id=391344438]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/h_separation = 16
+columns = 2
+
+[node name="BotaoDourado" parent="PanelContainer/Separação tela/Fundo branco/Margem no topo/Separação/Botões" unique_id=151969610 instance=ExtResource("7_fgqwr")]
+layout_mode = 2
+size_flags_horizontal = 5
+size_flags_vertical = 5
+theme = ExtResource("8_uob8s")
+text = "Cancelar "
+
+[node name="BotaoDourado2" parent="PanelContainer/Separação tela/Fundo branco/Margem no topo/Separação/Botões" unique_id=2038329979 instance=ExtResource("7_fgqwr")]
+layout_mode = 2
+size_flags_horizontal = 5
+size_flags_vertical = 5
+theme = ExtResource("9_tg7su")
+text = "Assinar"
+cor = "Vermelho-Outline"
+
+[node name="NavBar" parent="PanelContainer/Separação tela" unique_id=1337153430 instance=ExtResource("7_22ene")]
+layout_mode = 2
