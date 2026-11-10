@@ -1,0 +1,43 @@
+[gd_scene format=3 uid="uid://b5twx6pxx6p24"]
+
+[ext_resource type="PackedScene" uid="uid://2lf6ir5c2sd2" path="res://editor/components/NavigationCamera/NavigationCamera.tscn" id="1_ff3ga"]
+[ext_resource type="PackedScene" uid="uid://do1dp8dx6h41" path="res://editor/components/MapObject/MapObject.tscn" id="2_k7dwc"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_lnx2f"]
+sky_top_color = Color(0.47955805, 0.5640533, 0.6820065, 1)
+sky_horizon_color = Color(0.7359229, 0.7594211, 0.79233694, 1)
+ground_bottom_color = Color(0.13556594, 0.14506352, 0.15877372, 1)
+ground_horizon_color = Color(0.7359229, 0.7594211, 0.79233694, 1)
+energy_multiplier = 1.5
+
+[sub_resource type="Sky" id="Sky_ff3ga"]
+sky_material = SubResource("ProceduralSkyMaterial_lnx2f")
+
+[sub_resource type="Environment" id="Environment_k7dwc"]
+background_mode = 2
+sky = SubResource("Sky_ff3ga")
+
+[sub_resource type="BoxMesh" id="BoxMesh_ika0p"]
+
+[node name="ExampleScene" type="Node3D" unique_id=1820660532]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=593176942]
+transform = Transform3D(-1, 8.742278e-08, 3.821371e-15, 0, -4.371139e-08, 1, 8.742278e-08, 1, 4.371139e-08, 0, 0, 0)
+light_color = Color(0.9996305, 0.99999994, 0.9523626, 1)
+shadow_enabled = true
+directional_shadow_mode = 0
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=47253131]
+environment = SubResource("Environment_k7dwc")
+
+[node name="Cena Principal" type="Node3D" parent="." unique_id=482997075]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Cena Principal" unique_id=170957066]
+transform = Transform3D(50, 0, 0, 0, 0.1, 0, 0, 0, 50, 0, 0, 0)
+mesh = SubResource("BoxMesh_ika0p")
+
+[node name="NavigationCamera" parent="Cena Principal" unique_id=992210718 instance=ExtResource("1_ff3ga")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.7519255, 14.913958)
+
+[node name="MapObject" parent="Cena Principal" unique_id=2113961865 instance=ExtResource("2_k7dwc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)

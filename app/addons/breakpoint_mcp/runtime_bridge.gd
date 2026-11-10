@@ -1,0 +1,1630 @@
+extends Node
+## Breakpoint Runtime Bridge — runs INSIDE the running game as an autoload.
+##
+## The editor plugin auto-registers this as an autoload singleton
+## ("BreakpointRuntimeBridge"), so it is present whenever the project runs. In a
+## development run — a game started by an editor build — it opens
+## a loopback TCP server on 127.0.0.1:9081 (override BREAKPOINT_RUNTIME_PORT) speaking
+## the SAME newline-delimited JSON protocol as the editor bridge, and exposes the
+## live SceneTree: read/write properties, call methods, emit signals, inject
+## input, read Performance monitors, capture frames, and read a log ring buffer.
+##
+## NOTE: this script is intentionally NOT @tool — it must run in the game, not
+## the editor. All handlers run on the main thread (socket polled from _process).
+##
+## An EXPORTED game carries this autoload too, and there it stays closed: no socket, no
+## secret written, no logger hooked (325, BP-0023 — see bridge_secret.gd's
+## runtime_listen_policy for the one opt-in, debug exports only).
+##
+## STRICT MODE (BP-0037, opt-in through 1.x): a project that sets
+## `breakpoint_mcp/runtime/strict=true` gets no autoload from the plugin. The game attaches
+## this script itself, from its own debug-only code, by path — so an export preset that
+## leaves `addons/breakpoint_mcp/` out leaves no reference behind:
+##     const BP := "res://addons/breakpoint_mcp/runtime_bridge.gd"
+##     if OS.is_debug_build() and ResourceLoader.exists(BP):
+##         var bridge: Node = load(BP).new()
+##         bridge.name = "BreakpointRuntimeBridge"
+##         get_tree().root.add_child.call_deferred(bridge)
+## and the bridge then listens only with BREAKPOINT_RUNTIME=1 or `--breakpoint-runtime`.
+
+## The addon version this GAME is running, answered on `ping`.
+##
+## 🔴 THE EDITOR PLANE HAS ANSWERED WITH ONE SINCE IT HAD ONE AND THIS PLANE NEVER DID
+## (258 §2). The runtime table's own `unknown_method` remedy says *the addon running in
+## the game is older than the host* — a claim about a version the game could not report,
+## on the one plane where disk and memory diverge most: `init --force` rewrites the files
+## and the process that is already running keeps the addon it loaded. Held in lockstep
+## with `plugin.cfg` and with `operations.gd`'s copy by contract_check check 14, which
+## exists because two of those literals disagreed for two releases.
+const ADDON_VERSION := "1.19.0"
+const Codec := preload("res://addons/breakpoint_mcp/variant_json.gd")
+const Remedies := preload("res://addons/breakpoint_mcp/error_remedies.gd")
+const DEFAULT_PORT := 9081
+const LOG_CAP := 1000
+# D1a: how many error/warning entries one response may carry. A cap and not the
+# whole ring: a call that provokes a thousand warnings must not turn a 200-byte
+# reply into a 100 KB one. The `total` beside the list is what stops the cap
+# lying about how many there were.
+const ENGINE_LOG_CAP := 20
+# D6: source for the runtime-compiled Logger subclass (Godot 4.5+). Kept as a
+# string so `extends Logger` is only ever compiled where the class exists — the
+# addon stays parse-clean on Godot 4.3/4.4 (no Logger class).
+const _LOG_CAPTURE_SRC := """extends Logger
+var sink: Callable
+func _log_message(message: String, error: bool) -> void:
+	if sink.is_valid():
+		sink.call("error" if error else "info", message)
+func _log_error(_function: String, file: String, line: int, code: String, rationale: String, _editor_notify: bool, error_type: int, _script_backtraces: Array) -> void:
+	if sink.is_valid():
+		var lvl := "warning" if error_type == 1 else "error"
+		var detail := rationale if rationale != "" else code
+		sink.call(lvl, "%s (%s:%d)" % [detail, file, line])
+"""
+
+# Curated Performance monitors exposed by runtime.get_monitors.
+const MONITORS := {
+	"time/fps": Performance.TIME_FPS,
+	"time/process": Performance.TIME_PROCESS,
+	"time/physics_process": Performance.TIME_PHYSICS_PROCESS,
+	"memory/static": Performance.MEMORY_STATIC,
+	# Total live ObjectDB instances — Nodes, Resources and BARE Objects alike, which is
+	# what makes it the only monitor here that can see a leaked non-Node. Added session
+	# 153 so the _node_add `not_a_node` leak fixed in the same commit is REGRESSION-LOCKED
+	# in CI rather than merely proved once on a laptop: node-lifecycle.integration.mjs
+	# drives that branch in bulk and watches this number.
+	"object/count": Performance.OBJECT_COUNT,
+	"object/node_count": Performance.OBJECT_NODE_COUNT,
+	"object/resource_count": Performance.OBJECT_RESOURCE_COUNT,
+	"render/total_objects_drawn": Performance.RENDER_TOTAL_OBJECTS_IN_FRAME,
+	"render/total_draw_calls": Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME,
+	"render/video_mem_used": Performance.RENDER_VIDEO_MEM_USED,
+	"physics_3d/active_objects": Performance.PHYSICS_3D_ACTIVE_OBJECTS,
+	"physics_2d/active_objects": Performance.PHYSICS_2D_ACTIVE_OBJECTS,
+	"audio/output_latency": Performance.AUDIO_OUTPUT_LATENCY,
+}
+
+const BridgeSecret := preload("res://addons/breakpoint_mcp/bridge_secret.gd")
+const PauseLatch := preload("res://addons/breakpoint_mcp/pause_latch.gd")
+# F4: methods dispatched on the async lane (they await frames); see _handle_line / _dispatch_async.
+const ASYNC_METHODS := ["runtime.step_frames"]
+# 🆕 BP-0041 (1.19.0): the input kinds runtime.inject_input answers, in the order the
+# refusal lists them. `pointer` alone rides the async lane (a tap or drag spans frames).
+const INPUT_KINDS := ["action", "key", "mouse_button", "mouse_motion", "joypad_button", "joypad_motion", "pointer"]
+const POINTER_ACTIONS := ["press", "move", "release", "tap", "drag"]
+# The pointer's `button` is a MouseButton index, as on mouse_button: 1 left, 2 right, 3 middle.
+const POINTER_MASKS := {MOUSE_BUTTON_LEFT: MOUSE_BUTTON_MASK_LEFT, MOUSE_BUTTON_RIGHT: MOUSE_BUTTON_MASK_RIGHT, MOUSE_BUTTON_MIDDLE: MOUSE_BUTTON_MASK_MIDDLE}
+const STRETCH_MODES := ["disabled", "canvas_items", "viewport"]
+const STRETCH_ASPECTS := ["ignore", "keep", "keep_width", "keep_height", "expand"]
+# F4: default salient fields captured by runtime.state_digest when no explicit list is given.
+const _DIGEST_DEFAULT_FIELDS := ["position", "global_position", "rotation", "scale", "visible", "modulate"]
+
+var _server: TCPServer
+var _clients: Array = [] # Array of {peer, buf}
+var _port: int = DEFAULT_PORT
+## Loopback-auth handshake state (default-on; see bridge_secret.gd), mirroring the
+## editor bridge_server. `_auth_required` is false only when auth is explicitly
+## disabled (BREAKPOINT_BRIDGE_INSECURE) or the secret can't be minted.
+var _secret: String = ""
+var _auth_required: bool = false
+var _log: Array = []     # ring buffer of {seq, level, message}
+var _log_seq: int = 0
+var _tree_dirty: bool = false
+var _log_dirty: bool = false
+var _log_capture = null  # registered Logger (Godot 4.5+) or null
+var _in_capture: bool = false
+## 🔴 325 (BP-0023): the listen decision, taken first in _ready (bridge_secret.gd's
+## runtime_listen_policy). Read by _setup_auth for where the secret comes from.
+var _policy: Dictionary = {}
+## 🆕 BP-0041: where the injected pointer last was and which buttons it holds, so a
+## `press`, `move` and `release` sent as three calls carry the relative motion and the
+## button_mask one real gesture would.
+var _pointer_at := Vector2.ZERO
+var _pointer_mask: int = 0
+
+
+## The facts the listen policy is decided on. A method and not inline so the
+## headless smoke can stand an exported build up inside an editor binary — the only
+## binary CI has — by overriding this one function and nothing else.
+func _policy_facts() -> Dictionary:
+	return {
+		"editor_build": BridgeSecret.is_development_build(OS.has_feature("editor"), OS.has_feature("template")),
+		"debug_build": OS.is_debug_build(),
+		"exported_optin": OS.get_environment("BREAKPOINT_RUNTIME_EXPORTED"),
+		"env_secret": OS.get_environment("BREAKPOINT_RUNTIME_SECRET"),
+		# 🆕 BP-0037 — strict mode and its developer switch (bridge_secret.gd).
+		"strict": BridgeSecret.runtime_strict(ProjectSettings.get_setting(BridgeSecret.STRICT_SETTING, false)),
+		"switch": BridgeSecret.runtime_switch_on(OS.get_environment(BridgeSecret.SWITCH_ENV), OS.get_cmdline_user_args()),
+	}
+
+
+func _ready() -> void:
+	# 🔴 325 (BP-0023): an exported game must not open a control port. Decide before
+	# anything binds, mints, hooks the logger or connects to the tree; when the answer
+	# is no, this node stays in the tree inert — `push_log` still works for game code
+	# that calls it — and a shipped game prints nothing unless someone asked for the
+	# bridge and is being refused.
+	var f := _policy_facts()
+	_policy = BridgeSecret.runtime_listen_policy(bool(f["editor_build"]), bool(f["debug_build"]), String(f["exported_optin"]), String(f["env_secret"]), bool(f.get("strict", false)), bool(f.get("switch", false)))
+	if not bool(_policy["listen"]):
+		set_process(false)
+		if bool(_policy["warn"]):
+			push_warning("[breakpoint_runtime] not listening: %s" % _policy["reason"])
+		else:
+			print_verbose("[breakpoint_runtime] not listening: %s" % _policy["reason"])
+		return
+	# Keep servicing requests even while the game is paused (e.g. at a breakpoint).
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	var env_port := OS.get_environment("BREAKPOINT_RUNTIME_PORT")
+	if env_port != "" and env_port.is_valid_int():
+		_port = int(env_port)
+	_setup_auth()
+	_server = TCPServer.new()
+	var err := _server.listen(_port, "127.0.0.1")
+	if err != OK:
+		push_error("[breakpoint_runtime] could not listen on 127.0.0.1:%d (error %d)" % [_port, err])
+	else:
+		push_log("info", "BreakpointRuntimeBridge listening on 127.0.0.1:%d" % _port)
+	# D3 follow-up: re-emit godot://runtime/tree when the live SceneTree structure
+	# changes so subscribers re-read it. Collapsed to one push per frame via
+	# _tree_dirty (see _process) so a burst of node adds/removes is a single event.
+	var tree := get_tree()
+	if tree:
+		tree.node_added.connect(_on_tree_structure_changed)
+		tree.node_removed.connect(_on_tree_structure_changed)
+		tree.node_renamed.connect(_on_tree_structure_changed)
+	_install_log_capture()
+
+
+## Establish the loopback-auth secret unless explicitly disabled. Default-on:
+## BREAKPOINT_BRIDGE_INSECURE=1 (or =true) turns auth OFF (documented escape
+## hatch). If the secret can't be persisted, run WITHOUT auth rather than
+## bricking the bridge (a broken mint must not lock out the host).
+func _setup_auth() -> void:
+	# An opted-in debug export (325): the secret comes from the environment or not at all.
+	# Never minted — that would write into the game's own install — and never insecure:
+	# BREAKPOINT_BRIDGE_INSECURE is a development-run escape hatch only.
+	if String(_policy.get("secret_source", "")) == "env":
+		_secret = String(_policy.get("secret", ""))
+		_auth_required = true
+		if _secret.length() < BridgeSecret.EXPORT_SECRET_MIN_LEN:
+			# Unreachable through runtime_listen_policy, which never says listen without a
+			# valid secret — but if it ever did, fail CLOSED: a random secret nobody holds,
+			# never the empty string const_time_eq would match an empty `auth` against.
+			_secret = Crypto.new().generate_random_bytes(32).hex_encode()
+		return
+	var insecure := OS.get_environment("BREAKPOINT_BRIDGE_INSECURE").to_lower()
+	if insecure == "1" or insecure == "true":
+		_auth_required = false
+		push_warning("[breakpoint_runtime] BREAKPOINT_BRIDGE_INSECURE set — loopback bridge auth DISABLED")
+		return
+	_secret = BridgeSecret.load_or_mint()
+	_auth_required = _secret != ""
+	if not _auth_required:
+		push_error("[breakpoint_runtime] could not establish bridge secret — running WITHOUT auth")
+
+
+## Public API: game code can route its own logs here for runtime.get_log to read.
+func push_log(level: String, message: String) -> void:
+	_log_seq += 1
+	_log.append({"seq": _log_seq, "level": level, "message": message})
+	while _log.size() > LOG_CAP:
+		_log.pop_front()
+	_log_dirty = true
+
+
+func _exit_tree() -> void:
+	var tree := get_tree()
+	if tree:
+		if tree.node_added.is_connected(_on_tree_structure_changed):
+			tree.node_added.disconnect(_on_tree_structure_changed)
+		if tree.node_removed.is_connected(_on_tree_structure_changed):
+			tree.node_removed.disconnect(_on_tree_structure_changed)
+		if tree.node_renamed.is_connected(_on_tree_structure_changed):
+			tree.node_renamed.disconnect(_on_tree_structure_changed)
+	if _log_capture != null and ClassDB.class_has_method("OS", "remove_logger"):
+		# Call dynamically: OS.remove_logger() is 4.5+, and a literal OS.remove_logger(...) is
+		# resolved at PARSE time, so it fails to compile the whole script on Godot 4.3/4.4 —
+		# taking the entire runtime bridge down, not just capture. OS.call() defers the lookup
+		# to runtime, past the class_has_method guard above.
+		OS.call("remove_logger", _log_capture)
+	_log_capture = null
+	for c in _clients:
+		var peer: StreamPeerTCP = c["peer"]
+		if peer:
+			peer.disconnect_from_host()
+	_clients.clear()
+	if _server:
+		_server.stop()
+
+
+func _process(_delta: float) -> void:
+	if _server == null:
+		return
+	while _server.is_connection_available():
+		var peer := _server.take_connection()
+		if peer:
+			_clients.append({"peer": peer, "buf": "", "authed": not _auth_required})
+	var alive: Array = []
+	for c in _clients:
+		var peer: StreamPeerTCP = c["peer"]
+		peer.poll()
+		var status := peer.get_status()
+		if status == StreamPeerTCP.STATUS_ERROR or status == StreamPeerTCP.STATUS_NONE:
+			continue
+		var available := peer.get_available_bytes()
+		if available > 0:
+			var chunk := peer.get_data(available)
+			if chunk[0] == OK:
+				var bytes: PackedByteArray = chunk[1]
+				c["buf"] += bytes.get_string_from_utf8()
+		_drain_lines(c)
+		if c.get("close", false):
+			peer.poll()
+			peer.disconnect_from_host()
+			continue
+		alive.append(c)
+	_clients = alive
+	# D3 follow-up: one runtime-tree push per frame if the SceneTree changed.
+	if _tree_dirty:
+		_tree_dirty = false
+		broadcast_event("godot://runtime/tree")
+	if _log_dirty:
+		_log_dirty = false
+		broadcast_event("godot://runtime/log")
+
+
+func _drain_lines(c: Dictionary) -> void:
+	var buf: String = c["buf"]
+	while true:
+		var nl := buf.find("\n")
+		if nl == -1:
+			break
+		var line := buf.substr(0, nl).strip_edges()
+		buf = buf.substr(nl + 1)
+		if line != "":
+			_handle_line(c, line)
+			if c.get("close", false):
+				break
+	c["buf"] = buf
+
+
+func _handle_line(c: Dictionary, line: String) -> void:
+	var peer: StreamPeerTCP = c["peer"]
+	var parsed: Variant = JSON.parse_string(line)
+	if typeof(parsed) != TYPE_DICTIONARY:
+		if not c.get("authed", false):
+			_deny_unauth(c)
+			return
+		_send(peer, {"id": null, "ok": false, "error": {"code": "bad_json", "message": "Bad request"}})
+		return
+	var req: Dictionary = parsed
+	var id: Variant = req.get("id", null)
+	var method := String(req.get("method", ""))
+	var params: Dictionary = req.get("params", {}) if typeof(req.get("params")) == TYPE_DICTIONARY else {}
+	# Handshake gate: an unauthenticated peer may ONLY authenticate.
+	if not c.get("authed", false):
+		if method == "auth" and BridgeSecret.const_time_eq(String(params.get("secret", "")), _secret):
+			c["authed"] = true
+			_send(peer, {"id": id, "ok": true})
+		else:
+			_deny_unauth(c)
+		return
+	# Pause latch (addon "Pause Agent" control): honor the same editor-set latch the
+	# editor bridge does. While paused, HOLD every new command except a liveness
+	# `ping` — reject without dispatching; the running game is otherwise untouched.
+	# Read cross-process from res://.godot/ (the editor writes it; see pause_latch.gd).
+	if method != "ping" and PauseLatch.is_paused():
+		var held := {"id": id}
+		held.merge(PauseLatch.held_response(method))
+		_send(peer, held)
+		return
+	# F4: async lane — methods that await frames can't use the synchronous dispatch (which sends
+	# its response immediately). Start a coroutine that sends the id'd response when done; the host
+	# correlates responses by id, so an out-of-order async response is fine.
+	if method in ASYNC_METHODS or _is_pointer(method, params):
+		_dispatch_async(c, id, method, params)
+		return
+	# D1a: the engine-error echo. The ring already receives every push_error /
+	# push_warning and every engine message (via the 4.5+ Logger capture), but
+	# nothing tied one to the CALL that provoked it — a caller had to notice
+	# something was wrong, then go and read runtime.get_log, then guess which
+	# entries were its own. Reading _log_seq either side of the dispatch answers
+	# that by construction: everything appended in between belongs to this call.
+	var seq_before := _log_seq
+	var result := _dispatch(method, params)
+	var response := {"id": id}
+	response.merge(result)
+	_attach_engine_log(response, seq_before)
+	_send(peer, response)
+
+
+## Generic, no-echo denial for an unauthenticated peer; marks the connection for
+## closing. Never reveals the expected secret, the received value, or any detail.
+func _deny_unauth(c: Dictionary) -> void:
+	_send(c["peer"], {"id": null, "ok": false, "error": {"code": "unauthorized"}})
+	c["close"] = true
+
+
+func _send(peer: StreamPeerTCP, obj: Dictionary) -> void:
+	peer.put_data((JSON.stringify(obj) + "\n").to_utf8_buffer())
+
+
+## D3: push an unsolicited "resource changed" event to every connected client so
+## a subscribed MCP host can emit notifications/resources/updated. Mirrors the
+## editor bridge_server; events carry no "id" (they are not responses), so the
+## host routes them by the "event" field without colliding with request/response.
+func broadcast_event(uri: String) -> void:
+	for c in _clients:
+		var peer: StreamPeerTCP = c["peer"]
+		if peer and c.get("authed", false) and peer.get_status() == StreamPeerTCP.STATUS_CONNECTED:
+			_send(peer, {"event": "resource.changed", "uri": uri})
+
+
+## D3 follow-up: the live SceneTree gained/lost/renamed a node. Mark it dirty;
+## _process coalesces to a single godot://runtime/tree push per frame regardless
+## of how many nodes changed this frame.
+func _on_tree_structure_changed(_node: Node) -> void:
+	_tree_dirty = true
+
+
+## D6: zero-config console capture. Godot 4.5+ exposes a scriptable Logger
+## (OS.add_logger); register one that funnels every print()/push_warning/
+## push_error and engine message into the same ring buffer runtime.get_log reads,
+## so the host gets the game's console with NO managed parent process. Compiled at
+## runtime, so `extends Logger` is only ever parsed where the class exists.
+func _install_log_capture() -> void:
+	if _log_capture != null:
+		return
+	if not ClassDB.class_exists("Logger") or not ClassDB.class_has_method("OS", "add_logger"):
+		return  # < 4.5: no scriptable logger; runtime.get_log still serves push_log entries.
+	var src := GDScript.new()
+	src.source_code = _LOG_CAPTURE_SRC
+	if src.reload() != OK:
+		return  # runtime script compilation unavailable — degrade quietly.
+	var inst = src.new()
+	inst.set("sink", Callable(self, "_on_captured_log"))
+	# Call dynamically (see _exit_tree): OS.add_logger() is 4.5+, and a literal call is resolved
+	# at PARSE time — a bare OS.add_logger(...) fails to compile the script on Godot 4.3/4.4,
+	# killing the whole runtime bridge. OS.call() defers to runtime, past the class_exists /
+	# class_has_method guard above.
+	OS.call("add_logger", inst)
+	_log_capture = inst
+	push_log("info", "log capture active (Godot %s)" % Engine.get_version_info().get("string", ""))
+
+
+## Sink for the runtime-compiled Logger. Writes to the ring buffer only (never
+## prints/errors — that would recurse through the logger we registered); the
+## _in_capture guard is belt-and-braces in case a downstream call ever emits.
+func _on_captured_log(level: String, message: String) -> void:
+	if _in_capture:
+		return
+	_in_capture = true
+	push_log(level, message.strip_edges())
+	_in_capture = false
+
+
+## D1a: every `error`/`warning` ring entry appended AFTER `seq_before`, i.e. during
+## the dispatch this response belongs to. Written into `result` and not beside it:
+## the host resolves a reply as `msg.result`, so a sibling key is dropped on the
+## floor — and `structuredContent` must match the tool's `outputSchema` or a
+## conforming client throws, which is why `engine_log` is declared on all 26
+## runtime output schemas rather than smuggled in.
+##
+## `isError` IS DELIBERATELY UNTOUCHED. A push_error during a call that returned
+## what it was asked for is a DIAGNOSTIC, not a failed call; promoting it would
+## make every noisy frame look like a broken tool and would change the meaning of
+## a field callers already branch on.
+##
+## Absent when there is nothing, never `[]`: an optional field that is always
+## present carries no information, and 208 §4's finding is that absent and
+## explicitly-empty are NOT the same value to a client that never materialises
+## defaults.
+func _attach_engine_log(response: Dictionary, seq_before: int) -> void:
+	if not response.get("ok", false):
+		return  # a failed call already carries its own error; see the note above
+	var result: Variant = response.get("result")
+	if typeof(result) != TYPE_DICTIONARY:
+		return
+	var entries: Array = []
+	for e in _log:
+		if entries.size() >= ENGINE_LOG_CAP:
+			break
+		if int(e.get("seq", 0)) <= seq_before:
+			continue
+		var lvl := String(e.get("level", ""))
+		if lvl == "error" or lvl == "warning":
+			entries.append(e)
+	if entries.is_empty():
+		return
+	# 🔴 THE COUNT IS SEPARATE FROM THE LIST, because the list is CAPPED. A caller
+	# reading twenty entries cannot tell "twenty happened" from "hundreds happened
+	# and you are seeing the first twenty", and the second is the case that matters.
+	var total := 0
+	for e in _log:
+		if int(e.get("seq", 0)) > seq_before:
+			var lvl2 := String(e.get("level", ""))
+			if lvl2 == "error" or lvl2 == "warning":
+				total += 1
+	result["engine_log"] = {"entries": entries, "total": total, "since_seq": seq_before}
+
+
+# ----------------------------------------------------------- dispatch --------
+
+func _dispatch(method: String, params: Dictionary) -> Dictionary:
+	match method:
+		"ping":
+			return _ok({"pong": true, "runtime": true, "addon_version": ADDON_VERSION, "godot": Engine.get_version_info().get("string", ""), "log_capture": _log_capture != null})
+		"runtime.get_tree":
+			return _get_tree(params)
+		"runtime.get_property":
+			return _get_property(params)
+		"runtime.set_property":
+			return _set_property(params)
+		"runtime.call_method":
+			return _call_method(params)
+		"runtime.emit_signal":
+			return _emit_signal(params)
+		"runtime.inject_input":
+			return _inject_input(params)
+		"runtime.get_monitors":
+			return _get_monitors(params)
+		"runtime.screenshot":
+			return _screenshot()
+		"runtime.get_log":
+			return _get_log(params)
+		"runtime.assert_node_state":
+			return _assert_node_state(params)
+		"runtime.assert_scene_structure":
+			return _assert_scene_structure(params)
+		"runtime.assert_perf":
+			return _assert_perf(params)
+		"runtime.assert_screen_text":
+			return _assert_screen_text(params)
+		"runtime.screenshot_diff":
+			return _screenshot_diff(params)
+		"runtime.anim_play":
+			return _anim_play(params)
+		"runtime.anim_stop":
+			return _anim_stop(params)
+		"runtime.anim_get_state":
+			return _anim_get_state(params)
+		"runtime.node_add":
+			return _node_add(params)
+		"runtime.node_remove":
+			return _node_remove(params)
+		"runtime.time_scale":
+			return _time_scale(params)
+		"runtime.state_digest":
+			return _state_digest(params)
+		"runtime.seed_rng":
+			return _seed_rng(params)
+		"runtime.read_state":
+			return _read_state(params)
+		"runtime.step_frames":
+			# Dispatched on the async lane (see _handle_line / _dispatch_async); this placeholder
+			# keeps the static contract check (which scans _dispatch case labels) aware of the
+			# method. It is not reached in normal operation.
+			return _err("async_only", "runtime.step_frames is dispatched on the async lane")
+		_:
+			return _err("unknown_method", "No such method: %s" % method)
+
+
+func _ok(result: Variant) -> Dictionary:
+	return {"ok": true, "result": result}
+
+
+func _err(code: String, message: String) -> Dictionary:
+	# 254: the message says what went wrong; the remedy says what to do about it. It is
+	# attached HERE, at the one place every runtime-plane failure passes through, so no
+	# call site can forget it and none has to repeat it.
+	var e := {"code": code, "message": message}
+	var r := Remedies.remedy(code, Remedies.RUNTIME)
+	if r != "":
+		e["remedy"] = r
+	return {"ok": false, "error": e}
+
+
+func _base() -> Node:
+	return get_tree().current_scene
+
+
+func _resolve(path: String) -> Node:
+	if path == "" or path == ".":
+		return _base()
+	if path.begins_with("/"):
+		return get_node_or_null(NodePath(path))
+	var b := _base()
+	if b == null:
+		return null
+	return b.get_node_or_null(NodePath(path))
+
+
+func _path_of(node: Node) -> String:
+	var b := _base()
+	if b and (node == b or b.is_ancestor_of(node)):
+		return "." if node == b else String(b.get_path_to(node))
+	return String(node.get_path())
+
+
+func _serialize(node: Node, depth: int, max_depth: int) -> Dictionary:
+	var d := {
+		"name": String(node.name),
+		"type": node.get_class(),
+		"path": _path_of(node),
+		"child_count": node.get_child_count(),
+	}
+	if node is CanvasItem:
+		d["visible"] = (node as CanvasItem).visible
+	elif node is Node3D:
+		d["visible"] = (node as Node3D).visible
+	if depth < max_depth and node.get_child_count() > 0:
+		var kids: Array = []
+		for c in node.get_children():
+			kids.append(_serialize(c, depth + 1, max_depth))
+		d["children"] = kids
+	return d
+
+
+func _get_tree(params: Dictionary) -> Dictionary:
+	var base := _base()
+	if base == null:
+		return _err("no_scene", "No current scene is running")
+	return _ok(_serialize(base, 0, int(params.get("max_depth", 64))))
+
+
+func _get_property(params: Dictionary) -> Dictionary:
+	var node := _resolve(String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	var prop := String(params.get("property", ""))
+	if prop == "":
+		return _err("bad_params", "Missing 'property'")
+	return _ok({"path": _path_of(node), "property": prop, "value": Codec.encode(Codec.read_property(node, prop))})
+
+
+## 🔴 THIS FUNCTION USED TO ANSWER WITH A READ-BACK IT NEVER COMPARED TO WHAT IT WAS
+## ASKED FOR (issue #327). Every way a write can fail to land — a String coerced into
+## a bool, an untagged `{"x":..,"y":..}` landing in a Vector2 as (0,0), an indexed path
+## read with the wrong method, a `value` key that never arrived — produced the same
+## `ok` envelope carrying the value the property ALREADY HAD. The caller's next action
+## was therefore taken against a state it believed it had set, arbitrarily far from the
+## point where nothing happened.
+##
+## 🔴 THE THREE OUTCOMES, AND ONLY ONE OF THEM IS A FAILURE OF THE WRITE:
+##
+##   APPLIED    the engine holds what was asked for                    -> ok
+##   COERCED    same type, different value — a setter clamped, snapped
+##              or normalised it. Ordinary and its own business, but the
+##              caller must be TOLD, because it is not what it asked for -> ok, coerced
+##   REFUSED    the property is unchanged, or holds an incompatible
+##              type: nothing the caller wrote survived                  -> error
+static func _set_outcome(asked: Variant, before: Variant, after: Variant) -> String:
+	if Codec.values_equal(asked, after):
+		return "applied"
+	if not Codec.types_compatible(typeof(asked), typeof(after)):
+		return "mismatch"
+	if Codec.values_equal(before, after):
+		return "ignored"
+	return "coerced"
+
+
+func _set_property(params: Dictionary) -> Dictionary:
+	var node := _resolve(String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	var prop := String(params.get("property", ""))
+	if prop == "":
+		return _err("bad_params", "Missing 'property'")
+	# 🔴 A MISSING `value` IS NOT A NULL VALUE, and conflating them WIPED PROPERTIES.
+	# `Dictionary.get("value")` answers null for a key that is not there, and
+	# `Object.set(prop, null)` does not refuse — the engine coerces null to the
+	# property type's zero. Measured on 4.7: rotation 1.25 -> 0.0, position
+	# (123, 456) -> (0, 0), reported as success both times. The host's own published
+	# input schema left `value` OPTIONAL (`z.any()` is optional in zod), so a client
+	# omitting it was doing exactly what it was told it could do.
+	if not params.has("value"):
+		return _err(
+			"bad_params",
+			"Missing 'value'. Pass it explicitly — an absent value is not the same request as a null one, and writing null here would set %s to its type's zero." % prop
+		)
+	var asked: Variant = Codec.decode(params["value"])
+	var before: Variant = Codec.read_property(node, prop)
+	Codec.write_property(node, prop, asked)
+	var after: Variant = Codec.read_property(node, prop)
+	var outcome := _set_outcome(asked, before, after)
+	# 🔴 A REFUSED WRITE PUTS THE PROPERTY BACK, and the first draft of this fix did not.
+	# The engine has already coerced by the time we can compare, so `{"x":.., "y":..}`
+	# landing in a Vector2 had ALREADY overwritten (123, 456) with (0, 0) — and reporting
+	# that honestly would have left the caller with an accurate message and a broken
+	# scene. An error the tool raises about its own write must not also BE a write.
+	if outcome == "mismatch" or outcome == "ignored":
+		Codec.write_property(node, prop, before)
+	if outcome == "mismatch":
+		return _err(
+			"set_mismatch",
+			"%s.%s holds %s after the write and %s was asked for. Nothing the caller wrote survived: rich types cross this wire as {\"__type__\": \"Vector2\", \"x\": .., \"y\": ..} and a bare map, array or string is not that."
+				% [_path_of(node), prop, _describe(after), _describe(asked)]
+		)
+	if outcome == "ignored":
+		return _err(
+			"set_ignored",
+			"%s.%s is unchanged at %s after being asked for %s. The property may not exist on this node, or its setter refused the value."
+				% [_path_of(node), prop, _describe(after), _describe(asked)]
+		)
+	var out := {"path": _path_of(node), "property": prop, "value": Codec.encode(after)}
+	if outcome == "coerced":
+		# The write LANDED and the engine changed it — a clamp, a snap, a normalise.
+		# Saying so is the difference between a tool that is honest about what it did
+		# and one that lets the caller assume.
+		out["coerced"] = true
+		out["requested"] = Codec.encode(asked)
+	return _ok(out)
+
+
+## `type_string(typeof(v))` plus the value, for a message a reader can act on.
+static func _describe(v: Variant) -> String:
+	return "%s %s" % [type_string(typeof(v)), JSON.stringify(Codec.encode(v))]
+
+
+func _call_method(params: Dictionary) -> Dictionary:
+	var node := _resolve(String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	var method := String(params.get("method", ""))
+	if not node.has_method(method):
+		return _err("no_method", "%s has no method %s" % [node.get_class(), method])
+	var args: Array = []
+	for a in params.get("args", []):
+		args.append(Codec.decode(a))
+	var result: Variant = node.callv(method, args)
+	return _ok({"return": Codec.encode(result)})
+
+
+func _emit_signal(params: Dictionary) -> Dictionary:
+	var node := _resolve(String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	var sig := String(params.get("signal", ""))
+	if not node.has_signal(sig):
+		return _err("no_signal", "%s has no signal %s" % [node.get_class(), sig])
+	var call_args: Array = [sig]
+	for a in params.get("args", []):
+		call_args.append(Codec.decode(a))
+	# emit_signal RETURNS an Error, and discarding it made this tool answer
+	# {"emitted": true} for an emission the engine refused. The cause is an `args` count
+	# that does not match a CONNECTED callable's arity: the engine pushes its own
+	# "Method expected N argument(s), but called with M" into the GAME's log — not the
+	# caller's — and that callable never runs, so the caller fails at its NEXT assertion,
+	# arbitrarily far from the cause.
+	#
+	# 🔴 TWO non-OK codes, and only one of them is a failure. Measured identically on
+	# 4.3, 4.5 and 4.7:
+	#
+	#   OK (0)                    a connected callable ran
+	#   ERR_METHOD_NOT_FOUND (37) a callable IS connected and could not be invoked —
+	#                             the arity mismatch. This is the defect worth reporting.
+	#   ERR_UNAVAILABLE (2)       the signal exists but has NO connections at all.
+	#                             Emitting into the void is ordinary and must SUCCEED —
+	#                             rejecting it would break every game that emits a signal
+	#                             nothing happens to be listening to.
+	#
+	# 🔴 The honest consequence: arity is checkable ONLY when something is connected.
+	# With no listener, a wrong count also returns ERR_UNAVAILABLE (there is no callable
+	# whose arity could mismatch), so it is indistinguishable from a correct emission.
+	# That is a limit of what the engine reports, not something this tool can tighten,
+	# and the catalog says so rather than implying a guarantee that does not exist.
+	var err: int = node.callv("emit_signal", call_args)
+	if err != OK and err != ERR_UNAVAILABLE:
+		return _err(
+			"emit_failed",
+			"emit_signal(%s) with %d arg(s) failed: %s (%d). Check the count against the arity of the signal's connected callables."
+				% [sig, call_args.size() - 1, error_string(err), err]
+		)
+	return _ok({"emitted": true})
+
+
+func _inject_input(params: Dictionary) -> Dictionary:
+	var ev: Dictionary = params.get("event", {})
+	var kind := String(ev.get("kind", ""))
+	match kind:
+		"action":
+			var action := String(ev.get("action", ""))
+			# An action the InputMap does not know is NOT injectable. Input.action_press
+			# pushes its own engine error and returns, so without this guard the reply is
+			# {"injected": true} for a typo'd action name and the caller's NEXT assertion is
+			# where the failure surfaces — as far from the cause as it is possible to get.
+			# Found live, session 153, by the probe that first pointed this tool at a real
+			# InputMap. Covers both operands: an absent "action" key arrives here as "".
+			if not InputMap.has_action(action):
+				return _err("bad_action", "No such InputMap action: %s" % action)
+			if bool(ev.get("pressed", true)):
+				Input.action_press(action, float(ev.get("strength", 1.0)))
+			else:
+				Input.action_release(action)
+			return _ok({"injected": true, "kind": kind})
+		"key":
+			# 🆕 BP-0041: keys bound in the editor's Input Map are stored by PHYSICAL key (the
+			# dialog's default), and an event carrying only `keycode` never matches one — so
+			# today's key kind reached `_input` but not the actions. A key with none of the
+			# three codes is KEY_NONE, which matches nothing, so it is refused, not injected.
+			if not (ev.has("keycode") or ev.has("physical_keycode") or ev.has("key_label")):
+				return _err("bad_event", "A key event needs at least one of event.keycode, event.physical_keycode or event.key_label; with none it is KEY_NONE and matches no key and no action.")
+			var k := InputEventKey.new()
+			k.keycode = int(ev.get("keycode", 0))
+			k.physical_keycode = int(ev.get("physical_keycode", 0))
+			k.key_label = int(ev.get("key_label", 0))
+			k.unicode = int(ev.get("unicode", 0))
+			k.echo = bool(ev.get("echo", false))
+			k.pressed = bool(ev.get("pressed", true))
+			_apply_modifiers(k, ev)
+			Input.parse_input_event(k)
+			return _ok({"injected": true, "kind": kind})
+		"mouse_button":
+			var mb := InputEventMouseButton.new()
+			mb.button_index = int(ev.get("button", 1))
+			mb.pressed = bool(ev.get("pressed", true))
+			mb.double_click = bool(ev.get("double_click", false))
+			var in_frame := String(ev.get("space", "window")) == "frame"
+			var pos_err := _apply_vector2(ev, "position", func(v: Vector2) -> void: mb.position = _frame_to_window(v) if in_frame else v)
+			if not pos_err.is_empty():
+				return pos_err
+			mb.global_position = mb.position
+			_apply_modifiers(mb, ev)
+			Input.parse_input_event(mb)
+			return _ok({"injected": true, "kind": kind})
+		"mouse_motion":
+			var mm := InputEventMouseMotion.new()
+			var m_in_frame := String(ev.get("space", "window")) == "frame"
+			var mpos_err := _apply_vector2(ev, "position", func(v: Vector2) -> void: mm.position = _frame_to_window(v) if m_in_frame else v)
+			if not mpos_err.is_empty():
+				return mpos_err
+			var rel_err := _apply_vector2(ev, "relative", func(v: Vector2) -> void: mm.relative = v)
+			if not rel_err.is_empty():
+				return rel_err
+			mm.global_position = mm.position
+			mm.button_mask = int(ev.get("button_mask", 0))
+			_apply_modifiers(mm, ev)
+			Input.parse_input_event(mm)
+			return _ok({"injected": true, "kind": kind})
+		"joypad_button":
+			if not ev.has("button"):
+				return _err("bad_event", "A joypad_button event needs event.button, Godot's JoyButton index (0 is the bottom face button).")
+			var jb := InputEventJoypadButton.new()
+			jb.device = int(ev.get("device", 0))
+			jb.button_index = int(ev.get("button"))
+			jb.pressed = bool(ev.get("pressed", true))
+			jb.pressure = float(ev.get("pressure", 1.0 if jb.pressed else 0.0))
+			Input.parse_input_event(jb)
+			return _ok({"injected": true, "kind": kind})
+		"joypad_motion":
+			if not ev.has("axis"):
+				return _err("bad_event", "A joypad_motion event needs event.axis, Godot's JoyAxis index (0 to 5), and event.value from -1 to 1.")
+			var jm := InputEventJoypadMotion.new()
+			jm.device = int(ev.get("device", 0))
+			jm.axis = int(ev.get("axis"))
+			jm.axis_value = clampf(float(ev.get("value", 0.0)), -1.0, 1.0)
+			Input.parse_input_event(jm)
+			return _ok({"injected": true, "kind": kind})
+		"pointer":
+			# Reached only from a caller that bypassed _handle_line's routing; the lane is async.
+			return _err("async_only", "runtime.inject_input with kind pointer is dispatched on the async lane")
+		_:
+			return _err("bad_kind", "Unknown input kind: %s. The kinds are %s." % [kind, ", ".join(INPUT_KINDS)])
+
+
+## 🆕 BP-0041 — the four modifier flags, on any event that carries them.
+func _apply_modifiers(e: InputEventWithModifiers, ev: Dictionary) -> void:
+	e.shift_pressed = bool(ev.get("shift", false))
+	e.ctrl_pressed = bool(ev.get("ctrl", false))
+	e.alt_pressed = bool(ev.get("alt", false))
+	e.meta_pressed = bool(ev.get("meta", false))
+
+
+## 🆕 BP-0041 — true when this call is a `pointer` gesture, which awaits frames and so
+## rides the async lane like runtime.step_frames.
+static func _is_pointer(method: String, params: Dictionary) -> bool:
+	if method != "runtime.inject_input":
+		return false
+	var ev: Variant = params.get("event")
+	return typeof(ev) == TYPE_DICTIONARY and String((ev as Dictionary).get("kind", "")) == "pointer"
+
+
+## 🆕 BP-0041 — the geometry that relates `runtime.screenshot`'s frame to the window.
+## `texture` is the frame's own pixel size (the image's, NOT `ViewportTexture.get_size()`:
+## measured windowed on 4.7 under canvas_items, that answered 685x386 for an 888x500 frame); `visible_rect` is the viewport's coordinate
+## space (what input events and Controls use); `window` is the OS window's client size;
+## the stretch fields are the root window's content scale settings.
+func _viewport_block(vp: Viewport, frame_size: Vector2) -> Dictionary:
+	var tex_size := frame_size
+	var vis := vp.get_visible_rect()
+	var win: Window = vp as Window if vp is Window else vp.get_window()
+	var block := {
+		"texture": [tex_size.x, tex_size.y],
+		"visible_rect": [vis.position.x, vis.position.y, vis.size.x, vis.size.y],
+		"window": [vis.size.x, vis.size.y],
+		"stretch_mode": "disabled",
+		"stretch_aspect": "ignore",
+		"content_scale_factor": 1.0,
+	}
+	if win != null:
+		block["window"] = [float(win.size.x), float(win.size.y)]
+		block["stretch_mode"] = STRETCH_MODES[clampi(int(win.content_scale_mode), 0, STRETCH_MODES.size() - 1)]
+		block["stretch_aspect"] = STRETCH_ASPECTS[clampi(int(win.content_scale_aspect), 0, STRETCH_ASPECTS.size() - 1)]
+		block["content_scale_factor"] = win.content_scale_factor
+	return block
+
+
+## 🆕 BP-0041 — the transform that carries a pixel of the frame `runtime.screenshot`
+## returns to a window pixel, in all three stretch modes.
+##
+## Godot's root window maps viewport coordinates to the window with
+## `get_final_transform()` = window_transform * stretch_transform * global_canvas_transform
+## (window.cpp, 4.3-4.7), and `Viewport._make_input_local` INVERTS exactly that for every
+## event. The frame is the viewport's render target, whose pixels are viewport coordinates
+## times the stretch scale — so frame -> window is `window_transform` alone: the letterbox
+## offset under canvas_items, offset and upscale under viewport, identity when disabled.
+## Measured windowed on the Mac (4.7, 1000x500 window, 1152x648 base, aspect keep): taps and
+## drags at frame pixels landed on their targets under all three modes.
+func _frame_transform() -> Transform2D:
+	var vp := get_viewport()
+	if vp == null:
+		return Transform2D.IDENTITY
+	if vp.has_method("get_stretch_transform"):  # bound from Godot 4.4
+		var inner: Transform2D = vp.call("get_stretch_transform") * vp.global_canvas_transform
+		return vp.get_final_transform() * inner.affine_inverse()
+	# 4.2 / 4.3 bind no stretch accessor, so the frame's own size says the stretch scale.
+	var tex := vp.get_texture()
+	var img: Image = tex.get_image() if tex != null else null
+	if img == null or img.get_width() <= 0 or img.get_height() <= 0:
+		return Transform2D.IDENTITY
+	var vis := vp.get_visible_rect()
+	var to_local := Transform2D(0.0, vis.size / Vector2(img.get_width(), img.get_height()), 0.0, vis.position)
+	return vp.get_final_transform() * to_local
+
+
+func _frame_to_window(f: Vector2) -> Vector2:
+	return _frame_transform() * f
+
+
+## 🆕 BP-0041 — the pointer kind: press / move / release / tap / drag, at points given in
+## the frame's pixels (`space` "frame", the default) or the window's (`space` "window").
+## The reply carries the window points actually sent, so a miss is visible in the reply.
+func _inject_pointer(ev_in: Variant) -> Dictionary:
+	if typeof(ev_in) != TYPE_DICTIONARY:
+		return _err("bad_event", "event must be an object.")
+	var ev: Dictionary = ev_in
+	var action := String(ev.get("action", ""))
+	if not action in POINTER_ACTIONS:
+		return _err("bad_event", "A pointer event needs event.action, one of %s; got %s." % [", ".join(POINTER_ACTIONS), JSON.stringify(action)])
+	if not (ev.has("x") and ev.has("y")):
+		return _err("bad_event", "A pointer event needs event.x and event.y, pixels of the frame runtime_screenshot returns.")
+	if action == "drag" and not (ev.has("to_x") and ev.has("to_y")):
+		return _err("bad_event", "A pointer drag needs event.to_x and event.to_y, where the button is released.")
+	var bname := int(ev.get("button", MOUSE_BUTTON_LEFT))
+	if not POINTER_MASKS.has(bname):
+		return _err("bad_event", "A pointer's event.button is a MouseButton index: 1 left, 2 right or 3 middle; got %s." % JSON.stringify(ev.get("button")))
+	var in_frame := String(ev.get("space", "frame")) != "window"
+	var warp := bool(ev.get("warp", false))
+	var per_step := clampi(int(ev.get("frames_per_step", 1)), 1, 10)
+	var xf := _frame_transform() if in_frame else Transform2D.IDENTITY
+	var start := xf * Vector2(float(ev.get("x")), float(ev.get("y")))
+	var points: Array = []
+	var frames := 0
+	match action:
+		"press":
+			_pointer_button(start, bname, true, warp)
+			points.append(start)
+		"release":
+			_pointer_button(start, bname, false, warp)
+			points.append(start)
+		"move":
+			_pointer_motion(start, warp)
+			points.append(start)
+		"tap":
+			_pointer_button(start, bname, true, warp)
+			points.append(start)
+			frames += await _pointer_wait(per_step)
+			_pointer_button(start, bname, false, warp)
+			points.append(start)
+		"drag":
+			var end := xf * Vector2(float(ev.get("to_x")), float(ev.get("to_y")))
+			var steps := clampi(int(ev.get("steps", 8)), 1, 60)
+			_pointer_button(start, bname, true, warp)
+			points.append(start)
+			for i in range(1, steps + 1):
+				frames += await _pointer_wait(per_step)
+				var p := start.lerp(end, float(i) / float(steps))
+				_pointer_motion(p, warp)
+				points.append(p)
+			frames += await _pointer_wait(per_step)
+			_pointer_button(end, bname, false, warp)
+			points.append(end)
+	var sent: Array = []
+	for p in points:
+		sent.append([(p as Vector2).x, (p as Vector2).y])
+	return _ok({"injected": true, "kind": "pointer", "window_points": sent, "frames": frames})
+
+
+func _pointer_wait(n: int) -> int:
+	var tree := get_tree()
+	for _i in n:
+		await tree.process_frame
+	return n
+
+
+func _pointer_button(at: Vector2, bname: int, pressed: bool, warp: bool) -> void:
+	if warp:
+		Input.warp_mouse(at)
+	if pressed:
+		_pointer_mask |= int(POINTER_MASKS[bname])
+	else:
+		_pointer_mask &= ~int(POINTER_MASKS[bname])
+	var mb := InputEventMouseButton.new()
+	mb.button_index = bname
+	mb.pressed = pressed
+	mb.position = at
+	mb.global_position = at
+	mb.button_mask = _pointer_mask
+	Input.parse_input_event(mb)
+	_pointer_at = at
+
+
+func _pointer_motion(at: Vector2, warp: bool) -> void:
+	if warp:
+		Input.warp_mouse(at)
+	var mm := InputEventMouseMotion.new()
+	mm.position = at
+	mm.global_position = at
+	mm.relative = at - _pointer_at
+	mm.button_mask = _pointer_mask
+	Input.parse_input_event(mm)
+	_pointer_at = at
+
+
+## Apply an OPTIONAL Vector2 field of a synthetic input event, or say why not.
+##
+## 🔴 THIS WAS `if pos is Vector2:` WITH NO ELSE, and it is the one place in the addon
+## where something really did discard silently — the shape issue #327 reported as
+## *Vector2 in mouse-motion events makes mouse-driven controls unreachable*. An
+## untagged `{"x": .., "y": ..}` decodes to a Dictionary, fails the type test, and the
+## event was injected AT THE ORIGIN with `{"injected": true}` on the way back. The
+## caller then read a game that had been clicked at (0, 0).
+##
+## Absent stays absent — these fields are genuinely optional and an omitted position
+## means *wherever the event lands by default*. PRESENT AND UNUSABLE is the error:
+## the caller aimed at something and missed by the width of the screen.
+## Returns {} when there is nothing to report, an `_err` envelope otherwise.
+func _apply_vector2(ev: Dictionary, field: String, apply: Callable) -> Dictionary:
+	if not ev.has(field):
+		return {}
+	var decoded: Variant = Codec.decode(ev[field])
+	if decoded is Vector2:
+		apply.call(decoded as Vector2)
+		return {}
+	return _err(
+		"bad_event_field",
+		"event.%s is %s and a Vector2 is required. Rich types cross this wire tagged: {\"__type__\": \"Vector2\", \"x\": .., \"y\": ..} — a bare map, array or string is not that, and injecting the event without it would have aimed at the origin."
+			% [field, _describe(decoded)]
+	)
+
+
+func _get_monitors(params: Dictionary) -> Dictionary:
+	var out := {}
+	var keys: Array = params.get("keys", [])
+	var wanted: Array = keys if keys.size() > 0 else MONITORS.keys()
+	for key in wanted:
+		var k := String(key)
+		if MONITORS.has(k):
+			out[k] = Performance.get_monitor(MONITORS[k])
+	return _ok({"monitors": out})
+
+
+## 🔴 311 — THE SAME QUESTION `operations.gd` ASKS ON THE EDITOR PLANE, ASKED HERE.
+##
+## Measured at 310: Godot presents a frame only while `can_any_window_draw()`, and on
+## macOS that follows the window's occlusion state. The finding was made against the
+## EDITOR window, but nothing about it is editor-specific — a running game whose window
+## is minimised, off the active Space or fully covered stops being drawn to in exactly
+## the same way, and both capture sites below then hand back the last frame it drew, at
+## full size and in full colour, reported as success. `_screenshot_diff` is the worse of
+## the two: a stale frame compared against its own reference answers *no change*, which
+## is the most confident wrong answer this addon can give.
+##
+## 🔵 DUPLICATED FROM THE EDITOR PLANE ON PURPOSE, NOT SHARED. The two planes keep
+## separate vocabularies for the reason `error_remedies.gd` sets out at length: the code
+## is the same word, the SUBJECT is a different window and the next action is a
+## different sentence. A shared helper would have to be vague about which window it
+## means, which is the one thing the message has to be exact about.
+func _window_drawing_refusal() -> Dictionary:
+	return _err("window_not_drawing",
+		"The game window is not drawing, so there is no current frame to capture. Godot "
+		+ "presents a frame only while a window is visible: this one is minimised, on "
+		+ "another desktop or Space, completely covered by another window, or running "
+		+ "headless. Capturing now would return the last frame drawn before it was "
+		+ "hidden — full size, full colour, and with nothing in the image to mark it "
+		+ "stale — or a blank frame if nothing had been drawn yet. Bring the game window "
+		+ "back on screen and call again.")
+
+
+func _screenshot() -> Dictionary:
+	var vp := get_viewport()
+	if vp == null:
+		return _err("no_viewport", "No viewport")
+	if not DisplayServer.window_can_draw():
+		return _window_drawing_refusal()
+	var tex := vp.get_texture()
+	if tex == null:
+		return _err("no_texture", "No viewport texture")
+	var img := tex.get_image()
+	if img == null:
+		return _err("no_image", "Could not read frame")
+	var buf := img.save_png_to_buffer()
+	return _ok({
+		"mime": "image/png",
+		"base64": Marshalls.raw_to_base64(buf),
+		"width": img.get_width(),
+		"height": img.get_height(),
+		"viewport": _viewport_block(vp, Vector2(img.get_width(), img.get_height())),
+	})
+
+
+func _get_log(params: Dictionary) -> Dictionary:
+	var since := int(params.get("since_seq", 0))
+	var levels: Array = params.get("levels", [])
+	var entries: Array = []
+	for e in _log:
+		if int(e["seq"]) > since and (levels.is_empty() or levels.has(e["level"])):
+			entries.append(e)
+	return _ok({"entries": entries, "latest_seq": _log_seq, "capture": _log_capture != null})
+
+
+func _assert_node_state(params: Dictionary) -> Dictionary:
+	var node := _resolve(String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	var raw_expect: Variant = params.get("expect", {})
+	var expect: Dictionary = raw_expect if typeof(raw_expect) == TYPE_DICTIONARY else {}
+	var tol := float(params.get("tolerance", 0.0))
+	var mismatches: Array = []
+	for prop in expect.keys():
+		var key := String(prop)
+		var expected: Variant = expect[key]
+		var actual_encoded: Variant = Codec.encode(node.get(key))
+		if not _values_match(expected, actual_encoded, tol):
+			mismatches.append({"property": key, "expected": expected, "actual": actual_encoded})
+	return _ok({
+		"path": _path_of(node),
+		"ok": mismatches.is_empty(),
+		"checked": expect.size(),
+		"mismatches": mismatches,
+	})
+
+
+func _assert_scene_structure(params: Dictionary) -> Dictionary:
+	var raw: Variant = params.get("expect", [])
+	var expect: Array = raw if typeof(raw) == TYPE_ARRAY else []
+	var failures: Array = []
+	for entry_v in expect:
+		if typeof(entry_v) != TYPE_DICTIONARY:
+			continue
+		var entry: Dictionary = entry_v
+		var path := String(entry.get("path", ""))
+		var absent := bool(entry.get("absent", false))
+		var node := _resolve(path)
+		if absent:
+			if node != null:
+				failures.append({"path": path, "reason": "expected_absent_but_present"})
+			continue
+		if node == null:
+			failures.append({"path": path, "reason": "missing"})
+			continue
+		if entry.has("type"):
+			var want_type := String(entry["type"])
+			if not node.is_class(want_type) and node.get_class() != want_type:
+				failures.append({"path": path, "reason": "type_mismatch", "expected": want_type, "actual": node.get_class()})
+	return _ok({
+		"ok": failures.is_empty(),
+		"checked": expect.size(),
+		"failures": failures,
+	})
+
+
+func _values_match(expected: Variant, actual: Variant, tol: float) -> bool:
+	var te := typeof(expected)
+	var ta := typeof(actual)
+	var expected_num := te == TYPE_INT or te == TYPE_FLOAT
+	var actual_num := ta == TYPE_INT or ta == TYPE_FLOAT
+	if expected_num and actual_num:
+		return absf(float(actual) - float(expected)) <= tol
+	return _deep_equal(expected, actual)
+
+
+func _deep_equal(a: Variant, b: Variant) -> bool:
+	var ta := typeof(a)
+	var tb := typeof(b)
+	if ta != tb:
+		var an := ta == TYPE_INT or ta == TYPE_FLOAT
+		var bn := tb == TYPE_INT or tb == TYPE_FLOAT
+		if an and bn:
+			return float(a) == float(b)
+		return false
+	if ta == TYPE_DICTIONARY:
+		var da: Dictionary = a
+		var db: Dictionary = b
+		if da.size() != db.size():
+			return false
+		for k in da.keys():
+			if not db.has(k):
+				return false
+			if not _deep_equal(da[k], db[k]):
+				return false
+		return true
+	if ta == TYPE_ARRAY:
+		var aa: Array = a
+		var ba: Array = b
+		if aa.size() != ba.size():
+			return false
+		for i in aa.size():
+			if not _deep_equal(aa[i], ba[i]):
+				return false
+		return true
+	return a == b
+
+
+func _assert_perf(params: Dictionary) -> Dictionary:
+	var raw_baseline: Variant = params.get("baseline", {})
+	var baseline: Dictionary = raw_baseline if typeof(raw_baseline) == TYPE_DICTIONARY else {}
+	var tol := float(params.get("tolerance", 0.0))
+	var raw_dir: Variant = params.get("direction", {})
+	var dir_overrides: Dictionary = raw_dir if typeof(raw_dir) == TYPE_DICTIONARY else {}
+	var regressions: Array = []
+	var monitors := {}
+	var checked := 0
+	for key_v in baseline.keys():
+		var key := String(key_v)
+		if not MONITORS.has(key):
+			continue
+		checked += 1
+		var current := float(Performance.get_monitor(MONITORS[key]))
+		var base_val := float(baseline[key])
+		monitors[key] = current
+		var direction := "higher_better" if key == "time/fps" else "lower_better"
+		if dir_overrides.has(key):
+			direction = String(dir_overrides[key])
+		var passed := true
+		if direction == "higher_better":
+			passed = current >= base_val * (1.0 - tol)
+		else:
+			passed = current <= base_val * (1.0 + tol)
+		if not passed:
+			regressions.append({"key": key, "baseline": base_val, "current": current, "direction": direction})
+	return _ok({
+		"ok": regressions.is_empty(),
+		"checked": checked,
+		"regressions": regressions,
+		"monitors": monitors,
+	})
+
+
+func _text_of(node: Node) -> String:
+	# The visible text a Control exposes via its `text` property (Label / Button /
+	# LineEdit / TextEdit / RichTextLabel / CheckBox / LinkButton …). Non-text nodes
+	# return null from get() and are skipped.
+	var v: Variant = node.get("text")
+	if v is String:
+		return String(v)
+	return ""
+
+
+func _assert_screen_text(params: Dictionary) -> Dictionary:
+	var needle := String(params.get("text", ""))
+	var present := bool(params.get("present", true))
+	var use_regex := bool(params.get("regex", false))
+	var case_sensitive := bool(params.get("case_sensitive", false))
+	var has_min := params.has("min_count")
+	var min_count := int(params.get("min_count", 0))
+	var re: RegEx = null
+	if use_regex:
+		re = RegEx.new()
+		var pattern := needle if case_sensitive else "(?i)" + needle
+		if re.compile(pattern) != OK:
+			return _err("bad_regex", "Invalid regex: %s" % needle)
+	var samples: Array = []
+	var count := 0
+	var base := _base()
+	if base != null:
+		var stack: Array = [base]
+		while not stack.is_empty():
+			var node: Node = stack.pop_back()
+			for child in node.get_children():
+				stack.append(child)
+			if not (node is CanvasItem):
+				continue
+			if not (node as CanvasItem).is_visible_in_tree():
+				continue
+			var txt := _text_of(node)
+			if txt == "":
+				continue
+			var matched := false
+			if use_regex:
+				matched = re.search(txt) != null
+			elif case_sensitive:
+				matched = txt.contains(needle)
+			else:
+				matched = txt.to_lower().contains(needle.to_lower())
+			if matched:
+				count += 1
+				if samples.size() < 20:
+					samples.append({"path": _path_of(node), "text": txt})
+	var ok := (count > 0) if present else (count == 0)
+	if present and has_min:
+		ok = count >= min_count
+	return _ok({
+		"ok": ok,
+		"matches": count,
+		"present": present,
+		"samples": samples,
+	})
+
+
+func _screenshot_diff(params: Dictionary) -> Dictionary:
+	var reference := String(params.get("reference", ""))
+	var vp := get_viewport()
+	if vp == null:
+		return _err("no_viewport", "No viewport")
+	# 🔴 311 — AND HERE MOST OF ALL. A comparison against a frame the engine is not
+	# drawing does not fail; it AGREES with whatever it was last compared to.
+	if not DisplayServer.window_can_draw():
+		return _window_drawing_refusal()
+	var tex := vp.get_texture()
+	if tex == null:
+		return _err("no_texture", "No viewport texture")
+	var img := tex.get_image()
+	if img == null:
+		return _err("no_image", "Could not read frame")
+	var ref_img := Image.new()
+	var err := ref_img.load(reference)
+	if err != OK:
+		return _err("bad_reference", "Could not load reference image: %s (error %d)" % [reference, err])
+	return _compare_images(img, ref_img, params, reference)
+
+
+func _compare_images(frame: Image, reference_img: Image, params: Dictionary, reference: String) -> Dictionary:
+	var tolerance := float(params.get("tolerance", 0.0))
+	var per_channel := int(params.get("per_channel_threshold", 0))
+	# Work on copies normalized to RGBA8 so get_data() is a byte-aligned comparison.
+	var a := Image.new()
+	a.copy_from(frame)
+	var b := Image.new()
+	b.copy_from(reference_img)
+	a.convert(Image.FORMAT_RGBA8)
+	b.convert(Image.FORMAT_RGBA8)
+	var region_v: Variant = params.get("region")
+	if region_v is Dictionary:
+		var rg: Dictionary = region_v
+		var rect := Rect2i(int(rg.get("x", 0)), int(rg.get("y", 0)), int(rg.get("w", 0)), int(rg.get("h", 0)))
+		a = a.get_region(rect)
+		b = b.get_region(rect)
+	var w := a.get_width()
+	var h := a.get_height()
+	if w != b.get_width() or h != b.get_height():
+		return _ok({
+			"ok": false,
+			"reason": "dimension_mismatch",
+			"diff_ratio": 1.0,
+			"differing_pixels": 0,
+			"total_pixels": 0,
+			"width": w,
+			"height": h,
+			"reference": reference,
+		})
+	var total := w * h
+	var da := a.get_data()
+	var db := b.get_data()
+	var differing := 0
+	var n := da.size()
+	var i := 0
+	while i < n:
+		for c in 4:
+			if absi(int(da[i + c]) - int(db[i + c])) > per_channel:
+				differing += 1
+				break
+		i += 4
+	var ratio := (float(differing) / float(total)) if total > 0 else 0.0
+	return _ok({
+		"ok": ratio <= tolerance,
+		"diff_ratio": ratio,
+		"differing_pixels": differing,
+		"total_pixels": total,
+		"width": w,
+		"height": h,
+		"reference": reference,
+	})
+
+
+# ----------------------------------------------------- F8: animation ---------
+
+## Resolve a node and require it to be an AnimationPlayer.
+func _resolve_anim_player(path: String):
+	var node := _resolve(path)
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % path)
+	if not (node is AnimationPlayer):
+		return _err("not_animation_player", "%s is not an AnimationPlayer" % node.get_class())
+	return node as AnimationPlayer
+
+
+func _anim_state(ap: AnimationPlayer) -> Dictionary:
+	var anims: Array = []
+	for a in ap.get_animation_list():
+		anims.append(String(a))
+	return {
+		"playing": ap.is_playing(),
+		"current_animation": ap.current_animation,
+		"position": ap.current_animation_position,
+		"length": ap.current_animation_length,
+		"speed_scale": ap.speed_scale,
+		"animations": anims,
+	}
+
+
+func _anim_play(params: Dictionary) -> Dictionary:
+	var res = _resolve_anim_player(String(params.get("path", "")))
+	if res is Dictionary:
+		return res
+	var ap: AnimationPlayer = res
+	var anim := String(params.get("animation", ""))
+	if anim != "" and not ap.has_animation(anim):
+		return _err("no_animation", "AnimationPlayer has no animation '%s'" % anim)
+	var speed := float(params.get("custom_speed", 1.0))
+	var from_end := bool(params.get("from_end", false))
+	ap.play(anim, -1.0, speed, from_end)
+	return _ok({
+		"playing": ap.is_playing(),
+		"current_animation": ap.current_animation,
+		"speed_scale": ap.speed_scale,
+	})
+
+
+func _anim_stop(params: Dictionary) -> Dictionary:
+	var res = _resolve_anim_player(String(params.get("path", "")))
+	if res is Dictionary:
+		return res
+	var ap: AnimationPlayer = res
+	# keep_state:true pauses in place; default stops. pause()/stop() with no args are
+	# stable across Godot 4.2–4.5 (unlike stop()'s changing keep_state parameter).
+	if bool(params.get("keep_state", false)):
+		ap.pause()
+	else:
+		ap.stop()
+	return _ok({
+		"playing": ap.is_playing(),
+		"current_animation": ap.current_animation,
+		"position": ap.current_animation_position,
+	})
+
+
+func _anim_get_state(params: Dictionary) -> Dictionary:
+	var res = _resolve_anim_player(String(params.get("path", "")))
+	if res is Dictionary:
+		return res
+	var ap: AnimationPlayer = res
+	return _ok(_anim_state(ap))
+
+
+# ------------------------------------------- BP-0037 D: state the game exposes ----
+
+## The Engine metadata key a game registers its state readers under. The game needs no
+## reference to this folder or any class in it — it writes a Dictionary of
+## name -> Callable to Engine metadata from its own debug-only code:
+##     if OS.is_debug_build():
+##         var reg: Dictionary = Engine.get_meta(&"breakpoint_state", {})
+##         reg["mixer"] = _debug_mixer_state
+##         Engine.set_meta(&"breakpoint_state", reg)
+## so it compiles and runs unchanged in an export that leaves addons/breakpoint_mcp/ out.
+const STATE_META := &"breakpoint_state"
+
+
+## runtime.read_state — read-only by construction: it reads the registry and calls only
+## what the game chose to register there. No `name` lists the registered names.
+func _read_state(params: Dictionary) -> Dictionary:
+	if not Engine.has_meta(STATE_META) or typeof(Engine.get_meta(STATE_META)) != TYPE_DICTIONARY:
+		return _err("no_state_registry", "The game registered no state readers: Engine metadata \"breakpoint_state\" is not a Dictionary of name -> Callable.")
+	var reg: Dictionary = Engine.get_meta(STATE_META)
+	var names: Array = []
+	var by_name := {}
+	for k in reg.keys():
+		names.append(String(k))
+		by_name[String(k)] = reg[k]
+	names.sort()
+	var state_name := String(params.get("name", ""))
+	if state_name == "":
+		return _ok({"names": names})
+	if not by_name.has(state_name):
+		return _err("unknown_state", "No state reader named \"%s\". Registered: %s" % [state_name, ", ".join(PackedStringArray(names)) if not names.is_empty() else "(none)"])
+	var reader: Variant = by_name[state_name]
+	if typeof(reader) != TYPE_CALLABLE or not (reader as Callable).is_valid():
+		return _err("state_reader_gone", "The reader registered as \"%s\" is no longer callable — the object behind it was freed." % state_name)
+	var args: Array = []
+	for a in params.get("args", []):
+		args.append(Codec.decode(a))
+	var value: Variant = (reader as Callable).callv(args)
+	return _ok({"names": names, "name": state_name, "value": Codec.encode(value)})
+
+
+# ----------------------------------------------------- F8: node lifecycle ----
+
+func _node_add(params: Dictionary) -> Dictionary:
+	var parent := _resolve(String(params.get("parent", "")))
+	if parent == null:
+		return _err("bad_path", "Parent not found: %s" % params.get("parent", ""))
+	var child: Node = null
+	var scene_path := String(params.get("scene", ""))
+	if scene_path != "":
+		var ps: Variant = load(scene_path)
+		if ps == null or not (ps is PackedScene):
+			return _err("bad_scene", "Could not load PackedScene: %s" % scene_path)
+		child = (ps as PackedScene).instantiate()
+	else:
+		var type_name := String(params.get("type", ""))
+		if type_name == "":
+			return _err("bad_args", "Provide either 'scene' or 'type'")
+		if not ClassDB.class_exists(type_name) or not ClassDB.can_instantiate(type_name):
+			return _err("bad_type", "Cannot instantiate class: %s" % type_name)
+		var obj: Variant = ClassDB.instantiate(type_name)
+		if not (obj is Node):
+			# ClassDB.instantiate hands back an UNOWNED instance. A RefCounted subclass
+			# (Resource, Image, ...) releases itself when this reference goes out of scope;
+			# a bare Object does NOT, so returning here without freeing leaked one instance
+			# per call — which the engine reports only at exit, as "N ObjectDB instances
+			# were leaked". Proved session 152, measured session 153 at 51 leaked over 51
+			# calls and 0 with this branch in place.
+			# The RefCounted arm MUST be excluded: free() on a RefCounted is itself an error,
+			# which is why the safe-looking `Resource` case hid this for so long.
+			if obj is Object and not (obj is RefCounted):
+				(obj as Object).free()
+			return _err("not_a_node", "%s is not a Node" % type_name)
+		child = obj
+	if child == null:
+		return _err("instantiate_failed", "Failed to instantiate node")
+	var nm := String(params.get("name", ""))
+	if nm != "":
+		child.name = nm
+	# 🔴 283 §1's DEFECT ON THE OTHER PLANE, AND THIS ONE COULD NOT EVEN BE SEEN.
+	# `force_readable_name = true` for the same reason the twenty-two editor sites now
+	# pass it: Godot's default answers ANY name collision with the machine form
+	# `@Type@N`, so a caller asking twice for the same name got a node it could not
+	# address. Worse here than there — this reply carried `path` and `type` and NO
+	# `name`, so nothing in the answer even hinted the name had been replaced. 1.42.0's
+	# rule about the second call site, and 282 §11.1 paying it again.
+	# 🔴 ONLY A NAME THE CALLER ASKED FOR CAN BE COERCED, and the first draft of this got
+	# it wrong in a way the live probe caught: an unparented `ClassDB.instantiate()` node
+	# has an EMPTY name, so reading `requested` off the node reported every unnamed add as
+	# `coerced` from `""`. That is noise dressed as a diagnosis — the caller asked for
+	# nothing, so nothing was taken from it. The editor plane cannot hit this because it
+	# always writes a default name before adding; this plane deliberately does not.
+	parent.add_child(child, true)
+	var out := {"added": true, "path": _path_of(child), "name": String(child.name), "type": child.get_class()}
+	if nm != "" and String(child.name) != nm:
+		out["coerced"] = true
+		out["requested"] = nm
+	return _ok(out)
+
+
+func _node_remove(params: Dictionary) -> Dictionary:
+	var node := _resolve(String(params.get("path", "")))
+	if node == null:
+		return _err("bad_path", "Node not found: %s" % params.get("path", ""))
+	if node == _base():
+		return _err("cannot_remove_root", "Refusing to remove the current scene root")
+	var p := _path_of(node)
+	node.queue_free()
+	return _ok({"removed": true, "path": p})
+
+
+# ----------------------------------------------- F4: deterministic playtesting ----
+
+## Async dispatch lane: run a coroutine that awaits frames, then send the id'd response. Started
+## as a bare (un-awaited) call from _handle_line so _process never blocks; it resumes on the
+## engine's frame signals and sends when complete.
+func _dispatch_async(c: Dictionary, id: Variant, method: String, params: Dictionary) -> void:
+	# D1a: the async lane echoes too, and it is the lane that needs it MOST — a
+	# step_frames call runs the game for N frames, so it is the one dispatch here
+	# that can provoke errors from code the caller never named. Handing it the
+	# synchronous version's treatment is not symmetry for its own sake: a caller
+	# stepping frames to reproduce a bug is exactly the caller this feature is for.
+	var seq_before := _log_seq
+	var result: Dictionary
+	match method:
+		"runtime.step_frames":
+			result = await _step_frames(params)
+		"runtime.inject_input":
+			result = await _inject_pointer(params.get("event", {}))
+		_:
+			result = _err("async_only", "not an async method: %s" % method)
+	var peer: StreamPeerTCP = c.get("peer")
+	if peer != null and peer.get_status() == StreamPeerTCP.STATUS_CONNECTED:
+		var response := {"id": id}
+		response.merge(result)
+		_attach_engine_log(response, seq_before)
+		_send(peer, response)
+
+
+## Advance the game by an exact number of frames while otherwise frozen. Toggles
+## get_tree().paused false -> (await one frame) -> true per step (the standard Godot frame-step
+## idiom); the bridge keeps servicing the socket throughout because it is PROCESS_MODE_ALWAYS.
+## Restores the caller's prior pause state when done.
+func _step_frames(params: Dictionary) -> Dictionary:
+	var tree := get_tree()
+	if tree == null:
+		return _err("no_tree", "No scene tree")
+	var frames := clampi(int(params.get("frames", 1)), 1, 100000)
+	var kind := String(params.get("kind", "idle"))
+	var prev_scale := Engine.time_scale
+	# Advance by exactly `frames`: restore a normal time scale for the step (the caller froze via
+	# runtime_time_scale{scale:0}, which zeroes delta), and count real frames off the ENGINE frame
+	# counters. Freeze/step are driven by time_scale (delta), NOT get_tree().paused: pause is a
+	# per-node processing gate that desyncs from the frame counter by one frame at the step boundary
+	# (a node advances N-1 for N counted frames), whereas with time_scale the node processes every
+	# frame and the counter matches its work 1:1. time_scale is restored after.
+	Engine.time_scale = 1.0
+	if kind == "physics" or kind == "both":
+		var target_p := Engine.get_physics_frames() + frames
+		while Engine.get_physics_frames() < target_p:
+			await tree.physics_frame
+	else:
+		var target_i := Engine.get_process_frames() + frames
+		while Engine.get_process_frames() < target_i:
+			await tree.process_frame
+	Engine.time_scale = prev_scale
+	return _ok({"frames_advanced": frames, "frame_index": Engine.get_process_frames()})
+
+
+func _time_scale(params: Dictionary) -> Dictionary:
+	var previous := Engine.time_scale
+	var scale := maxf(0.0, float(params.get("scale", 1.0)))
+	Engine.time_scale = scale
+	# scale 0 freezes the game clock (delta -> 0): delta-based motion, tweens, timers and
+	# animations halt. runtime_step_frames temporarily restores a normal scale to advance an exact
+	# number of frames. Deliberately time_scale, not get_tree().paused — pause is a per-node
+	# processing gate that desyncs from the frame counter by one frame at the step boundary.
+	return _ok({"previous": previous, "current": Engine.time_scale})
+
+
+func _seed_rng(params: Dictionary) -> Dictionary:
+	var s := int(params.get("seed", 0))
+	seed(s)
+	return _ok({"seed": s})
+
+
+## Read a compact, stable-ordered snapshot of a subtree's salient state (read-only). Default
+## fields are the common transform/visibility properties; a caller may pass an explicit list.
+func _state_digest(params: Dictionary) -> Dictionary:
+	var root := _resolve(String(params.get("root", "")))
+	if root == null:
+		return _err("bad_path", "Node not found: %s" % params.get("root", ""))
+	var raw_fields: Variant = params.get("fields", [])
+	var fields: Array = raw_fields if typeof(raw_fields) == TYPE_ARRAY else []
+	var max_depth := int(params.get("max_depth", 8))
+	var digest := {}
+	var count := _digest_walk(root, 0, max_depth, fields, digest)
+	return _ok({"digest": digest, "node_count": count})
+
+
+func _digest_walk(node: Node, depth: int, max_depth: int, fields: Array, digest: Dictionary) -> int:
+	var entry := {}
+	if fields.is_empty():
+		for f in _DIGEST_DEFAULT_FIELDS:
+			var dv: Variant = node.get(f)
+			if dv != null:
+				entry[f] = Codec.encode(dv)
+	else:
+		for f in fields:
+			var fn := String(f)
+			entry[fn] = Codec.encode(node.get(fn))
+	digest[_path_of(node)] = entry
+	var count := 1
+	if depth < max_depth:
+		for ch in node.get_children():
+			count += _digest_walk(ch, depth + 1, max_depth, fields, digest)
+	return count

@@ -1,0 +1,83 @@
+class_name MapObject
+extends StaticBody3D
+
+## 0 = sem snap. Ex.: 1.0 alinha o objeto a uma grade de 1 unidade.
+@export var snap_size: float = 0.0
+
+var _hovering: bool = false
+var _dragging: bool = false
+var _grab_offset: Vector3 = Vector3.ZERO
+
+func _ready() -> void:
+	input_ray_pickable = true
+	mouse_entered.connect(_on_mouse_entered)
+	mouse_exited.connect(_on_mouse_exited)
+	input_event.connect(_on_input_event)
+	set_process(false)
+
+func _on_mouse_entered() -> void:
+	_hovering = true
+	_update_cursor()
+
+func _on_mouse_exited() -> void:
+	_hovering = false
+	_update_cursor()
+
+func _on_input_event(_camera: Node, event: InputEvent, _position: Vector3, _normal: Vector3, _shape_idx: int) -> void:
+	if event is InputEventMouseButton \
+			and event.button_index == MOUSE_BUTTON_LEFT \
+			and event.pressed:
+		var hit: Variant = _mouse_on_plane()
+		if hit == null:
+			return
+		# Guarda a distância entre o ponto clicado e o centro do objeto,
+		# para ele não "pular" para o cursor ao começar a arrastar
+		_grab_offset = global_position - (hit as Vector3)
+		_dragging = true
+		set_process(true)
+		_update_cursor()
+
+# Solta o botão em qualquer lugar da tela, mesmo fora do objeto
+func _input(event: InputEvent) -> void:
+	if _dragging \
+			and event is InputEventMouseButton \
+			and event.button_index == MOUSE_BUTTON_LEFT \
+			and not event.pressed:
+		_dragging = false
+		set_process(false)
+		_update_cursor()
+
+# Atualiza no _process (e não só no evento de movimento) para o objeto
+# continuar acompanhando o mouse enquanto a câmera se move
+func _process(_delta: float) -> void:
+	var hit: Variant = _mouse_on_plane()
+	if hit == null:
+		return
+
+	var target: Vector3 = (hit as Vector3) + _grab_offset
+	if snap_size > 0.0:
+		target.x = snappedf(target.x, snap_size)
+		target.z = snappedf(target.z, snap_size)
+
+	global_position = Vector3(target.x, global_position.y, target.z)
+
+# Interseção do raio do mouse com o plano horizontal na altura do objeto
+func _mouse_on_plane() -> Variant:
+	var viewport := get_viewport()
+	var cam := viewport.get_camera_3d()
+	if cam == null:
+		return null
+
+	var mouse := viewport.get_mouse_position()
+	var origin := cam.project_ray_origin(mouse)
+	var direction := cam.project_ray_normal(mouse)
+
+	return Plane(Vector3.UP, global_position.y).intersects_ray(origin, direction)
+
+func _update_cursor() -> void:
+	if _dragging:
+		Input.set_default_cursor_shape(Input.CURSOR_DRAG)
+	elif _hovering:
+		Input.set_default_cursor_shape(Input.CURSOR_POINTING_HAND)
+	else:
+		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
