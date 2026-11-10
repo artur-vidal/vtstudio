@@ -1,0 +1,161 @@
+[gd_scene format=3 uid="uid://dr1r5so6e7ars"]
+
+[ext_resource type="Texture2D" uid="uid://ckdhqmluadyul" path="res://assets/images/background/Background.png" id="1_05kc0"]
+[ext_resource type="FontFile" uid="uid://dwhrhbcuu4ruw" path="res://assets/fonts/Fondamento/Fondamento-Regular.ttf" id="2_fejsg"]
+[ext_resource type="FontFile" uid="uid://boh5tn7ickl64" path="res://assets/fonts/Outfit/static/Outfit-Bold.ttf" id="3_m051g"]
+[ext_resource type="PackedScene" uid="uid://dgiyf8adwj63m" path="res://assets/components/dropdown/Dropdown.tscn" id="4_2k2s5"]
+[ext_resource type="PackedScene" uid="uid://jj1hffbx4inr" path="res://assets/components/navBar/NavBar.tscn" id="5_2hc00"]
+[ext_resource type="Texture2D" uid="uid://wige0t5t1l7u" path="res://assets/images/LogoVTStudio.png" id="5_fejsg"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_lujl4"]
+texture = ExtResource("1_05kc0")
+axis_stretch_vertical = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3874r"]
+bg_color = Color(0.9882353, 0.9882353, 1, 1)
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_x1wmc"]
+color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+grow_begin = 15.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cqbs0"]
+bg_color = Color(0.6117647, 0.10980392, 0.18039216, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[node name="Daltonismo" type="Control" unique_id=345947179]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=1975840753]
+custom_minimum_size = Vector2(412, 917)
+custom_maximum_size = Vector2(412, 917)
+layout_mode = 0
+offset_right = 412.0
+offset_bottom = 917.0
+theme_override_styles/panel = SubResource("StyleBoxTexture_lujl4")
+
+[node name="Separação tela" type="VBoxContainer" parent="PanelContainer" unique_id=456681333]
+layout_mode = 2
+
+[node name="Header" type="HBoxContainer" parent="PanelContainer/Separação tela" unique_id=1727283890]
+custom_minimum_size = Vector2(412, 140)
+custom_maximum_size = Vector2(412, 140)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/Separação tela/Header" unique_id=964192173]
+layout_mode = 2
+theme_override_constants/margin_left = 80
+theme_override_constants/margin_right = 80
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=1392897429]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_colors/default_color = Color(0.007843138, 0.007843138, 0.007843138, 1)
+theme_override_fonts/normal_font = ExtResource("2_fejsg")
+theme_override_font_sizes/normal_font_size = 32
+text = "Daltonismo"
+fit_content = true
+scroll_active = false
+
+[node name="Fundo branco" type="PanelContainer" parent="PanelContainer/Separação tela" unique_id=379996099]
+custom_minimum_size = Vector2(1152, 629)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_3874r")
+
+[node name="Separação" type="VBoxContainer" parent="PanelContainer/Separação tela/Fundo branco" unique_id=329209163]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="Margem" type="MarginContainer" parent="PanelContainer/Separação tela/Fundo branco/Separação" unique_id=2083235601]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+
+[node name="Opções" type="VBoxContainer" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem" unique_id=756677178]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/separation = 8
+
+[node name="HSeparator" type="HSeparator" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=107675232]
+custom_minimum_size = Vector2(412, 0)
+custom_maximum_size = Vector2(412, -1)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxLine_x1wmc")
+
+[node name="Opcao" type="VBoxContainer" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=112536781]
+layout_mode = 2
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opcao" unique_id=904292905]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_colors/default_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+theme_override_fonts/normal_font = ExtResource("3_m051g")
+theme_override_font_sizes/normal_font_size = 16
+text = "Tipo de Daltonismo"
+fit_content = true
+
+[node name="Dropdown" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opcao" unique_id=538495497 instance=ExtResource("4_2k2s5")]
+custom_minimum_size = Vector2(220, 0)
+custom_maximum_size = Vector2(320, -1)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+fit_to_longest_item = false
+popup/item_0/text = "Nenhum"
+popup/item_1/text = "Deutaronopia"
+popup/item_2/text = "Tritanopia"
+popup/item_3/text = "Protanopia"
+
+[node name="HSeparator2" type="HSeparator" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=107469797]
+custom_minimum_size = Vector2(412, 0)
+custom_maximum_size = Vector2(412, -1)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxLine_x1wmc")
+
+[node name="Opcao2" type="VBoxContainer" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=723553009]
+layout_mode = 2
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opcao2" unique_id=1052393393]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_colors/default_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+theme_override_fonts/normal_font = ExtResource("3_m051g")
+theme_override_font_sizes/normal_font_size = 16
+text = "Exemplo"
+fit_content = true
+
+[node name="Imagem" type="PanelContainer" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opcao2" unique_id=936390237]
+custom_minimum_size = Vector2(180, 180)
+custom_maximum_size = Vector2(220, 220)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_cqbs0")
+
+[node name="TextureRect" type="TextureRect" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opcao2/Imagem" unique_id=700173726]
+layout_mode = 2
+texture = ExtResource("5_fejsg")
+stretch_mode = 5
+
+[node name="HSeparator4" type="HSeparator" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=1746009307]
+custom_minimum_size = Vector2(412, 0)
+custom_maximum_size = Vector2(412, -1)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxLine_x1wmc")
+
+[node name="NavBar" parent="PanelContainer/Separação tela" unique_id=1337153430 instance=ExtResource("5_2hc00")]
+layout_mode = 2
