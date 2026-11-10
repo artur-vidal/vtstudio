@@ -1,19 +1,9 @@
 [gd_scene format=3 uid="uid://btrnuha7covcr"]
 
-[ext_resource type="Texture2D" uid="uid://ckdhqmluadyul" path="res://assets/images/background/Background.png" id="1_48yu3"]
 [ext_resource type="Texture2D" uid="uid://r76kxhpnhhpu" path="res://assets/images/PlaceHolder-image.png" id="1_f6d1t"]
 [ext_resource type="FontFile" uid="uid://duh8pcqgfmpp" path="res://assets/fonts/Outfit/static/Outfit-Medium.ttf" id="2_6ahsb"]
-[ext_resource type="PackedScene" uid="uid://brotkrsfn8tyt" path="res://assets/components/icone/icon.tscn" id="2_pko2t"]
-[ext_resource type="Theme" uid="uid://c2q3rcmq2d5vv" path="res://assets/components/themes/icone/IconeVermelho.tres" id="3_bd4fs"]
 [ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://assets/components/botao/Botao.tscn" id="3_iknby"]
-[ext_resource type="Texture2D" uid="uid://cceq6vmhp7tw8" path="res://assets/images/Portrait_Placeholder.png" id="4_2gts7"]
 [ext_resource type="Theme" uid="uid://bwp2tkasans1b" path="res://assets/components/themes/button/ButtonDourado.tres" id="4_fegw2"]
-[ext_resource type="FontFile" uid="uid://dwhrhbcuu4ruw" path="res://assets/fonts/Fondamento/Fondamento-Regular.ttf" id="5_t6lyp"]
-[ext_resource type="PackedScene" uid="uid://jj1hffbx4inr" path="res://assets/components/navBar/NavBar.tscn" id="10_xlfu2"]
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_oh8pa"]
-texture = ExtResource("1_48yu3")
-axis_stretch_vertical = 2
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_f0sqa"]
 bg_color = Color(0.654902, 0.11372549, 0.19215687, 1)
@@ -42,71 +32,17 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="PanelContainer" type="PanelContainer" parent="." unique_id=211106242]
-custom_minimum_size = Vector2(412, 917)
-custom_maximum_size = Vector2(412, 917)
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=2011938134]
+custom_minimum_size = Vector2(412, 106)
+custom_maximum_size = Vector2(412, 106)
 layout_mode = 0
+offset_top = 222.0
 offset_right = 412.0
-offset_bottom = 917.0
-theme_override_styles/panel = SubResource("StyleBoxTexture_oh8pa")
-
-[node name="Separação tela" type="VBoxContainer" parent="PanelContainer" unique_id=851806732]
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 0
-theme_override_constants/separation = 82
-
-[node name="Header" type="HBoxContainer" parent="PanelContainer/Separação tela" unique_id=1620527133]
-custom_minimum_size = Vector2(412, 140)
-custom_maximum_size = Vector2(412, 140)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-theme_override_constants/separation = 16
-alignment = 1
-
-[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/Separação tela/Header" unique_id=1541067934]
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-theme_override_constants/margin_left = 91
-theme_override_constants/margin_right = 80
-
-[node name="PanelContainer" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=1726400785 instance=ExtResource("2_pko2t")]
-clip_children = 2
-layout_mode = 2
-size_flags_horizontal = 8
-size_flags_vertical = 4
-size_flags_stretch_ratio = 0.0
-offset_transform_enabled = true
-offset_transform_position_ratio = Vector2(1.52, 0)
-theme = ExtResource("3_bd4fs")
-textura = ExtResource("4_2gts7")
-cor = "Vermelho"
-
-[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=893081121]
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-theme_override_colors/default_color = Color(0.007843138, 0.007843138, 0.007843138, 1)
-theme_override_fonts/normal_font = ExtResource("5_t6lyp")
-theme_override_font_sizes/normal_font_size = 32
-text = "Meus Projetos"
-fit_content = true
-scroll_active = false
-
-[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/Separação tela" unique_id=5126755]
-layout_mode = 2
-theme_override_constants/separation = 16
-
-[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/Separação tela/VBoxContainer" unique_id=2011938134]
-custom_minimum_size = Vector2(412, 106)
-custom_maximum_size = Vector2(412, 106)
-layout_mode = 2
+offset_bottom = 328.0
 size_flags_horizontal = 4
 size_flags_vertical = 4
 
-[node name="PanelContainer" type="PanelContainer" parent="PanelContainer/Separação tela/VBoxContainer/VBoxContainer" unique_id=686597035]
+[node name="PanelContainer" type="PanelContainer" parent="VBoxContainer" unique_id=686597035]
 custom_minimum_size = Vector2(396, 130)
 custom_maximum_size = Vector2(396, 130)
 layout_mode = 2
@@ -115,12 +51,12 @@ size_flags_vertical = 4
 theme_override_styles/panel = SubResource("StyleBoxFlat_f0sqa")
 accessibility_region = true
 
-[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/Separação tela/VBoxContainer/VBoxContainer/PanelContainer" unique_id=1413205980]
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/PanelContainer" unique_id=1413205980]
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_constants/separation = 23
 
-[node name="Imagem" type="PanelContainer" parent="PanelContainer/Separação tela/VBoxContainer/VBoxContainer/PanelContainer/HBoxContainer" unique_id=570187011]
+[node name="Imagem" type="PanelContainer" parent="VBoxContainer/PanelContainer/HBoxContainer" unique_id=570187011]
 custom_minimum_size = Vector2(142, 82)
 custom_maximum_size = Vector2(142, 82)
 propagate_maximum_size = false
@@ -131,17 +67,17 @@ offset_transform_enabled = true
 offset_transform_position = Vector2(12.98, 0)
 theme_override_styles/panel = SubResource("StyleBoxFlat_4rqtk")
 
-[node name="TextureRect" type="TextureRect" parent="PanelContainer/Separação tela/VBoxContainer/VBoxContainer/PanelContainer/HBoxContainer/Imagem" unique_id=187158824]
+[node name="TextureRect" type="TextureRect" parent="VBoxContainer/PanelContainer/HBoxContainer/Imagem" unique_id=187158824]
 custom_minimum_size = Vector2(139, 82)
 custom_maximum_size = Vector2(139, 82)
 layout_mode = 2
 theme = SubResource("Theme_arce0")
 texture = ExtResource("1_f6d1t")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/Separação tela/VBoxContainer/VBoxContainer/PanelContainer/HBoxContainer" unique_id=883350107]
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/PanelContainer/HBoxContainer" unique_id=883350107]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="PanelContainer/Separação tela/VBoxContainer/VBoxContainer/PanelContainer/HBoxContainer/VBoxContainer" unique_id=1262805559]
+[node name="Label" type="Label" parent="VBoxContainer/PanelContainer/HBoxContainer/VBoxContainer" unique_id=1262805559]
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 0
@@ -154,196 +90,8 @@ vertical_alignment = 1
 autowrap_trim_flags = 0
 justification_flags = 0
 
-[node name="BotaoDourado" parent="PanelContainer/Separação tela/VBoxContainer/VBoxContainer/PanelContainer/HBoxContainer/VBoxContainer" unique_id=151969610 instance=ExtResource("3_iknby")]
+[node name="BotaoDourado" parent="VBoxContainer/PanelContainer/HBoxContainer/VBoxContainer" unique_id=151969610 instance=ExtResource("3_iknby")]
 layout_mode = 2
 theme = ExtResource("4_fegw2")
 text = "Ver"
 cor = "Dourado"
-
-[node name="VBoxContainer4" type="VBoxContainer" parent="PanelContainer/Separação tela/VBoxContainer" unique_id=2056097644]
-custom_minimum_size = Vector2(412, 106)
-custom_maximum_size = Vector2(412, 106)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-
-[node name="PanelContainer" type="PanelContainer" parent="PanelContainer/Separação tela/VBoxContainer/VBoxContainer4" unique_id=869895913]
-custom_minimum_size = Vector2(396, 130)
-custom_maximum_size = Vector2(396, 130)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-theme_override_styles/panel = SubResource("StyleBoxFlat_f0sqa")
-accessibility_region = true
-
-[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/Separação tela/VBoxContainer/VBoxContainer4/PanelContainer" unique_id=839952330]
-layout_mode = 2
-size_flags_vertical = 4
-theme_override_constants/separation = 23
-
-[node name="Imagem" type="PanelContainer" parent="PanelContainer/Separação tela/VBoxContainer/VBoxContainer4/PanelContainer/HBoxContainer" unique_id=989326703]
-custom_minimum_size = Vector2(142, 82)
-custom_maximum_size = Vector2(142, 82)
-propagate_maximum_size = false
-layout_mode = 2
-size_flags_horizontal = 0
-size_flags_vertical = 4
-offset_transform_enabled = true
-offset_transform_position = Vector2(12.98, 0)
-theme_override_styles/panel = SubResource("StyleBoxFlat_4rqtk")
-
-[node name="TextureRect" type="TextureRect" parent="PanelContainer/Separação tela/VBoxContainer/VBoxContainer4/PanelContainer/HBoxContainer/Imagem" unique_id=716933732]
-custom_minimum_size = Vector2(139, 82)
-custom_maximum_size = Vector2(139, 82)
-layout_mode = 2
-theme = SubResource("Theme_arce0")
-texture = ExtResource("1_f6d1t")
-
-[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/Separação tela/VBoxContainer/VBoxContainer4/PanelContainer/HBoxContainer" unique_id=2083794458]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="PanelContainer/Separação tela/VBoxContainer/VBoxContainer4/PanelContainer/HBoxContainer/VBoxContainer" unique_id=455264549]
-layout_mode = 2
-size_flags_horizontal = 0
-size_flags_vertical = 0
-size_flags_stretch_ratio = 0.0
-theme_override_fonts/font = ExtResource("2_6ahsb")
-theme_override_font_sizes/font_size = 24
-text = "Projeto N°1"
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_trim_flags = 0
-justification_flags = 0
-
-[node name="BotaoDourado" parent="PanelContainer/Separação tela/VBoxContainer/VBoxContainer4/PanelContainer/HBoxContainer/VBoxContainer" unique_id=1053110168 instance=ExtResource("3_iknby")]
-layout_mode = 2
-theme = ExtResource("4_fegw2")
-text = "Ver"
-cor = "Dourado"
-
-[node name="VBoxContainer2" type="VBoxContainer" parent="PanelContainer/Separação tela/VBoxContainer" unique_id=1676011972]
-custom_minimum_size = Vector2(412, 106)
-custom_maximum_size = Vector2(412, 106)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-
-[node name="PanelContainer" type="PanelContainer" parent="PanelContainer/Separação tela/VBoxContainer/VBoxContainer2" unique_id=443263471]
-custom_minimum_size = Vector2(396, 130)
-custom_maximum_size = Vector2(396, 130)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-theme_override_styles/panel = SubResource("StyleBoxFlat_f0sqa")
-accessibility_region = true
-
-[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/Separação tela/VBoxContainer/VBoxContainer2/PanelContainer" unique_id=1086980927]
-layout_mode = 2
-size_flags_vertical = 4
-theme_override_constants/separation = 23
-
-[node name="Imagem" type="PanelContainer" parent="PanelContainer/Separação tela/VBoxContainer/VBoxContainer2/PanelContainer/HBoxContainer" unique_id=110938040]
-custom_minimum_size = Vector2(142, 82)
-custom_maximum_size = Vector2(142, 82)
-propagate_maximum_size = false
-layout_mode = 2
-size_flags_horizontal = 0
-size_flags_vertical = 4
-offset_transform_enabled = true
-offset_transform_position = Vector2(12.98, 0)
-theme_override_styles/panel = SubResource("StyleBoxFlat_4rqtk")
-
-[node name="TextureRect" type="TextureRect" parent="PanelContainer/Separação tela/VBoxContainer/VBoxContainer2/PanelContainer/HBoxContainer/Imagem" unique_id=1124019695]
-custom_minimum_size = Vector2(139, 82)
-custom_maximum_size = Vector2(139, 82)
-layout_mode = 2
-theme = SubResource("Theme_arce0")
-texture = ExtResource("1_f6d1t")
-
-[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/Separação tela/VBoxContainer/VBoxContainer2/PanelContainer/HBoxContainer" unique_id=94593448]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="PanelContainer/Separação tela/VBoxContainer/VBoxContainer2/PanelContainer/HBoxContainer/VBoxContainer" unique_id=1231288756]
-layout_mode = 2
-size_flags_horizontal = 0
-size_flags_vertical = 0
-size_flags_stretch_ratio = 0.0
-theme_override_fonts/font = ExtResource("2_6ahsb")
-theme_override_font_sizes/font_size = 24
-text = "Projeto N°1"
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_trim_flags = 0
-justification_flags = 0
-
-[node name="BotaoDourado" parent="PanelContainer/Separação tela/VBoxContainer/VBoxContainer2/PanelContainer/HBoxContainer/VBoxContainer" unique_id=81003378 instance=ExtResource("3_iknby")]
-layout_mode = 2
-theme = ExtResource("4_fegw2")
-text = "Ver"
-cor = "Dourado"
-
-[node name="VBoxContainer3" type="VBoxContainer" parent="PanelContainer/Separação tela/VBoxContainer" unique_id=1529565408]
-custom_minimum_size = Vector2(412, 106)
-custom_maximum_size = Vector2(412, 106)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-theme_override_constants/separation = -16
-
-[node name="PanelContainer" type="PanelContainer" parent="PanelContainer/Separação tela/VBoxContainer/VBoxContainer3" unique_id=666267499]
-custom_minimum_size = Vector2(396, 130)
-custom_maximum_size = Vector2(396, 130)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-theme_override_styles/panel = SubResource("StyleBoxFlat_f0sqa")
-accessibility_region = true
-
-[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/Separação tela/VBoxContainer/VBoxContainer3/PanelContainer" unique_id=28837172]
-layout_mode = 2
-size_flags_vertical = 4
-theme_override_constants/separation = 23
-
-[node name="Imagem" type="PanelContainer" parent="PanelContainer/Separação tela/VBoxContainer/VBoxContainer3/PanelContainer/HBoxContainer" unique_id=1024316906]
-custom_minimum_size = Vector2(142, 82)
-custom_maximum_size = Vector2(142, 82)
-propagate_maximum_size = false
-layout_mode = 2
-size_flags_horizontal = 0
-size_flags_vertical = 4
-offset_transform_enabled = true
-offset_transform_position = Vector2(12.98, 0)
-theme_override_styles/panel = SubResource("StyleBoxFlat_4rqtk")
-
-[node name="TextureRect" type="TextureRect" parent="PanelContainer/Separação tela/VBoxContainer/VBoxContainer3/PanelContainer/HBoxContainer/Imagem" unique_id=1785421763]
-custom_minimum_size = Vector2(139, 82)
-custom_maximum_size = Vector2(139, 82)
-layout_mode = 2
-theme = SubResource("Theme_arce0")
-texture = ExtResource("1_f6d1t")
-
-[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/Separação tela/VBoxContainer/VBoxContainer3/PanelContainer/HBoxContainer" unique_id=1373941528]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="PanelContainer/Separação tela/VBoxContainer/VBoxContainer3/PanelContainer/HBoxContainer/VBoxContainer" unique_id=1044976349]
-layout_mode = 2
-size_flags_horizontal = 0
-size_flags_vertical = 0
-size_flags_stretch_ratio = 0.0
-theme_override_fonts/font = ExtResource("2_6ahsb")
-theme_override_font_sizes/font_size = 24
-text = "Projeto N°1"
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_trim_flags = 0
-justification_flags = 0
-
-[node name="BotaoDourado" parent="PanelContainer/Separação tela/VBoxContainer/VBoxContainer3/PanelContainer/HBoxContainer/VBoxContainer" unique_id=489677088 instance=ExtResource("3_iknby")]
-layout_mode = 2
-theme = ExtResource("4_fegw2")
-text = "Ver"
-cor = "Dourado"
-
-[node name="NavBar" parent="PanelContainer/Separação tela" unique_id=1337153430 instance=ExtResource("10_xlfu2")]
-layout_mode = 2
-theme_override_constants/separation = 16
