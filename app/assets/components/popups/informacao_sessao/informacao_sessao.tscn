@@ -1,0 +1,121 @@
+[gd_scene format=3 uid="uid://bhvfjloj06qle"]
+
+[ext_resource type="Texture2D" uid="uid://r76kxhpnhhpu" path="res://assets/images/PlaceHolder-image.png" id="1_2jpjs"]
+[ext_resource type="FontFile" uid="uid://boh5tn7ickl64" path="res://assets/fonts/Outfit/static/Outfit-Bold.ttf" id="2_47bys"]
+[ext_resource type="FontFile" uid="uid://iyvms52ed4p4" path="res://assets/fonts/Outfit/static/Outfit-Regular.ttf" id="3_vxt5r"]
+[ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://assets/components/botao/Botao.tscn" id="4_1qsty"]
+[ext_resource type="Theme" uid="uid://bbubev3ycaqjc" path="res://assets/components/themes/button/ButtonVermelho.tres" id="5_368f0"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vgfs1"]
+bg_color = Color(0.8352941, 0.7490196, 0.5254902, 1)
+border_width_top = 60
+border_color = Color(0.6117647, 0.10980392, 0.18039216, 1)
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(0, 0, 0, 0.27450982)
+shadow_size = 6
+shadow_offset = Vector2(4, 4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cqbs0"]
+border_width_left = 8
+border_width_top = 8
+border_width_right = 8
+border_width_bottom = 8
+border_color = Color(0.9882353, 0.9882353, 1, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[node name="InformacaoSessao" type="PanelContainer" unique_id=982595184]
+custom_minimum_size = Vector2(280, 380)
+custom_maximum_size = Vector2(280, 420)
+theme_override_styles/panel = SubResource("StyleBoxFlat_vgfs1")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=57875241]
+layout_mode = 2
+theme_override_constants/margin_top = 16
+
+[node name="Divisória" type="VBoxContainer" parent="MarginContainer" unique_id=1269076091]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="PanelContainer" type="PanelContainer" parent="MarginContainer/Divisória" unique_id=1838990232]
+custom_minimum_size = Vector2(220, 100)
+custom_maximum_size = Vector2(220, 100)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_cqbs0")
+
+[node name="TextureRect" type="TextureRect" parent="MarginContainer/Divisória/PanelContainer" unique_id=668768965]
+custom_minimum_size = Vector2(220, 100)
+custom_maximum_size = Vector2(280, 100)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture = ExtResource("1_2jpjs")
+stretch_mode = 6
+
+[node name="Textos" type="MarginContainer" parent="MarginContainer/Divisória" unique_id=498145]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+theme_override_constants/margin_left = 32
+
+[node name="Texto" type="GridContainer" parent="MarginContainer/Divisória/Textos" unique_id=1370531010]
+layout_mode = 2
+columns = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/Divisória/Textos/Texto" unique_id=2030956276]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Legenda" type="HBoxContainer" parent="MarginContainer/Divisória/Textos/Texto/VBoxContainer" unique_id=1742009903]
+layout_mode = 2
+theme_override_constants/separation = 42
+
+[node name="RichTextLabel" type="RichTextLabel" parent="MarginContainer/Divisória/Textos/Texto/VBoxContainer/Legenda" unique_id=86549665]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+theme_override_fonts/normal_font = ExtResource("2_47bys")
+theme_override_font_sizes/normal_font_size = 24
+text = "Players:"
+fit_content = true
+
+[node name="RichTextLabel2" type="RichTextLabel" parent="MarginContainer/Divisória/Textos/Texto/VBoxContainer/Legenda" unique_id=1969204945]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+theme_override_fonts/normal_font = ExtResource("2_47bys")
+theme_override_font_sizes/normal_font_size = 24
+text = "Mestre:"
+fit_content = true
+
+[node name="Pessoas" type="HBoxContainer" parent="MarginContainer/Divisória/Textos/Texto/VBoxContainer" unique_id=2017238624]
+layout_mode = 2
+theme_override_constants/separation = 42
+
+[node name="Player" type="RichTextLabel" parent="MarginContainer/Divisória/Textos/Texto/VBoxContainer/Pessoas" unique_id=1130497835]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+theme_override_fonts/normal_font = ExtResource("3_vxt5r")
+text = "Insira player
+Insira player
+Insira player
+"
+fit_content = true
+
+[node name="Mestre" type="RichTextLabel" parent="MarginContainer/Divisória/Textos/Texto/VBoxContainer/Pessoas" unique_id=980079461]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+theme_override_fonts/normal_font = ExtResource("3_vxt5r")
+text = "Insira mestre"
+fit_content = true
+
+[node name="BotaoDourado" parent="MarginContainer/Divisória" unique_id=151969610 instance=ExtResource("4_1qsty")]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 6
+theme = ExtResource("5_368f0")
+text = "Sair"
+cor = "Vermelho"
