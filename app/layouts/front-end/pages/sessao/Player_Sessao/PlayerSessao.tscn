@@ -1,0 +1,264 @@
+[gd_scene format=3 uid="uid://wy7xigmmpa2o"]
+
+[ext_resource type="Texture2D" uid="uid://1y287ilvq2xa" path="res://assets/images/Vector.png" id="1_8pi45"]
+[ext_resource type="FontFile" uid="uid://dwhrhbcuu4ruw" path="res://assets/fonts/Fondamento/Fondamento-Regular.ttf" id="2_jyr32"]
+[ext_resource type="Texture2D" uid="uid://r76kxhpnhhpu" path="res://assets/images/PlaceHolder-image.png" id="3_cgrob"]
+[ext_resource type="Texture2D" uid="uid://bpkp47igxp2om" path="res://assets/images/Faixa.png" id="4_tyw04"]
+[ext_resource type="FontFile" uid="uid://boh5tn7ickl64" path="res://assets/fonts/Outfit/static/Outfit-Bold.ttf" id="5_hu3cs"]
+[ext_resource type="FontFile" uid="uid://iyvms52ed4p4" path="res://assets/fonts/Outfit/static/Outfit-Regular.ttf" id="6_im6ml"]
+[ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://assets/components/botao/Botao.tscn" id="7_vps2v"]
+[ext_resource type="Theme" uid="uid://bwp2tkasans1b" path="res://assets/components/themes/button/ButtonDourado.tres" id="8_sqy7b"]
+[ext_resource type="PackedScene" uid="uid://jj1hffbx4inr" path="res://assets/components/navBar/NavBar.tscn" id="9_2n6my"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rywq3"]
+bg_color = Color(0.6117647, 0.10980392, 0.18039216, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mrbba"]
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ik8i3"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+
+[node name="PlayerSessao" type="Control" unique_id=1685892239]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=833715510]
+custom_minimum_size = Vector2(412, 917)
+custom_maximum_size = Vector2(412, 917)
+layout_mode = 0
+offset_right = 412.0
+offset_bottom = 917.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_rywq3")
+
+[node name="Separação tela" type="VBoxContainer" parent="PanelContainer" unique_id=2064443794]
+layout_mode = 2
+theme_override_constants/separation = 9
+
+[node name="Header" type="HBoxContainer" parent="PanelContainer/Separação tela" unique_id=749871169]
+custom_minimum_size = Vector2(412, 140)
+custom_maximum_size = Vector2(412, 140)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/Separação tela/Header" unique_id=1669703691]
+layout_mode = 2
+theme_override_constants/margin_left = 100
+theme_override_constants/margin_right = 80
+
+[node name="Vector" type="Sprite2D" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=952573298]
+position = Vector2(29, 66.5)
+scale = Vector2(1.5, 1.4583334)
+texture = ExtResource("1_8pi45")
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=1734096130]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("2_jyr32")
+theme_override_font_sizes/normal_font_size = 32
+text = "Detalhes projeto"
+fit_content = true
+scroll_active = false
+
+[node name="Contéudo" type="VBoxContainer" parent="PanelContainer/Separação tela" unique_id=393397534]
+custom_minimum_size = Vector2(412, 620)
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Foto" type="PanelContainer" parent="PanelContainer/Separação tela/Contéudo" unique_id=561615693]
+clip_children = 1
+custom_minimum_size = Vector2(320, 220)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_mrbba")
+
+[node name="TextureRect" type="TextureRect" parent="PanelContainer/Separação tela/Contéudo/Foto" unique_id=2088823216]
+layout_mode = 2
+texture = ExtResource("3_cgrob")
+expand_mode = 3
+stretch_mode = 4
+
+[node name="Título" type="PanelContainer" parent="PanelContainer/Separação tela/Contéudo" unique_id=171318216]
+custom_minimum_size = Vector2(320, 60)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_ik8i3")
+
+[node name="TextureRect" type="TextureRect" parent="PanelContainer/Separação tela/Contéudo/Título" unique_id=1470890365]
+layout_mode = 2
+texture = ExtResource("4_tyw04")
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Contéudo/Título" unique_id=1705865679]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("2_jyr32")
+theme_override_font_sizes/normal_font_size = 32
+text = "Nome sessão"
+fit_content = true
+
+[node name="Informações" type="GridContainer" parent="PanelContainer/Separação tela/Contéudo" unique_id=499677495]
+custom_minimum_size = Vector2(320, 120)
+custom_maximum_size = Vector2(320, 320)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/h_separation = 16
+columns = 2
+
+[node name="Pessoas" type="VBoxContainer" parent="PanelContainer/Separação tela/Contéudo/Informações" unique_id=342926248]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Mestre" type="VBoxContainer" parent="PanelContainer/Separação tela/Contéudo/Informações/Pessoas" unique_id=1756401402]
+layout_mode = 2
+
+[node name="Título" type="RichTextLabel" parent="PanelContainer/Separação tela/Contéudo/Informações/Pessoas/Mestre" unique_id=716370562]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("5_hu3cs")
+theme_override_font_sizes/normal_font_size = 24
+text = "Mestre:"
+fit_content = true
+
+[node name="Nome" type="RichTextLabel" parent="PanelContainer/Separação tela/Contéudo/Informações/Pessoas/Mestre" unique_id=4701833]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("6_im6ml")
+theme_override_font_sizes/normal_font_size = 20
+text = "Insira Nome"
+fit_content = true
+
+[node name="Players" type="VBoxContainer" parent="PanelContainer/Separação tela/Contéudo/Informações/Pessoas" unique_id=971030573]
+layout_mode = 2
+
+[node name="Título" type="RichTextLabel" parent="PanelContainer/Separação tela/Contéudo/Informações/Pessoas/Players" unique_id=1094370809]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("5_hu3cs")
+theme_override_font_sizes/normal_font_size = 24
+text = "Players:"
+fit_content = true
+
+[node name="Nome" type="RichTextLabel" parent="PanelContainer/Separação tela/Contéudo/Informações/Pessoas/Players" unique_id=1295247163]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("6_im6ml")
+theme_override_font_sizes/normal_font_size = 20
+text = "Insira Nome"
+fit_content = true
+
+[node name="Nome2" type="RichTextLabel" parent="PanelContainer/Separação tela/Contéudo/Informações/Pessoas/Players" unique_id=165950859]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("6_im6ml")
+theme_override_font_sizes/normal_font_size = 20
+text = "Insira Nome"
+fit_content = true
+
+[node name="Nome3" type="RichTextLabel" parent="PanelContainer/Separação tela/Contéudo/Informações/Pessoas/Players" unique_id=728332095]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("6_im6ml")
+theme_override_font_sizes/normal_font_size = 20
+text = "Insira Nome"
+fit_content = true
+
+[node name="Nome4" type="RichTextLabel" parent="PanelContainer/Separação tela/Contéudo/Informações/Pessoas/Players" unique_id=1406622022]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("6_im6ml")
+theme_override_font_sizes/normal_font_size = 20
+text = "Insira Nome"
+fit_content = true
+
+[node name="Infos" type="VBoxContainer" parent="PanelContainer/Separação tela/Contéudo/Informações" unique_id=1617302986]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Sessao" type="VBoxContainer" parent="PanelContainer/Separação tela/Contéudo/Informações/Infos" unique_id=135789459]
+layout_mode = 2
+
+[node name="Título" type="RichTextLabel" parent="PanelContainer/Separação tela/Contéudo/Informações/Infos/Sessao" unique_id=424655126]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("5_hu3cs")
+theme_override_font_sizes/normal_font_size = 24
+text = "Última sessão:"
+fit_content = true
+
+[node name="Nome" type="RichTextLabel" parent="PanelContainer/Separação tela/Contéudo/Informações/Infos/Sessao" unique_id=2126206919]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("6_im6ml")
+theme_override_font_sizes/normal_font_size = 20
+text = "dd/mm/yyyy"
+fit_content = true
+
+[node name="Edicao" type="VBoxContainer" parent="PanelContainer/Separação tela/Contéudo/Informações/Infos" unique_id=1172087410]
+layout_mode = 2
+
+[node name="Título" type="RichTextLabel" parent="PanelContainer/Separação tela/Contéudo/Informações/Infos/Edicao" unique_id=1181573414]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("5_hu3cs")
+theme_override_font_sizes/normal_font_size = 24
+text = "Última edição:"
+fit_content = true
+
+[node name="Nome" type="RichTextLabel" parent="PanelContainer/Separação tela/Contéudo/Informações/Infos/Edicao" unique_id=1535900176]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("6_im6ml")
+theme_override_font_sizes/normal_font_size = 20
+text = "dd/mm/yyyy"
+fit_content = true
+
+[node name="Armazenamento" type="VBoxContainer" parent="PanelContainer/Separação tela/Contéudo/Informações/Infos" unique_id=146577988]
+layout_mode = 2
+
+[node name="Título" type="RichTextLabel" parent="PanelContainer/Separação tela/Contéudo/Informações/Infos/Armazenamento" unique_id=1315893102]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("5_hu3cs")
+theme_override_font_sizes/normal_font_size = 24
+text = "Armazenamento:"
+fit_content = true
+
+[node name="Nome" type="RichTextLabel" parent="PanelContainer/Separação tela/Contéudo/Informações/Infos/Armazenamento" unique_id=5277285]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
+theme_override_fonts/normal_font = ExtResource("6_im6ml")
+theme_override_font_sizes/normal_font_size = 20
+text = "XXgb - X% do 
+disco local"
+fit_content = true
+
+[node name="BotaoDourado" parent="PanelContainer/Separação tela/Contéudo" unique_id=151969610 instance=ExtResource("7_vps2v")]
+custom_minimum_size = Vector2(320, 60)
+custom_maximum_size = Vector2(320, 60)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 4
+theme = ExtResource("8_sqy7b")
+text = "Hospedar Sessão"
+tamanho = "Large"
+cor = "Dourado"
+
+[node name="NavBar" parent="PanelContainer/Separação tela" unique_id=1337153430 instance=ExtResource("9_2n6my")]
+layout_mode = 2
