@@ -24,6 +24,8 @@ State="*uid://e7nm6kpjft6r"
 
 [display]
 
+window/size/viewport_width=412
+window/size/viewport_height=917
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
