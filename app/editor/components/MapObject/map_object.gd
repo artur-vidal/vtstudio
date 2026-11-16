@@ -1,12 +1,19 @@
 class_name MapObject
 extends StaticBody3D
 
+## Estado visual do objeto. Usado pelo outline das miniaturas.
+enum VisualState { IDLE, HOVER, DRAG }
+
+## Emitido quando o estado visual muda (nada, mouse em cima ou arrastando)
+signal visual_state_changed(state: VisualState)
+
 ## 0 = sem snap. Ex.: 1.0 alinha o objeto a uma grade de 1 unidade.
 @export var snap_size: float = 0.0
 
 var _hovering: bool = false
 var _dragging: bool = false
 var _grab_offset: Vector3 = Vector3.ZERO
+var _visual_state: VisualState = VisualState.IDLE
 
 func _ready() -> void:
 	input_ray_pickable = true
@@ -15,13 +22,22 @@ func _ready() -> void:
 	input_event.connect(_on_input_event)
 	set_process(false)
 
+func visual_state() -> VisualState:
+	return _visual_state
+
+## Sobrescreva para reagir às mudanças de estado (ex.: mostrar um outline)
+func _on_visual_state_changed(_state: VisualState) -> void:
+	pass
+
 func _on_mouse_entered() -> void:
 	_hovering = true
 	_update_cursor()
+	_refresh_visual_state()
 
 func _on_mouse_exited() -> void:
 	_hovering = false
 	_update_cursor()
+	_refresh_visual_state()
 
 func _on_input_event(_camera: Node, event: InputEvent, _position: Vector3, _normal: Vector3, _shape_idx: int) -> void:
 	if event is InputEventMouseButton \
@@ -36,6 +52,7 @@ func _on_input_event(_camera: Node, event: InputEvent, _position: Vector3, _norm
 		_dragging = true
 		set_process(true)
 		_update_cursor()
+		_refresh_visual_state()
 
 # Solta o botão em qualquer lugar da tela, mesmo fora do objeto
 func _input(event: InputEvent) -> void:
@@ -46,6 +63,7 @@ func _input(event: InputEvent) -> void:
 		_dragging = false
 		set_process(false)
 		_update_cursor()
+		_refresh_visual_state()
 
 # Atualiza no _process (e não só no evento de movimento) para o objeto
 # continuar acompanhando o mouse enquanto a câmera se move
@@ -81,3 +99,15 @@ func _update_cursor() -> void:
 		Input.set_default_cursor_shape(Input.CURSOR_POINTING_HAND)
 	else:
 		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
+
+func _refresh_visual_state() -> void:
+	var state := VisualState.IDLE
+	if _dragging:
+		state = VisualState.DRAG
+	elif _hovering:
+		state = VisualState.HOVER
+	if state == _visual_state:
+		return
+	_visual_state = state
+	_on_visual_state_changed(state)
+	visual_state_changed.emit(state)
