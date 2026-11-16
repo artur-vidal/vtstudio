@@ -8,7 +8,7 @@ extends Node3D
 @export var min_distance: float = 3.0
 @export var max_distance: float = 40.0
 @export var min_eixo_rotation: float = deg_to_rad(-80.0)
-@export var max_eixo_rotation: float = deg_to_rad(-15.0)
+@export var max_eixo_rotation: float = deg_to_rad(0.0)
 
 @export_group("Movimento")
 @export var acceleration: float = 60.0   # unidades/s². Menor = demora mais para chegar na velocidade máxima

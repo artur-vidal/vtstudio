@@ -1,55 +1,73 @@
 [gd_scene format=3 uid="uid://b5twx6pxx6p24"]
 
 [ext_resource type="PackedScene" uid="uid://2lf6ir5c2sd2" path="res://editor/components/NavigationCamera/NavigationCamera.tscn" id="1_ff3ga"]
-[ext_resource type="PackedScene" uid="uid://do1dp8dx6h41" path="res://editor/components/MapObject/MapObject.tscn" id="2_k7dwc"]
+[ext_resource type="PackedScene" uid="uid://dmae4dybo3bbo" path="res://editor/example_assets/castle_dungeon.glb" id="3_8vv83"]
 [ext_resource type="Script" uid="uid://c16xy484cjfwt" path="res://editor/components/MiniatureSpawner/miniature_spawner.gd" id="3_d2pi1"]
 [ext_resource type="Script" uid="uid://banbv7d3dxu0q" path="res://editor/components/MiniatureLoaderUI/miniature_loader_ui.gd" id="4_8vv83"]
+[ext_resource type="PackedScene" uid="uid://crxbv1tkeujs4" path="res://editor/example_assets/dungeon_test_trim_sheet.glb" id="4_bm3vh"]
+[ext_resource type="Script" uid="uid://b41qjmjeni1n1" path="res://editor/components/LocalModelObject/local_model_object.gd" id="5_h4k5c"]
+[ext_resource type="PackedScene" uid="uid://b50c6he0xli0x" path="res://editor/example_assets/warlord-the-last-conqueror/source/WARLORD.glb" id="6_pwq6d"]
+[ext_resource type="PackedScene" uid="uid://cevbclf2brt2c" path="res://editor/example_assets/prisoner_in_stripes.glb" id="7_pwq6d"]
 
-[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_lnx2f"]
-sky_top_color = Color(0.47955805, 0.5640533, 0.6820065, 1)
-sky_horizon_color = Color(0.7359229, 0.7594211, 0.79233694, 1)
-ground_bottom_color = Color(0.13556594, 0.14506352, 0.15877372, 1)
-ground_horizon_color = Color(0.7359229, 0.7594211, 0.79233694, 1)
-energy_multiplier = 1.5
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_d2pi1"]
+sky_top_color = Color(0.14483434, 0.16619748, 0.20895728, 1)
+sky_horizon_color = Color(0.26152658, 0.26995528, 0.28787804, 1)
+ground_bottom_color = Color(0.0721915, 0.084543176, 0.113474555, 1)
+ground_horizon_color = Color(0.26152658, 0.26995528, 0.28787804, 1)
 
-[sub_resource type="Sky" id="Sky_ff3ga"]
-sky_material = SubResource("ProceduralSkyMaterial_lnx2f")
+[sub_resource type="Sky" id="Sky_8vv83"]
+sky_material = SubResource("ProceduralSkyMaterial_d2pi1")
 
-[sub_resource type="Environment" id="Environment_k7dwc"]
+[sub_resource type="Environment" id="Environment_bm3vh"]
 background_mode = 2
-sky = SubResource("Sky_ff3ga")
-
-[sub_resource type="BoxMesh" id="BoxMesh_ika0p"]
+sky = SubResource("Sky_8vv83")
+tonemap_mode = 2
+ssao_enabled = true
 
 [node name="ExampleScene" type="Node3D" unique_id=1820660532]
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=593176942]
-transform = Transform3D(-1, 8.742278e-08, 3.821371e-15, 0, -4.371139e-08, 1, 8.742278e-08, 1, 4.371139e-08, 0, 0, 0)
-light_color = Color(0.9996305, 0.99999994, 0.9523626, 1)
-shadow_enabled = true
-directional_shadow_mode = 0
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=54029739]
+environment = SubResource("Environment_bm3vh")
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=47253131]
-environment = SubResource("Environment_k7dwc")
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=196001645]
+transform = Transform3D(0.9952274, -0.056110676, 0.07983742, 0, 0.8181497, 0.57500523, -0.0975829, -0.572261, 0.814245, 0, 0, 0)
+light_color = Color(0.7312588, 0.9999997, 0.9760607, 1)
+light_energy = 2.0
+shadow_enabled = true
+directional_shadow_max_distance = 119.0
 
 [node name="Cena Principal" type="Node3D" parent="." unique_id=482997075]
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Cena Principal" unique_id=170957066]
-transform = Transform3D(50, 0, 0, 0, 0.1, 0, 0, 0, 50, 0, 0, 0)
-mesh = SubResource("BoxMesh_ika0p")
-
 [node name="NavigationCamera" parent="Cena Principal" unique_id=992210718 instance=ExtResource("1_ff3ga")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.7519255, 14.913958)
-
-[node name="MapObject" parent="Cena Principal" unique_id=2113961865 instance=ExtResource("2_k7dwc")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.564434, -1.6508255, 19.104967)
 
 [node name="MiniatureSpawner" type="Node" parent="Cena Principal" unique_id=1817935035]
 script = ExtResource("3_d2pi1")
 ground_height = 0.05
 max_spawn_distance = 15.0
 
+[node name="Sketchfab_Scene" parent="Cena Principal" unique_id=1637924647 instance=ExtResource("3_8vv83")]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
+
+[node name="Sketchfab_Scene2" parent="Cena Principal" unique_id=1394175243 instance=ExtResource("4_bm3vh")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -63.063034, 0, 0)
+
+[node name="Guerreiro" type="StaticBody3D" parent="Cena Principal" unique_id=1077550762]
+transform = Transform3D(0.33039042, 0, -0.9438444, 0, 1, 0, 0.9438444, 0, 0.33039042, 4.3713074, -3.3537974, -4.0256815)
+script = ExtResource("5_h4k5c")
+scene = ExtResource("6_pwq6d")
+scale_multiplier = Vector3(2.5, 2.5, 2.5)
+metadata/_custom_type_script = "uid://b41qjmjeni1n1"
+
+[node name="Prisioneira" type="StaticBody3D" parent="Cena Principal" unique_id=1939349093]
+transform = Transform3D(-0.9442584, 0, 0.32920545, 0, 1, 0, -0.32920545, 0, -0.9442584, -4.7828484, -2.9085858, 3.3725667)
+script = ExtResource("5_h4k5c")
+scene = ExtResource("7_pwq6d")
+scale_multiplier = Vector3(2.5, 2.5, 2.5)
+metadata/_custom_type_script = "uid://b41qjmjeni1n1"
+
 [node name="MiniatureLoaderUI" type="CanvasLayer" parent="." unique_id=1531929411]
+visible = false
 script = ExtResource("4_8vv83")
 
 [connection signal="load_progress" from="Cena Principal/MiniatureSpawner" to="MiniatureLoaderUI" method="show_progress"]
