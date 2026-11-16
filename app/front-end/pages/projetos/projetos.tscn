@@ -1,3 +1,87 @@
-[gd_scene format=3 uid="uid://de6vydprtdbps"]
+[gd_scene format=3 uid="uid://y6tdh7brkipa"]
 
-[node name="Projetos" type="Node2D" unique_id=571447344]
+[ext_resource type="Texture2D" uid="uid://ckdhqmluadyul" path="res://assets/images/background/Background.png" id="1_kemwe"]
+[ext_resource type="FontFile" uid="uid://dwhrhbcuu4ruw" path="res://assets/fonts/Fondamento/Fondamento-Regular.ttf" id="2_nnytl"]
+[ext_resource type="PackedScene" uid="uid://brotkrsfn8tyt" path="res://front-end/components/icone/icon.tscn" id="3_5bx5a"]
+[ext_resource type="Theme" uid="uid://c2q3rcmq2d5vv" path="res://front-end/components/themes/icone/IconeVermelho.tres" id="4_8f376"]
+[ext_resource type="Texture2D" uid="uid://cceq6vmhp7tw8" path="res://assets/images/Portrait_Placeholder.png" id="5_tl46g"]
+[ext_resource type="PackedScene" uid="uid://btrnuha7covcr" path="res://front-end/components/Salas/Salas.tscn" id="6_k5rli"]
+[ext_resource type="PackedScene" uid="uid://jj1hffbx4inr" path="res://front-end/components/navBar/NavBar.tscn" id="7_72w1r"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_abjee"]
+texture = ExtResource("1_kemwe")
+axis_stretch_vertical = 2
+
+[node name="Projetos" type="Control" unique_id=682259937]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=1027135187]
+custom_minimum_size = Vector2(412, 917)
+custom_maximum_size = Vector2(412, 917)
+layout_mode = 0
+offset_right = 412.0
+offset_bottom = 917.0
+theme_override_styles/panel = SubResource("StyleBoxTexture_abjee")
+
+[node name="Separação tela" type="VBoxContainer" parent="PanelContainer" unique_id=2124447532]
+layout_mode = 2
+theme_override_constants/separation = 60
+
+[node name="Header" type="HBoxContainer" parent="PanelContainer/Separação tela" unique_id=1085837054]
+custom_minimum_size = Vector2(412, 140)
+custom_maximum_size = Vector2(412, 140)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/Separação tela/Header" unique_id=163038945]
+layout_mode = 2
+theme_override_constants/margin_left = 120
+theme_override_constants/margin_right = 80
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=170119623]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_colors/default_color = Color(0.007843138, 0.007843138, 0.007843138, 1)
+theme_override_fonts/normal_font = ExtResource("2_nnytl")
+theme_override_font_sizes/normal_font_size = 32
+text = "Início"
+fit_content = true
+scroll_active = false
+
+[node name="PanelContainer" parent="PanelContainer/Separação tela/Header" unique_id=1726400785 instance=ExtResource("3_5bx5a")]
+clip_children = 2
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = ExtResource("4_8f376")
+textura = ExtResource("5_tl46g")
+cor = "Vermelho"
+
+[node name="Projetos" type="VBoxContainer" parent="PanelContainer/Separação tela" unique_id=1808341841]
+custom_minimum_size = Vector2(420, 516)
+custom_maximum_size = Vector2(420, 516)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/separation = 110
+
+[node name="Projetos" parent="PanelContainer/Separação tela/Projetos" unique_id=20505969 instance=ExtResource("6_k5rli")]
+layout_mode = 2
+
+[node name="Projetos2" parent="PanelContainer/Separação tela/Projetos" unique_id=902803938 instance=ExtResource("6_k5rli")]
+layout_mode = 2
+
+[node name="Projetos3" parent="PanelContainer/Separação tela/Projetos" unique_id=1264541868 instance=ExtResource("6_k5rli")]
+layout_mode = 2
+
+[node name="NavBar" parent="PanelContainer/Separação tela" unique_id=1337153430 instance=ExtResource("7_72w1r")]
+layout_mode = 2
