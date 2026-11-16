@@ -21,9 +21,13 @@ ApiClient="*uid://xpsy2d05hxpo"
 GoogleAuthManager="*uid://ctk61borwlrf2"
 Config="*uid://dr26qwn0r4e72"
 State="*uid://e7nm6kpjft6r"
+SceneChanger="*uid://chscah6rj6u3y"
 
 [display]
 
+window/size/viewport_width=412
+window/size/viewport_height=917
+window/size/mode=2
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
