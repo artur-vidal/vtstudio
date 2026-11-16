@@ -1,7 +1,7 @@
 class_name MapObject
 extends StaticBody3D
 
-## Estado visual do objeto. Alimenta o cursor do mouse e o outline das miniaturas.
+## Estado visual do objeto. Usado pelo outline das miniaturas.
 enum VisualState { IDLE, HOVER, DRAG }
 
 ## Emitido quando o estado visual muda (nada, mouse em cima ou arrastando)
@@ -9,13 +9,6 @@ signal visual_state_changed(state: VisualState)
 
 ## 0 = sem snap. Ex.: 1.0 alinha o objeto a uma grade de 1 unidade.
 @export var snap_size: float = 0.0
-
-# O cursor do mouse é um só para o jogo inteiro, então o estado de TODOS os objetos
-# precisa ficar num lugar só. Quando cada objeto decidia o cursor sozinho, ir de um
-# objeto para o vizinho (ou soltar um arrasto sobre outro) podia deixar o cursor errado,
-# dependendo da ordem em que os eventos de entrar/sair chegavam.
-static var _hovered: Array[MapObject] = []
-static var _dragged: MapObject = null
 
 var _hovering: bool = false
 var _dragging: bool = false
@@ -38,14 +31,13 @@ func _on_visual_state_changed(_state: VisualState) -> void:
 
 func _on_mouse_entered() -> void:
 	_hovering = true
-	if not _hovered.has(self):
-		_hovered.append(self)
-	_refresh()
+	_update_cursor()
+	_refresh_visual_state()
 
 func _on_mouse_exited() -> void:
 	_hovering = false
-	_hovered.erase(self)
-	_refresh()
+	_update_cursor()
+	_refresh_visual_state()
 
 func _on_input_event(_camera: Node, event: InputEvent, _position: Vector3, _normal: Vector3, _shape_idx: int) -> void:
 	if event is InputEventMouseButton \
@@ -58,9 +50,9 @@ func _on_input_event(_camera: Node, event: InputEvent, _position: Vector3, _norm
 		# para ele não "pular" para o cursor ao começar a arrastar
 		_grab_offset = global_position - (hit as Vector3)
 		_dragging = true
-		_dragged = self
 		set_process(true)
-		_refresh_all()
+		_update_cursor()
+		_refresh_visual_state()
 
 # Solta o botão em qualquer lugar da tela, mesmo fora do objeto
 func _input(event: InputEvent) -> void:
@@ -68,35 +60,10 @@ func _input(event: InputEvent) -> void:
 			and event is InputEventMouseButton \
 			and event.button_index == MOUSE_BUTTON_LEFT \
 			and not event.pressed:
-		_end_drag()
-
-# Se a janela perde o foco no meio de um arrasto, o botão pode ser solto fora dela e o
-# evento nunca chega: sem isso o objeto ficaria "preso" ao mouse e o cursor errado
-func _notification(what: int) -> void:
-	if what == NOTIFICATION_WM_WINDOW_FOCUS_OUT:
-		_hovering = false
-		_hovered.erase(self)
-		if _dragging:
-			_end_drag()
-		else:
-			_refresh_all()
-
-func _exit_tree() -> void:
-	_hovering = false
-	_hovered.erase(self)
-	if _dragged == self:
-		_dragged = null
-	_dragging = false
-	for other in _hovered:
-		other._refresh()
-	_update_cursor()
-
-func _end_drag() -> void:
-	_dragging = false
-	if _dragged == self:
-		_dragged = null
-	set_process(false)
-	_refresh_all()
+		_dragging = false
+		set_process(false)
+		_update_cursor()
+		_refresh_visual_state()
 
 # Atualiza no _process (e não só no evento de movimento) para o objeto
 # continuar acompanhando o mouse enquanto a câmera se move
@@ -125,31 +92,22 @@ func _mouse_on_plane() -> Variant:
 
 	return Plane(Vector3.UP, global_position.y).intersects_ray(origin, direction)
 
-# Arrastar muda o estado de todos: quem está com o mouse em cima, mas não é o objeto
-# arrastado, deixa de mostrar o hover até o arrasto terminar
-func _refresh_all() -> void:
-	_refresh()
-	for other in _hovered:
-		if other != self:
-			other._refresh()
+func _update_cursor() -> void:
+	if _dragging:
+		Input.set_default_cursor_shape(Input.CURSOR_DRAG)
+	elif _hovering:
+		Input.set_default_cursor_shape(Input.CURSOR_POINTING_HAND)
+	else:
+		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
 
-func _refresh() -> void:
+func _refresh_visual_state() -> void:
 	var state := VisualState.IDLE
 	if _dragging:
 		state = VisualState.DRAG
-	elif _hovering and _dragged == null:
+	elif _hovering:
 		state = VisualState.HOVER
-	if state != _visual_state:
-		_visual_state = state
-		_on_visual_state_changed(state)
-		visual_state_changed.emit(state)
-	_update_cursor()
-
-# Arrastando tem prioridade; depois, qualquer objeto com o mouse em cima
-static func _update_cursor() -> void:
-	var shape := Input.CURSOR_ARROW
-	if _dragged != null:
-		shape = Input.CURSOR_DRAG
-	elif not _hovered.is_empty():
-		shape = Input.CURSOR_POINTING_HAND
-	Input.set_default_cursor_shape(shape)
+	if state == _visual_state:
+		return
+	_visual_state = state
+	_on_visual_state_changed(state)
+	visual_state_changed.emit(state)

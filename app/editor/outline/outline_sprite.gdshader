@@ -5,26 +5,27 @@ shader_type spatial;
 render_mode unshaded, cull_disabled;
 
 uniform sampler2D tex : source_color, filter_linear;
-uniform vec4 outline_color : source_color = vec4(1.0, 0.95, 0.55, 1.0);
+uniform vec4 outline_color : source_color = vec4(1.0, 0.8, 0.1, 1.0);
 // Tamanho do quad dividido pelo tamanho da imagem (o quad tem margem para o outline)
 uniform vec2 uv_scale = vec2(1.0);
 // Espessura do outline, em UV da imagem
 uniform vec2 width_uv = vec2(0.02);
 
 void vertex() {
-	// Billboard preso ao eixo Y, igual ao Sprite3D com BILLBOARD_FIXED_Y
-	vec3 center = MODEL_MATRIX[3].xyz;
-	vec3 to_camera = INV_VIEW_MATRIX[3].xyz - center;
-	to_camera.y = 0.0;
-	if (length(to_camera) < 0.0001) {
-		to_camera = vec3(0.0, 0.0, 1.0);
+	// Billboard preso ao eixo Y, como o do Sprite3D (BILLBOARD_FIXED_Y): a imagem fica em pé
+	// no mundo e o plano dela é perpendicular à direção horizontal da câmera.
+	// O eixo X vem do vetor "para trás" da câmera (INV_VIEW_MATRIX[2]), e NÃO do vetor
+	// "direita" dela (INV_VIEW_MATRIX[0]): o "direita" gira junto com o roll da câmera (Q/E),
+	// e o outline rolaria enquanto a imagem continua em pé. Sem roll, as duas contas dão o
+	// mesmo resultado, por isso o erro só aparecia ao inclinar a câmera.
+	vec3 up = MODEL_MATRIX[1].xyz;
+	vec3 right = cross(up, INV_VIEW_MATRIX[2].xyz);
+	if (length(right) < 0.0001) {
+		right = INV_VIEW_MATRIX[0].xyz; // câmera olhando reto para baixo: sem direção horizontal
 	}
-	to_camera = normalize(to_camera);
-	vec3 right = normalize(cross(vec3(0.0, 1.0, 0.0), to_camera));
-	float scale_x = length(MODEL_MATRIX[0].xyz);
-	float scale_y = length(MODEL_MATRIX[1].xyz);
-	vec3 world = center + right * VERTEX.x * scale_x + vec3(0.0, 1.0, 0.0) * VERTEX.y * scale_y;
-	POSITION = PROJECTION_MATRIX * VIEW_MATRIX * vec4(world, 1.0);
+	right = normalize(right);
+	vec3 front = normalize(cross(right, up));
+	MODELVIEW_MATRIX = VIEW_MATRIX * mat4(vec4(right, 0.0), vec4(up, 0.0), vec4(front, 0.0), MODEL_MATRIX[3]);
 }
 
 float alpha_at(vec2 uv) {

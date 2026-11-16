@@ -1,6 +1,0 @@
-[gd_scene format=3 uid="uid://b5k3dpx57c7sj"]
-
-[ext_resource type="Script" uid="uid://b5qlwu02rca7x" path="res://editor/loaders/tests/fbx_resolver_test.gd" id="1_xrje4"]
-
-[node name="FbxResolverTest" type="Node" unique_id=260263148]
-script = ExtResource("1_xrje4")

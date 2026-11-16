@@ -1,6 +1,0 @@
-[gd_scene format=3 uid="uid://k7a34a10ku1j"]
-
-[ext_resource type="Script" uid="uid://dfn1pgh70l7i6" path="res://editor/components/MapObject/map_object_cursor_test.gd" id="1_fgbn1"]
-
-[node name="MapObjectCursorTest" type="Node" unique_id=1706152450]
-script = ExtResource("1_fgbn1")

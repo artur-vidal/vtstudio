@@ -1,12 +1,12 @@
 class_name BillboardObject
 extends MapObject
 ## Miniatura de imagem (inclusive GIF animado): um quadro que gira só em torno do eixo Y
-## para sempre encarar a câmera. Herda o arrasto do MapObject.
+## para sempre encarar a câmera. Herda o arrasto e o estado visual do MapObject.
 ##
 ## O visual é um Sprite3D com billboard fixo no Y. A caixa de colisão gira em torno do Y
-## a cada quadro de física, acompanhando a câmera, para continuar cobrindo a imagem
-## (uma caixa parada deixaria de cobri-la quando a câmera desse a volta).
-## Ao passar o mouse ou arrastar, a imagem ganha um outline que segue o formato dela.
+## a cada quadro de física, seguindo a MESMA regra do billboard (veja billboard_normal),
+## para continuar cobrindo a imagem. Ao passar o mouse ou arrastar, a imagem ganha um
+## outline que segue o formato dela.
 
 ## Altura da imagem no mundo, em unidades. A largura segue a proporção original.
 @export var world_height: float = 2.0
@@ -25,6 +25,22 @@ var _textures: Array[ImageTexture] = []
 var _delays: PackedFloat32Array = PackedFloat32Array()
 var _frame: int = 0
 var _world_size: Vector2 = Vector2.ONE
+
+
+## Direção horizontal para onde a imagem aponta, IGUAL à do Sprite3D com BILLBOARD_FIXED_Y:
+## a projeção horizontal do vetor "para trás" da câmera. A imagem fica em pé no mundo e o
+## plano dela é perpendicular a essa direção, onde quer que o objeto esteja na tela.
+## Dois erros já aconteceram aqui, e a shader do outline (outline_sprite.gdshader) usa a
+## mesma conta:
+##  - apontar para a POSIÇÃO da câmera desalinha tudo que está fora do centro da tela;
+##  - usar o vetor "direita" da câmera faz o plano rolar junto com o roll (Q/E), enquanto a
+##    imagem continua em pé. O "para trás" não muda com o roll.
+static func billboard_normal(camera: Camera3D) -> Vector3:
+	var back := camera.global_basis.z
+	back.y = 0.0
+	if back.length() < 0.0001:
+		return Vector3.BACK # câmera olhando reto para baixo: sem direção horizontal
+	return back.normalized()
 
 
 ## Monta o objeto a partir da imagem carregada. Pode ser chamado antes de entrar na
@@ -73,16 +89,15 @@ func _ready() -> void:
 		_timer.start(maxf(_delays[0], 0.02))
 
 
-## A colisão é atualizada na física (e não no _process, que o MapObject liga e desliga
-## durante o arrasto), já que é a física que usa a caixa para detectar o mouse.
+## A colisão é atualizada na física, que é quem usa a caixa para achar o objeto sob o mouse
 func _physics_process(_delta: float) -> void:
 	if _collision == null:
 		return
 	var camera := get_viewport().get_camera_3d()
 	if camera == null:
 		return
-	var to_camera := camera.global_position - global_position
-	_collision.rotation.y = atan2(to_camera.x, to_camera.z) - global_rotation.y
+	var normal := billboard_normal(camera)
+	_collision.rotation.y = atan2(normal.x, normal.z) - global_rotation.y
 
 
 func _on_visual_state_changed(state: VisualState) -> void:

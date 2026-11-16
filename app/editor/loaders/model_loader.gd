@@ -16,7 +16,7 @@ const FBX_EXTENSIONS: PackedStringArray = ['fbx']
 
 ## Mensagem do último erro. Fica vazia quando o carregamento dá certo.
 var error: String = ''
-## Avisos do último carregamento que bem-sucedido (ex.: textura de um FBX não encontrada)
+## Avisos de um carregamento que deu certo (ex.: textura de um FBX não encontrada)
 var warnings: PackedStringArray = PackedStringArray()
 
 
