@@ -18,13 +18,15 @@ enum DragMode { MOVE, ROTATE, ELEVATE }
 
 ## Radians por pixel horizontal ao girar com R.
 @export var rotation_sensitivity: float = 0.01
+## Compensa o encurtamento aparente dos eixos sem explodir no horizonte.
+@export_range(1.0, 8.0, 0.25) var max_drag_angle_compensation: float = 4.0
 
 var _drag_mode: DragMode = DragMode.MOVE
 var _drag_target := Vector3.ZERO
 var _drag_units_per_pixel: float = 0.01
-var _drag_right := Vector3.RIGHT
-var _drag_forward := Vector3.FORWARD
-var _screen_right := Vector2.RIGHT
+var _drag_height_compensation: float = 1.0
+var _drag_camera: Camera3D
+var _drag_local_hit := Vector3.ZERO
 var _rotation_start_yaw: float = 0.0
 var _rotation_angle: float = 0.0
 var _rotation_radius: float = 1.0
@@ -71,27 +73,26 @@ func _begin_drag(camera: Camera3D, hit_position: Vector3) -> void:
 	_dragging = true
 	_drag_target = global_position
 	_drag_mode = DragMode.MOVE
-	_capture_drag_basis(camera, hit_position)
+	_drag_camera = camera
+	_drag_local_hit = to_local(hit_position)
+	_update_drag_projection(camera, hit_position)
 	add_to_group('miniature_dragging')
 	set_process(true)
 	_update_drag_mode()
 	_refresh_visual_state()
 
 
-## Escala de tela fixada na captura; não divide pelo ângulo de um plano rasante.
-## A base horizontal também funciona com câmera de frente, de cima ou com roll.
-func _capture_drag_basis(camera: Camera3D, hit_position: Vector3) -> void:
-	var forward := -camera.global_basis.z
-	forward.y = 0.0
-	if forward.length_squared() < 0.0001:
-		forward = camera.global_basis.y
-		forward.y = 0.0
-	_drag_forward = forward.normalized()
-	_drag_right = _drag_forward.cross(Vector3.UP).normalized()
-	_screen_right = Vector2(_drag_right.dot(camera.global_basis.x), -_drag_right.dot(camera.global_basis.y)).normalized()
+## Escala da projeção atual, sem interseção com um plano rasante.
+func _update_drag_projection(camera: Camera3D, hit_position: Vector3) -> void:
 	var depth := maxf(2.0, (hit_position - camera.global_position).dot(-camera.global_basis.z))
 	var pixel := get_viewport().get_mouse_position()
 	_drag_units_per_pixel = camera.project_position(pixel, depth).distance_to(camera.project_position(pixel + Vector2.RIGHT, depth))
+	_drag_height_compensation = _axis_compensation(Vector3.UP, camera)
+
+
+func _axis_compensation(axis: Vector3, camera: Camera3D) -> float:
+	var projected_length := Vector2(axis.dot(camera.global_basis.x), axis.dot(camera.global_basis.y)).length()
+	return 1.0 / maxf(projected_length, 1.0 / maxf(1.0, max_drag_angle_compensation))
 
 
 # Solta em qualquer ponto da tela; o modo depende das teclas durante a captura.
@@ -101,6 +102,9 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
 		_end_drag()
 	elif event is InputEventMouseMotion:
+		# O mesmo gesto não deve arrastar a peça e girar a câmera.
+		if event.button_mask & MOUSE_BUTTON_MASK_RIGHT:
+			return
 		_update_drag_mode()
 		_apply_drag_motion(event.relative)
 	elif event is InputEventKey:
@@ -149,18 +153,52 @@ func _apply_drag_motion(pixels: Vector2) -> void:
 		_rotation_angle += angle
 		_update_rotation_indicator()
 		return
+	if not is_instance_valid(_drag_camera):
+		return
+	var hit_position := to_global(_drag_local_hit)
+	_update_drag_projection(_drag_camera, hit_position)
 	if _drag_mode == DragMode.ELEVATE:
-		_drag_target.y -= pixels.y * _drag_units_per_pixel
+		_drag_target.y -= pixels.y * _drag_units_per_pixel * _drag_height_compensation
 		var height := snappedf(_drag_target.y, snap_size) if snap_size > 0.0 else _drag_target.y
 		global_position.y = height
 		return
-	var screen_forward := Vector2(_screen_right.y, -_screen_right.x)
-	_drag_target += (_drag_right * pixels.dot(_screen_right) + _drag_forward * pixels.dot(screen_forward)) * _drag_units_per_pixel
+	_drag_target += _screen_delta_to_ground(pixels, hit_position)
 	var target := _drag_target
 	if snap_size > 0.0:
 		target.x = snappedf(target.x, snap_size)
 		target.z = snappedf(target.z, snap_size)
 	global_position = Vector3(target.x, global_position.y, target.z)
+
+
+## Inverte a projeção local dos eixos X/Z, incluindo perspectiva, roll e
+## posição do ponto agarrado na tela. A inversa é limitada nas direções que
+## ficam quase invisíveis: reduz suavemente a resposta em vez de inverter
+## arbitrariamente o eixo ou gerar um deslocamento enorme no horizonte.
+func _screen_delta_to_ground(pixels: Vector2, point: Vector3) -> Vector3:
+	var depth := (point - _drag_camera.global_position).dot(-_drag_camera.global_basis.z)
+	if depth <= _drag_camera.near:
+		return Vector3.ZERO
+	var step := maxf(0.0001, depth * 0.001)
+	var x := (_drag_camera.unproject_position(point + Vector3.RIGHT * step) - _drag_camera.unproject_position(point - Vector3.RIGHT * step)) / (2.0 * step)
+	var z := (_drag_camera.unproject_position(point + Vector3.BACK * step) - _drag_camera.unproject_position(point - Vector3.BACK * step)) / (2.0 * step)
+	# Autovetores de J*J^T: limita os dois ganhos sem introduzir viés de direção.
+	var a := x.x * x.x + z.x * z.x
+	var b := x.x * x.y + z.x * z.y
+	var d := x.y * x.y + z.y * z.y
+	var gap := sqrt(maxf(0.0, (a - d) * (a - d) + 4.0 * b * b))
+	var high := maxf(0.0, (a + d + gap) * 0.5)
+	var low := maxf(0.0, (a + d - gap) * 0.5)
+	var axis := Vector2(b, high - a)
+	if axis.length_squared() < 0.000001:
+		axis = Vector2.RIGHT if a >= d else Vector2.DOWN
+	else:
+		axis = axis.normalized()
+	var other := Vector2(-axis.y, axis.x)
+	var max_gain := _drag_units_per_pixel * maxf(1.0, max_drag_angle_compensation)
+	var minimum := 1.0 / maxf(max_gain * max_gain, 0.00000001)
+	var solved := axis * pixels.dot(axis) / maxf(high, minimum) + other * pixels.dot(other) / maxf(low, minimum)
+	var delta := Vector3(x.dot(solved), 0.0, z.dot(solved))
+	return delta.limit_length(pixels.length() * max_gain)
 
 
 func _update_rotation_indicator() -> void:

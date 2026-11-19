@@ -69,10 +69,18 @@ func _process(delta: float) -> void:
 		camera_z = 0.0
 
 	# Suavização independente de framerate
-	rotation.y = lerp_angle(rotation.y, target_yaw, _smooth(orbit_smoothing, real_delta))
-	eixo.rotation.x = lerpf(eixo.rotation.x, target_pitch, _smooth(orbit_smoothing, real_delta))
-	eixo.rotation.z = lerp_angle(eixo.rotation.z, camera_z, _smooth(roll_smoothing, real_delta))
+	_apply_view_rotation(real_delta)
 	camera.position.z = lerpf(camera.position.z, distance, _smooth(zoom_smoothing, real_delta))
+
+
+## Gira a visão em torno do próprio olho, sem orbitar o pivô distante.
+## A compensação acompanha cada passo da suavização; o zoom continua sendo dolly.
+func _apply_view_rotation(delta: float) -> void:
+	var eye_position := camera.global_position
+	rotation.y = lerp_angle(rotation.y, target_yaw, _smooth(orbit_smoothing, delta))
+	eixo.rotation.x = lerpf(eixo.rotation.x, target_pitch, _smooth(orbit_smoothing, delta))
+	eixo.rotation.z = lerp_angle(eixo.rotation.z, camera_z, _smooth(roll_smoothing, delta))
+	global_position += eye_position - camera.global_position
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("cam_zoom_in"):
