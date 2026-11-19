@@ -3,14 +3,18 @@ extends RefCounted
 ## Aparência do outline das miniaturas (modelos 3D e imagens): uma cor e uma espessura
 ## para o mouse em cima (hover) e outras para o arrasto. Ajuste tudo aqui.
 
-const HOVER_COLOR: Color = Color(1.0, 0.8, 0.1)
-const DRAG_COLOR: Color = Color(1.0, 0.35, 0.05)
+const HOVER_COLOR: Color = Color('#D4C08A')
+const DRAG_COLOR: Color = Color('#A72735')
 ## Espessuras em unidades do mundo
 const HOVER_WIDTH: float = 0.07
 const DRAG_WIDTH: float = 0.11
 ## Modelos 3D: espessura constante em pixels, independente do zoom/escala.
 const MODEL_HOVER_PIXELS: float = 2.0
-const MODEL_DRAG_PIXELS: float = 3.0
+const MODEL_DRAG_PIXELS: float = 3.5
+const MODEL_PULSE_PIXELS: float = 3.5
+const PULSE_ATTACK_SECONDS: float = 0.12
+const PULSE_RELEASE_SECONDS: float = 0.24
+const DRAG_TRANSITION_SECONDS: float = 0.14
 
 ## Casco invertido, para modelos 3D
 const HULL_SHADER: Shader = preload('res://editor/outline/outline_hull.gdshader')

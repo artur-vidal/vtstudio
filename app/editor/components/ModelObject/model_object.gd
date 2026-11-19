@@ -22,6 +22,8 @@ var _geometries: Array[GeometryInstance3D] = []
 var _outline_material: ShaderMaterial
 var _outline_mask_material: ShaderMaterial
 var _original_overlays: Array[Material] = []
+var _outline_tween: Tween
+var _outline_state: VisualState = VisualState.IDLE
 
 
 ## Monta o objeto a partir do modelo carregado. Pode ser chamado antes de entrar na
@@ -76,6 +78,7 @@ func setup(model_root: Node3D) -> bool:
 	_collect_geometries(model_root)
 	_outline_material = ShaderMaterial.new()
 	_outline_material.shader = OutlineStyle.HULL_SHADER
+	_outline_material.set_shader_parameter('width_pixels', OutlineStyle.MODEL_HOVER_PIXELS)
 	_outline_material.render_priority = Material.RENDER_PRIORITY_MAX
 	_outline_mask_material = ShaderMaterial.new()
 	_outline_mask_material.shader = OutlineStyle.MASK_SHADER
@@ -88,13 +91,34 @@ func setup(model_root: Node3D) -> bool:
 func _on_visual_state_changed(state: VisualState) -> void:
 	if _outline_material == null:
 		return
+	var previous := _outline_state
+	_outline_state = state
+	if _outline_tween != null:
+		_outline_tween.kill()
+		_outline_tween = null
 	var overlay: Material = null
 	if state != VisualState.IDLE:
 		_outline_material.set_shader_parameter('outline_color', OutlineStyle.color_for(state))
-		_outline_material.set_shader_parameter('width_pixels', OutlineStyle.model_width_for(state))
+		_animate_outline(state, previous)
 		overlay = _outline_mask_material
 	for index in _geometries.size():
 		_geometries[index].material_overlay = overlay if overlay != null else _original_overlays[index]
+
+
+## Um pulso por entrada; soltar o arrasto só retorna à espessura de hover.
+## Tweens são ligados ao nó e cancelados quando o estado muda.
+func _animate_outline(state: VisualState, previous: VisualState) -> void:
+	var target := OutlineStyle.model_width_for(state)
+	if not is_inside_tree():
+		_outline_material.set_shader_parameter('width_pixels', target)
+		return
+	_outline_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	if state == VisualState.HOVER and previous == VisualState.IDLE:
+		_outline_material.set_shader_parameter('width_pixels', target)
+		_outline_tween.tween_property(_outline_material, 'shader_parameter/width_pixels', OutlineStyle.MODEL_PULSE_PIXELS, OutlineStyle.PULSE_ATTACK_SECONDS)
+		_outline_tween.tween_property(_outline_material, 'shader_parameter/width_pixels', target, OutlineStyle.PULSE_RELEASE_SECONDS)
+	else:
+		_outline_tween.tween_property(_outline_material, 'shader_parameter/width_pixels', target, OutlineStyle.DRAG_TRANSITION_SECONDS)
 
 
 ## Junta as caixas de todas as malhas, no espaço do pai do modelo. Não usa
