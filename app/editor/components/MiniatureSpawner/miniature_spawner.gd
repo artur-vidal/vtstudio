@@ -23,6 +23,9 @@ signal load_progress(path: String, fraction: float)
 @export var ground_height: float = 0.0
 ## Maior dimensão de um modelo 3D depois de escalado, em unidades do mundo
 @export var model_size: float = 2.0
+## Qualidade das miniaturas externas; o original nunca é sobrescrito.
+@export var optimize_models: bool = true
+@export_range(1000, 2000000, 1000) var model_triangle_budget: int = 100000
 ## Altura de uma imagem billboard, em unidades do mundo
 @export var image_height: float = 2.0
 ## Distância entre miniaturas criadas de uma vez (vários arquivos escolhidos juntos)
@@ -83,12 +86,16 @@ func _spawn_model(path: String, point: Vector3) -> void:
 
 	var miniature := ModelObject.new()
 	miniature.target_size = model_size
+	miniature.optimize_geometry = optimize_models
+	miniature.triangle_budget = model_triangle_budget
 	if not miniature.setup(model):
 		miniature.free()
 		spawn_failed.emit(path, 'O modelo não tem geometria visível')
 		return
 	_place(miniature, path, point)
 	for warning in loader.warnings:
+		spawn_warning.emit(path, warning)
+	for warning in miniature.optimization_warnings:
 		spawn_warning.emit(path, warning)
 
 

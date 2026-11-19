@@ -9,6 +9,12 @@ extends MapObject
 ## Maior dimensão do modelo depois de escalado, em unidades do mundo
 @export var target_size: float = 2.0
 
+## Desative para comparar a aparência com o original.
+@export var optimize_geometry: bool = true
+@export_range(1000, 2000000, 1000) var triangle_budget: int = 100000
+var optimization_report: Dictionary = {}
+var optimization_warnings := PackedStringArray()
+
 ## Raiz do modelo carregado (filha de um pivot interno)
 var model: Node3D
 
@@ -51,6 +57,13 @@ func setup(model_root: Node3D) -> bool:
 	collision.shape = shape
 	collision.position = Vector3(0.0, shape.size.y / 2.0, 0.0)
 	add_child(collision)
+
+	if optimize_geometry:
+		var optimizer := ModelOptimizer.new()
+		optimization_report = optimizer.optimize(model_root, triangle_budget)
+		optimization_warnings = optimizer.warnings
+		for warning in optimization_warnings:
+			push_warning('ModelObject: ' + warning)
 
 	_collect_geometries(model_root)
 	_outline_material = ShaderMaterial.new()
