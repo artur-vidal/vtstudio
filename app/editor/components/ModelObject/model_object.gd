@@ -3,7 +3,7 @@ extends MapObject
 ## Miniatura de um modelo 3D carregado em tempo de execução. Herda o arrasto do MapObject.
 ##
 ## O modelo é escalado para caber em `target_size` e posicionado com o centro da base
-## na origem do objeto. A colisão é uma caixa (AABB) que cobre o modelo inteiro.
+## na origem do objeto. A seleção usa os triângulos da malha, sem preencher os vazios.
 ## Ao passar o mouse ou arrastar, o modelo ganha um outline (veja OutlineStyle).
 
 ## Maior dimensão do modelo depois de escalado, em unidades do mundo
@@ -52,20 +52,26 @@ func setup(model_root: Node3D) -> bool:
 	# Centro da base na origem do objeto: o modelo fica "de pé" sobre o chão
 	pivot.position = Vector3(-center.x, -bounds.position.y, -center.z) * factor
 
-	var shape := BoxShape3D.new()
-	shape.size = bounds.size * factor
-	var collision := CollisionShape3D.new()
-	collision.name = 'CollisionShape3D'
-	collision.shape = shape
-	collision.position = Vector3(0.0, shape.size.y / 2.0, 0.0)
-	add_child(collision)
-
 	if optimize_geometry:
 		var optimizer := ModelOptimizer.new()
 		optimization_report = optimizer.optimize(model_root, triangle_budget)
 		optimization_warnings = optimizer.warnings
 		for warning in optimization_warnings:
 			push_warning('ModelObject: ' + warning)
+
+	# StaticBody3D permite colisão côncava: o raio só acerta a superfície,
+	# não a caixa vazia entre partes do modelo. Usa a malha já otimizada.
+	var faces := PackedVector3Array()
+	_collect_collision_faces(pivot, Transform3D.IDENTITY, faces)
+	if faces.is_empty():
+		return false
+	var shape := ConcavePolygonShape3D.new()
+	shape.backface_collision = true
+	shape.set_faces(faces)
+	var collision := CollisionShape3D.new()
+	collision.name = 'CollisionShape3D'
+	collision.shape = shape
+	add_child(collision)
 
 	_collect_geometries(model_root)
 	_outline_material = ShaderMaterial.new()
@@ -111,3 +117,19 @@ func _collect_geometries(node: Node) -> void:
 		_original_overlays.append((node as GeometryInstance3D).material_overlay)
 	for child in node.get_children():
 		_collect_geometries(child)
+
+
+## Converte cada triângulo para o espaço do ModelObject, incluindo o pivot.
+## Não usa global_transform: setup também funciona fora da árvore.
+func _collect_collision_faces(node: Node, parent_transform: Transform3D, out: PackedVector3Array) -> void:
+	var current := parent_transform
+	if node is Node3D:
+		if not (node as Node3D).visible:
+			return
+		current = parent_transform * (node as Node3D).transform
+	if node is MeshInstance3D:
+		var mesh := (node as MeshInstance3D).mesh
+		if mesh != null:
+			out.append_array(current * mesh.get_faces())
+	for child in node.get_children():
+		_collect_collision_faces(child, current, out)

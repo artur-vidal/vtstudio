@@ -104,6 +104,8 @@ func _apply_scale_multiplier() -> void:
 	pivot.position *= m
 
 	var collision := get_node('CollisionShape3D') as CollisionShape3D
-	var shape := collision.shape as BoxShape3D
-	shape.size *= m
-	collision.position.y = shape.size.y / 2.0
+	var shape := collision.shape as ConcavePolygonShape3D
+	var faces := shape.get_faces()
+	for index in faces.size():
+		faces[index] *= m
+	shape.set_faces(faces)

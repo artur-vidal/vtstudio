@@ -20,8 +20,9 @@ unmet budgets. `optimize_geometry = false` keeps the original geometry.
 
 The optimizer promotes a generated LOD to the highest-detail mesh and retains
 coarser LODs. It compacts unused vertices while preserving surface ordering,
-names, normals, tangents, UVs and custom attributes. Collision and normalization
-use original bounds. The original source resources/files remain untouched.
+names, normals, tangents, UVs and custom attributes. Normalization uses original
+bounds; picking uses the optimized triangle geometry. The original source
+resources/files remain untouched.
 
 Geometry is cached under `user://model_geometry_v1` with a SHA-256 key over
 geometry contents, surface formats, per-surface targets, optimizer version and
@@ -41,3 +42,17 @@ The external Prisioneira GLB produces existing Godot warnings about differing
 UV maps for normal/metallic textures; the runtime GLTF loader cannot represent
 those material mappings. Geometry optimization preserves the available channels
 but does not repair that importer limitation.
+
+## Picking regression
+
+```sh
+godot --headless --path app --script res://tests/model_picking_test.gd
+```
+
+Checks actual physics ray queries against two separated meshes: empty space
+inside the combined bounds must miss, both meshes must hit from either side,
+and space above the surface must miss. Repeats with object translation/rotation
+and a nonuniform local scale multiplier. The static concave collision is built
+once during setup from the optimized mesh, including all nested transforms.
+It represents the initial geometry; skeletal animation and shader deformation
+do not update it each frame. Texture transparency is not a geometric hole.
