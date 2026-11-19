@@ -20,6 +20,8 @@ var model: Node3D
 
 var _geometries: Array[GeometryInstance3D] = []
 var _outline_material: ShaderMaterial
+var _outline_mask_material: ShaderMaterial
+var _original_overlays: Array[Material] = []
 
 
 ## Monta o objeto a partir do modelo carregado. Pode ser chamado antes de entrar na
@@ -68,20 +70,25 @@ func setup(model_root: Node3D) -> bool:
 	_collect_geometries(model_root)
 	_outline_material = ShaderMaterial.new()
 	_outline_material.shader = OutlineStyle.HULL_SHADER
+	_outline_material.render_priority = Material.RENDER_PRIORITY_MAX
+	_outline_mask_material = ShaderMaterial.new()
+	_outline_mask_material.shader = OutlineStyle.MASK_SHADER
+	_outline_mask_material.render_priority = Material.RENDER_PRIORITY_MAX - 1
+	_outline_mask_material.next_pass = _outline_material
 	return true
 
 
-## Mostra o outline (como overlay de cada malha) enquanto há hover ou arrasto
+## Máscara transparente seguida do contorno, somente durante hover/arrasto.
 func _on_visual_state_changed(state: VisualState) -> void:
 	if _outline_material == null:
 		return
 	var overlay: Material = null
 	if state != VisualState.IDLE:
 		_outline_material.set_shader_parameter('outline_color', OutlineStyle.color_for(state))
-		_outline_material.set_shader_parameter('width', OutlineStyle.width_for(state))
-		overlay = _outline_material
-	for geometry in _geometries:
-		geometry.material_overlay = overlay
+		_outline_material.set_shader_parameter('width_pixels', OutlineStyle.model_width_for(state))
+		overlay = _outline_mask_material
+	for index in _geometries.size():
+		_geometries[index].material_overlay = overlay if overlay != null else _original_overlays[index]
 
 
 ## Junta as caixas de todas as malhas, no espaço do pai do modelo. Não usa
@@ -101,5 +108,6 @@ func _collect_bounds(node: Node, parent_transform: Transform3D, out: Array[AABB]
 func _collect_geometries(node: Node) -> void:
 	if node is GeometryInstance3D:
 		_geometries.append(node as GeometryInstance3D)
+		_original_overlays.append((node as GeometryInstance3D).material_overlay)
 	for child in node.get_children():
 		_collect_geometries(child)
