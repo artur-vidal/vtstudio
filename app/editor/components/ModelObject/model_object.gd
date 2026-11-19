@@ -157,3 +157,15 @@ func _collect_collision_faces(node: Node, parent_transform: Transform3D, out: Pa
 			out.append_array(current * mesh.get_faces())
 	for child in node.get_children():
 		_collect_collision_faces(child, current, out)
+
+
+func _get_rotation_radius() -> float:
+	var parts: Array[AABB] = []
+	_collect_bounds(model, (model.get_parent() as Node3D).transform, parts)
+	if parts.is_empty():
+		return super._get_rotation_radius()
+	var bounds := parts[0]
+	for part in parts:
+		bounds = bounds.merge(part)
+	var size := bounds.size * global_basis.get_scale().abs()
+	return maxf(0.25, Vector2(size.x, size.z).length() * 0.5 + 0.15)

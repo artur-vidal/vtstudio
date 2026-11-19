@@ -56,3 +56,27 @@ and a nonuniform local scale multiplier. The static concave collision is built
 once during setup from the optimized mesh, including all nested transforms.
 It represents the initial geometry; skeletal animation and shader deformation
 do not update it each frame. Texture transparency is not a geometric hole.
+
+## Miniature manipulation
+
+Hold left mouse on a miniature to move it on XZ. While holding it, hold R and
+move horizontally to rotate around world Y, or hold Shift and move vertically
+to change its height. R takes priority when both modifiers are held. Switching
+modes reanchors the movement target. Releasing the mouse or losing window focus
+ends capture. The rotation guide shows the signed sweep since entering R and
+the current forward direction, and hides when R or the mouse is released.
+
+Movement uses mouse deltas with a world-per-pixel scale captured at the hit
+depth (minimum depth 2 world units). It never intersects a grazing horizontal
+plane, does not move without mouse motion, and is independent of frame rate.
+Camera movement/zoom during capture does not recalculate that scale or basis.
+The guide is an editor overlay so it remains readable over map floors.
+Cursor shape changes have been removed from miniature and camera controls.
+
+```sh
+godot --headless --path app --script res://tests/miniature_manipulation_test.gd
+```
+
+Tests cover XZ movement, elevation isolation, Y rotation, continuous angle sweep
+across +/- PI, mode transitions, R/Shift priority, close and top-down cameras,
+no motion without input, indicator lifecycle and capture cleanup.

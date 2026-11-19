@@ -39,7 +39,8 @@ func _process(delta: float) -> void:
 	var real_delta := delta  # usado nas suavizações, sem o efeito do cam_slow
 	var speed_scale := 1.0
 
-	if Input.is_action_pressed("cam_slow"):
+	var miniature_held := not get_tree().get_nodes_in_group("miniature_dragging").is_empty()
+	if not miniature_held and Input.is_action_pressed("cam_slow"):
 		speed_scale = 0.1
 		delta /= 10
 
@@ -64,7 +65,7 @@ func _process(delta: float) -> void:
 	elif Input.is_action_pressed("cam_roll_right"):
 		camera_z -= 2.0 * delta
 
-	if Input.is_action_pressed("cam_reset"):
+	if not miniature_held and Input.is_action_pressed("cam_reset"):
 		camera_z = 0.0
 
 	# Suavização independente de framerate
@@ -82,17 +83,14 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and event.button_mask & MOUSE_BUTTON_MASK_RIGHT:
 		# Compensa o roll: converte o movimento da tela para o referencial do eixo
 		var rel: Vector2 = event.relative.rotated(-eixo.rotation.z)
-		
+
 		target_yaw -= rel.x * orbit_sensitivity
 		target_pitch = clampf(
 			target_pitch - rel.y * orbit_sensitivity,
 			min_eixo_rotation,
 			max_eixo_rotation
 		)
-		
-		Input.set_default_cursor_shape(Input.CURSOR_DRAG)
-	else:
-		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
+
 
 # Converte uma "velocidade" em fator de lerp estável com qualquer FPS
 func _smooth(speed: float, delta: float) -> float:
