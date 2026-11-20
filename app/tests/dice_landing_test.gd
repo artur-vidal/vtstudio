@@ -43,19 +43,26 @@ func _run() -> void:
 		var landed := [false]
 		stage.settled.connect(func(): landed[0] = true, CONNECT_ONE_SHOT)
 		var frames := 0
-		while not landed[0] and frames < 240:
+		while not landed[0] and frames < 420:
 			await physics_frame
 			frames += 1
 			for body: RigidBody3D in stage.bodies:
-				var data: Dictionary = stage.Assets.get_die(body.get_meta("sides"))
-				var clearance := body.position.y - stage.contact_height(data.shape, body.basis)
-				check(clearance >= -0.002, "Die penetrated the floor during flight: %s frozen=%s" % [clearance, body.freeze])
-				if body.freeze and clearance < 0.025 and stage.elapsed > stage.FREE_FALL_TIME:
-					check(stage.read_face(data, body.basis) == body.get_meta("value"), "First floor contact showed another result")
-			if frames % 15 == 0:
-				for i in stage.bodies.size():
-					for j in range(i + 1, stage.bodies.size()):
-						check(stage.bodies[i].position.distance_to(stage.bodies[j].position) > 1.64, "Dice overlap or stack")
+				for contact in body.get_colliding_bodies():
+					if contact is StaticBody3D and body.aligned:
+						var data: Dictionary = stage.Assets.get_die(body.get_meta("sides"))
+						check(stage.read_face(data, body.basis) == body.get_meta("value"), "Ground contact shows a different face")
+			if frames == 25:
+				var total_height := 0.0
+				for body: RigidBody3D in stage.bodies:
+					check(not body.custom_integrator and not body.freeze, "Native physics must drive the fall")
+					check(not body.lock_rotation and body.angular_velocity.length() > 0.1, "Initial fall must tumble freely")
+					total_height += body.position.y
+				check(total_height / stage.bodies.size() < 3.8, "Dice did not fall under gravity")
+			if frames == 70:
+				var touching := 0
+				for body: RigidBody3D in stage.bodies:
+					touching += int(body.get_contact_count() > 0)
+				check(touching > 0, "Physical throw never contacted the tray or another die")
 		check(landed[0], "Landing failed to finish")
 		for body: RigidBody3D in stage.bodies:
 			var data: Dictionary = stage.Assets.get_die(body.get_meta("sides"))

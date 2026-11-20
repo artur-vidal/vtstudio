@@ -4,7 +4,7 @@ extends Node3D
 signal settled
 
 const Assets = preload("res://editor/dice/dice_assets.gd")
-const DiceBody = preload("res://editor/dice/dice_body.gd")
+const OrientationBody = preload("res://editor/dice/dice_orientation_body.gd")
 const Palette = preload("res://editor/dice/dice_palette.gd")
 var bodies: Array[RigidBody3D] = []
 var targets: Array[Transform3D] = []
@@ -14,8 +14,8 @@ var rolling := false
 var elapsed := 0.0
 var settle_tween: Tween
 var aspect := 1.5
-const FREE_FALL_TIME := 1.4
-const LANDING_TIME := 1.45
+const FREE_FALL_TIME := 2.5
+const LANDING_TIME := 1.2
 
 func _ready() -> void:
 	motion_rng.randomize()
@@ -92,16 +92,14 @@ func throw_result(result: Dictionary) -> void:
 	for group: Dictionary in result.groups:
 		var data: Dictionary = Assets.get_die(group.sides)
 		for value: int in group.values:
-			var body := DiceBody.new()
-			body.custom_integrator = true
-			body.points = data.shape.points
+			var body := OrientationBody.new()
 			body.mass = 0.7
-			# Each die has a landing lane: collide with the tray, never stack on another die.
+			body.can_sleep = false
+			body.guidance_delay = motion_rng.randf_range(0.8, 1.1)
 			body.collision_layer = 2
-			# The tray contact is integrated explicitly, avoiding solver penetration.
-			body.collision_mask = 0
-			body.axis_lock_linear_x = true
-			body.axis_lock_linear_z = true
+			body.collision_mask = 3
+			body.contact_monitor = true
+			body.max_contacts_reported = 8
 			body.linear_damp = 0.65
 			body.angular_damp = 0.9
 			body.continuous_cd = true
@@ -117,11 +115,12 @@ func throw_result(result: Dictionary) -> void:
 			add_child(body)
 			body.position.y = 4.0 + (index % 5) * 0.3
 			body.rotation = Vector3(motion_rng.randf() * TAU, motion_rng.randf() * TAU, motion_rng.randf() * TAU)
-			body.linear_velocity = Vector3(motion_rng.randf_range(-0.1, 0.1), -2, motion_rng.randf_range(-0.1, 0.1))
+			body.linear_velocity = Vector3(motion_rng.randf_range(-2.5, 2.5), -2, motion_rng.randf_range(-2.5, 2.5))
 			body.angular_velocity = Vector3(motion_rng.randf_range(-10, 10), motion_rng.randf_range(-10, 10), motion_rng.randf_range(-10, 10))
 			body.set_meta("sides", group.sides)
 			body.set_meta("value", value)
 			var target_basis := face_basis(data, value)
+			body.landing_basis = target_basis
 			var min_y := 0.0
 			for point: Vector3 in (data.shape as ConvexPolygonShape3D).points:
 				min_y = minf(min_y, (target_basis * point).y)
@@ -131,8 +130,8 @@ func throw_result(result: Dictionary) -> void:
 	rolling = true
 	_reflow()
 	for i in bodies.size():
-		bodies[i].position.x = targets[i].origin.x
-		bodies[i].position.z = targets[i].origin.z
+		bodies[i].position.x = targets[i].origin.x - 1.0
+		bodies[i].position.z = targets[i].origin.z - 1.0
 	elapsed = 0
 
 static func face_basis(data: Dictionary, value: int) -> Basis:
@@ -185,6 +184,9 @@ func _physics_process(delta: float) -> void:
 	elapsed += delta
 	if elapsed < FREE_FALL_TIME:
 		return
+	for body in bodies:
+		if not body.aligned:
+			return
 	rolling = false
 	settle_tween = create_tween().set_parallel(true).set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
 	for i in bodies.size():
@@ -202,20 +204,11 @@ func _land_die(index: int, start: Transform3D, progress: float) -> void:
 	var target := targets[index]
 	var body := bodies[index]
 	var data: Dictionary = Assets.get_die(body.get_meta("sides"))
-	# Finish orienting while airborne. There is no late face swap after resting.
-	var turn := smoothstep(0.0, 0.62, progress)
-	var orientation := Basis(start.basis.get_rotation_quaternion().slerp(target.basis.get_rotation_quaternion(), turn))
-	var travel := smoothstep(0.0, 0.65, progress)
-	var position_on_tray := start.origin.lerp(target.origin, travel)
-	var clearance := maxf(0.0, start.origin.y - contact_height(data.shape, start.basis))
-	if progress < 0.72:
-		clearance *= 1.0 - pow(progress / 0.72, 2.0)
-		clearance += sin(PI * progress / 0.72) * 0.7
-	else:
-		# A small final bounce keeps the chosen face and returns exactly to the floor.
-		clearance = sin(PI * (progress - 0.72) / 0.28) * 0.16
-	position_on_tray.y = contact_height(data.shape, orientation) + maxf(0, clearance)
-	body.transform = Transform3D(orientation, position_on_tray)
+	# Only organize position here. The visible face was established before contact.
+	var weight := smoothstep(0.0, 1.0, progress)
+	var pose := Transform3D(Basis(start.basis.get_rotation_quaternion().slerp(target.basis.get_rotation_quaternion(), weight)), start.origin.lerp(target.origin, weight))
+	pose.origin.y = maxf(pose.origin.y, contact_height(data.shape, pose.basis))
+	body.transform = pose
 
 func _finish_landing() -> void:
 	for i in bodies.size():
