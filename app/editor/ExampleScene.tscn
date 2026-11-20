@@ -8,6 +8,7 @@
 [ext_resource type="Script" uid="uid://b41qjmjeni1n1" path="res://editor/components/LocalModelObject/local_model_object.gd" id="5_h4k5c"]
 [ext_resource type="PackedScene" uid="uid://b50c6he0xli0x" path="res://editor/example_assets/warlord-the-last-conqueror/source/WARLORD.glb" id="6_pwq6d"]
 [ext_resource type="PackedScene" uid="uid://cevbclf2brt2c" path="res://editor/example_assets/prisoner_in_stripes.glb" id="7_pwq6d"]
+[ext_resource type="PackedScene" path="res://editor/dice/DiceRoller.tscn" id="8_dice"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_d2pi1"]
 sky_top_color = Color(0.14483434, 0.16619748, 0.20895728, 1)
@@ -69,6 +70,8 @@ metadata/_custom_type_script = "uid://b41qjmjeni1n1"
 [node name="MiniatureLoaderUI" type="CanvasLayer" parent="." unique_id=1531929411]
 visible = false
 script = ExtResource("4_8vv83")
+
+[node name="DiceRoller" parent="." unique_id=1324780210 instance=ExtResource("8_dice")]
 
 [connection signal="load_progress" from="Cena Principal/MiniatureSpawner" to="MiniatureLoaderUI" method="show_progress"]
 [connection signal="miniature_spawned" from="Cena Principal/MiniatureSpawner" to="MiniatureLoaderUI" method="show_loaded"]

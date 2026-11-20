@@ -1,4 +1,42 @@
-# Model optimization
+# Tests
+
+## Dice rules
+
+```sh
+godot --headless --path app --script res://tests/dice_roll_test.gd
+```
+
+Validates d4/d6/d8/d10/d12/d20, independent sum/highest groups, mixed totals,
+zero-count filtering, duplicate types, 50 dice per group and 100 per roll limits,
+malformed configurations and samples, null RNG, immutable inputs, reproducible
+sampling and 120,000 sampled face bounds with a broad distribution smoke check.
+Special results are evaluated per group: sum must be strictly above 80% of
+`count * sides` (exactly 80% is ordinary); highest must equal `sides`.
+The combined total sums the individual group aggregates; any exceptional group
+marks the combined result exceptional. Invalid input returns an error and no
+partial result. Physics and animations do not change sampled values.
+
+`dice_roll.gd` provides `validate(groups)`, `roll(groups, rng)` and deterministic
+`evaluate(groups, values_by_group)`. Samples passed to `evaluate` align with
+every input group, including `[]` for zero counts; output omits zero-count groups.
+
+```sh
+godot --headless --path app --script res://tests/dice_integration_test.gd
+```
+
+Instantiates the real dice scene and tests launcher/open/close lifecycle, editor
+input suspension/restoration, empty initial selection, duplicate-roll blocking, mixed modes
+with all six types in a 30-dice roll and a maximum 50d6 + 50d20 roll, completion signals, final animated total,
+face orientation, convex support/table contact, cancellation and freeing while
+open. Tests actual button sizes so zero-sized controls cannot silently pass.
+Checks the 1-second pause between settlement and reveal, cancellation during
+that pause, asynchronous closing and release of UI keyboard focus. After
+settlement it resizes the real viewport to 450x1000 and 1700x1000, checks
+reflowed transforms and contact, and projects every mesh vertex to verify all
+dice fit on screen outside the central 40% result corridor. This complements
+visual review; it does not prove a visually pleasing intermediate animation.
+
+## Model optimization
 
 Run with Godot 4.7:
 
@@ -100,3 +138,12 @@ and projected drag response at 15, 30, 60 and 80 degrees with camera roll.
 They also keep a single capture through camera yaw, pitch, roll and zoom changes,
 including views from below and off-center projection, and verify that RMB look
 does not simultaneously move the held miniature.
+
+## Dice landing and numeral audit
+
+`dice_landing_test.gd` samples every physics frame, checks floor clearance,
+separation between dice and the sampled face at first contact and rest.
+`dice_face_audit.gd` renders all 60 face values beside captions for visual
+texture verification. Set `DICE_AUDIT_IMAGE` to an absolute PNG path, run with
+a graphical renderer, and inspect the output; geometric alignment alone does
+not establish numeral orientation.
