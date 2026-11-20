@@ -155,15 +155,15 @@ func _refresh() -> void:
 	var parts := PackedStringArray()
 	for group: Dictionary in get_roll_groups():
 		total += group.count
-		parts.append("%dd%d%s" % [group.count, group.sides, " â†‘" if group.mode == "highest" else ""])
+		parts.append("%dd%d%s" % [group.count, group.sides, " ↑" if group.mode == "highest" else ""])
 	summary.text = " + ".join(parts) if total > 0 else "Escolha seus dados"
-	status.text = "%d / %d dados Â· atÃ© %d por tipo" % [total, MAX_DICE, Rules.MAX_PER_GROUP]
+	status.text = "%d / %d dados · até %d por tipo" % [total, MAX_DICE, Rules.MAX_PER_GROUP]
 	if total > MAX_DICE:
 		status.text = "Limite de %d dados. Reduza uma quantidade." % MAX_DICE
 	elif total == 0:
 		status.text = "Adicione pelo menos um dado para rolar."
 	roll_button.disabled = rolling or total == 0 or total > MAX_DICE
-	roll_button.text = "Rolandoâ€¦" if rolling else ("Selecione seus dados" if total == 0 else "Rolar %d dado%s" % [total, "s" if total != 1 else ""])
+	roll_button.text = "Rolando…" if rolling else ("Selecione seus dados" if total == 0 else "Rolar %d dado%s" % [total, "s" if total != 1 else ""])
 	roll_button.add_theme_color_override("font_disabled_color", Palette.color(10))
 
 func _request_roll() -> void:

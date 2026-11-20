@@ -48,7 +48,7 @@ static func _build_cache() -> void:
 		result.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 		var material := mesh.surface_get_material(0).duplicate() as BaseMaterial3D
 		# Keep the supplied pixel-art atlas crisp on small dice.
-		material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST_WITH_MIPMAPS
+		material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
 		result.surface_set_material(0, material)
 		var shape := ConvexPolygonShape3D.new()
 		shape.points = vertices

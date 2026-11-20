@@ -4,6 +4,7 @@ extends Node3D
 signal settled
 
 const Assets = preload("res://editor/dice/dice_assets.gd")
+const DiceBody = preload("res://editor/dice/dice_body.gd")
 const Palette = preload("res://editor/dice/dice_palette.gd")
 var bodies: Array[RigidBody3D] = []
 var targets: Array[Transform3D] = []
@@ -13,7 +14,7 @@ var rolling := false
 var elapsed := 0.0
 var settle_tween: Tween
 var aspect := 1.5
-const FREE_FALL_TIME := 0.55
+const FREE_FALL_TIME := 1.4
 const LANDING_TIME := 1.45
 
 func _ready() -> void:
@@ -91,11 +92,16 @@ func throw_result(result: Dictionary) -> void:
 	for group: Dictionary in result.groups:
 		var data: Dictionary = Assets.get_die(group.sides)
 		for value: int in group.values:
-			var body := RigidBody3D.new()
+			var body := DiceBody.new()
+			body.custom_integrator = true
+			body.points = data.shape.points
 			body.mass = 0.7
 			# Each die has a landing lane: collide with the tray, never stack on another die.
 			body.collision_layer = 2
-			body.collision_mask = 1
+			# The tray contact is integrated explicitly, avoiding solver penetration.
+			body.collision_mask = 0
+			body.axis_lock_linear_x = true
+			body.axis_lock_linear_z = true
 			body.linear_damp = 0.65
 			body.angular_damp = 0.9
 			body.continuous_cd = true
@@ -140,6 +146,15 @@ static func face_basis(data: Dictionary, value: int) -> Basis:
 				var angle := glyph_up.signed_angle_to(Vector3.FORWARD, Vector3.UP)
 				orientation = Basis(Vector3.UP, angle) * orientation
 			if data.get("read_bottom", false):
+				# Fix yaw from an actual supporting-face vertex, so all four results
+				# have the same tetrahedron silhouette before the presentation tilt.
+				for point: Vector3 in data.shape.points:
+					if absf((point - face.center).dot(normal)) < 0.002:
+						var radial: Vector3 = orientation * (point - face.center)
+						radial.y = 0
+						if radial.length_squared() > 0.01:
+							orientation = Basis(Vector3.UP, radial.signed_angle_to(Vector3.FORWARD, Vector3.UP)) * orientation
+							break
 				# Presentation angle for the tetrahedron: expose the upper apex and
 				# its front face instead of looking directly along the apex axis.
 				orientation = Basis(Vector3.RIGHT, deg_to_rad(-45)) * orientation
@@ -195,6 +210,7 @@ func _land_die(index: int, start: Transform3D, progress: float) -> void:
 	var clearance := maxf(0.0, start.origin.y - contact_height(data.shape, start.basis))
 	if progress < 0.72:
 		clearance *= 1.0 - pow(progress / 0.72, 2.0)
+		clearance += sin(PI * progress / 0.72) * 0.7
 	else:
 		# A small final bounce keeps the chosen face and returns exactly to the floor.
 		clearance = sin(PI * (progress - 0.72) / 0.28) * 0.16

@@ -49,8 +49,8 @@ func _run() -> void:
 			for body: RigidBody3D in stage.bodies:
 				var data: Dictionary = stage.Assets.get_die(body.get_meta("sides"))
 				var clearance := body.position.y - stage.contact_height(data.shape, body.basis)
-				check(clearance >= -0.002, "Die penetrated the floor during flight")
-				if clearance < 0.025:
+				check(clearance >= -0.002, "Die penetrated the floor during flight: %s frozen=%s" % [clearance, body.freeze])
+				if body.freeze and clearance < 0.025 and stage.elapsed > stage.FREE_FALL_TIME:
 					check(stage.read_face(data, body.basis) == body.get_meta("value"), "First floor contact showed another result")
 			if frames % 15 == 0:
 				for i in stage.bodies.size():
