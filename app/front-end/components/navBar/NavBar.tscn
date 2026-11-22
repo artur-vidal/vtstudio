@@ -4,9 +4,13 @@
 [ext_resource type="Theme" uid="uid://bbubev3ycaqjc" path="res://front-end/components/themes/button/ButtonVermelho.tres" id="2_gpufo"]
 [ext_resource type="Texture2D" uid="uid://bcl2g2mu5g85u" path="res://assets/icons/Casa.png" id="3_v2dd8"]
 [ext_resource type="Texture2D" uid="uid://cmnvpqf4ci22" path="res://assets/icons/Carta.png" id="4_f3b18"]
+[ext_resource type="Script" uid="uid://blex1i4y7e4r1" path="res://front-end/components/botao/home.gd" id="4_ii1xa"]
 [ext_resource type="Texture2D" uid="uid://ckoltbqe1qmev" path="res://assets/icons/Lapis.png" id="5_u58k2"]
 [ext_resource type="Texture2D" uid="uid://bummnu7aur6qn" path="res://assets/icons/Pastas.png" id="6_bnnoi"]
+[ext_resource type="Script" uid="uid://bhoxbgcjxrsbd" path="res://front-end/components/botao/mensagens.gd" id="6_d3hel"]
 [ext_resource type="Texture2D" uid="uid://uxfhwlj7bg4s" path="res://assets/images/Detalhe.png" id="7_1alol"]
+[ext_resource type="Script" uid="uid://f53wljiq46vy" path="res://front-end/components/botao/projetos.gd" id="8_udd1f"]
+[ext_resource type="Script" uid="uid://dbdxsgr1lvep3" path="res://front-end/components/botao/assets.gd" id="10_71j3w"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_p877t"]
 bg_color = Color(0.6117647, 0.10980392, 0.18039216, 1)
@@ -31,7 +35,7 @@ theme_override_constants/margin_bottom = 0
 layout_mode = 2
 alignment = 1
 
-[node name="BotaoDourado" parent="PanelContainer/MarginContainer/HBoxContainer" unique_id=151969610 instance=ExtResource("1_qksk2")]
+[node name="Home" parent="PanelContainer/MarginContainer/HBoxContainer" unique_id=151969610 instance=ExtResource("1_qksk2")]
 custom_minimum_size = Vector2(96, 96)
 custom_maximum_size = Vector2(96, 96)
 layout_mode = 2
@@ -41,10 +45,11 @@ theme = ExtResource("2_gpufo")
 text = ""
 icon = ExtResource("3_v2dd8")
 icon_alignment = 1
+script = ExtResource("4_ii1xa")
 tamanho = "Nav"
 cor = "Vermelho"
 
-[node name="BotaoDourado2" parent="PanelContainer/MarginContainer/HBoxContainer" unique_id=1410929047 instance=ExtResource("1_qksk2")]
+[node name="Mensagens" parent="PanelContainer/MarginContainer/HBoxContainer" unique_id=1410929047 instance=ExtResource("1_qksk2")]
 custom_minimum_size = Vector2(96, 96)
 custom_maximum_size = Vector2(96, 96)
 layout_mode = 2
@@ -54,10 +59,11 @@ theme = ExtResource("2_gpufo")
 text = ""
 icon = ExtResource("4_f3b18")
 icon_alignment = 1
+script = ExtResource("6_d3hel")
 tamanho = "Nav"
 cor = "Vermelho"
 
-[node name="BotaoDourado3" parent="PanelContainer/MarginContainer/HBoxContainer" unique_id=1932619316 instance=ExtResource("1_qksk2")]
+[node name="Projetos" parent="PanelContainer/MarginContainer/HBoxContainer" unique_id=1932619316 instance=ExtResource("1_qksk2")]
 custom_minimum_size = Vector2(96, 96)
 custom_maximum_size = Vector2(96, 96)
 layout_mode = 2
@@ -67,10 +73,11 @@ theme = ExtResource("2_gpufo")
 text = ""
 icon = ExtResource("5_u58k2")
 icon_alignment = 1
+script = ExtResource("8_udd1f")
 tamanho = "Nav"
 cor = "Vermelho"
 
-[node name="BotaoDourado4" parent="PanelContainer/MarginContainer/HBoxContainer" unique_id=122122126 instance=ExtResource("1_qksk2")]
+[node name="Assets" parent="PanelContainer/MarginContainer/HBoxContainer" unique_id=122122126 instance=ExtResource("1_qksk2")]
 custom_minimum_size = Vector2(96, 96)
 custom_maximum_size = Vector2(96, 96)
 layout_mode = 2
@@ -80,6 +87,7 @@ theme = ExtResource("2_gpufo")
 text = ""
 icon = ExtResource("6_bnnoi")
 icon_alignment = 1
+script = ExtResource("10_71j3w")
 tamanho = "Nav"
 cor = "Vermelho"
 
@@ -87,3 +95,8 @@ cor = "Vermelho"
 position = Vector2(206, 121.00001)
 scale = Vector2(1, 1.6413014)
 texture = ExtResource("7_1alol")
+
+[connection signal="pressed" from="PanelContainer/MarginContainer/HBoxContainer/Home" to="PanelContainer/MarginContainer/HBoxContainer/Home" method="_on_pressed"]
+[connection signal="pressed" from="PanelContainer/MarginContainer/HBoxContainer/Mensagens" to="PanelContainer/MarginContainer/HBoxContainer/Mensagens" method="_on_pressed"]
+[connection signal="pressed" from="PanelContainer/MarginContainer/HBoxContainer/Projetos" to="PanelContainer/MarginContainer/HBoxContainer/Projetos" method="_on_pressed"]
+[connection signal="pressed" from="PanelContainer/MarginContainer/HBoxContainer/Assets" to="PanelContainer/MarginContainer/HBoxContainer/Assets" method="_on_pressed"]
