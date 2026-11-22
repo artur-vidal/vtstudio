@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://front-end/components/botao/Botao.tscn" id="7_oe1xp"]
 [ext_resource type="Theme" uid="uid://bwp2tkasans1b" path="res://front-end/components/themes/button/ButtonDourado.tres" id="8_rs7yg"]
 [ext_resource type="Theme" uid="uid://bbubev3ycaqjc" path="res://front-end/components/themes/button/ButtonVermelho.tres" id="9_wkbrv"]
+[ext_resource type="Script" uid="uid://cq6skgr3ahnlq" path="res://front-end/components/botao/hospedar.gd" id="10_bbgop"]
 [ext_resource type="PackedScene" uid="uid://jj1hffbx4inr" path="res://front-end/components/navBar/NavBar.tscn" id="10_tw7nx"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yn1r1"]
@@ -268,6 +269,9 @@ custom_minimum_size = Vector2(144, 60)
 layout_mode = 2
 theme = ExtResource("8_rs7yg")
 text = "Hospedar Sessão"
+script = ExtResource("10_bbgop")
+mensagem = "Sessão Hospedada"
+duracao = 2.0
 tamanho = "Large"
 cor = "Dourado"
 
