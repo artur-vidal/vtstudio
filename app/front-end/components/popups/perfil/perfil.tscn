@@ -113,6 +113,7 @@ theme = ExtResource("6_w8t0t")
 text = "Amigos"
 script = ExtResource("12_i8xip")
 popup = "res://front-end/components/popups/amigos/amigos.tscn"
+cor = "Cinza-Outline"
 
 [node name="Deslogar" parent="VBoxContainer/GridContainer" unique_id=942791657 instance=ExtResource("4_w4wjy")]
 layout_mode = 2
