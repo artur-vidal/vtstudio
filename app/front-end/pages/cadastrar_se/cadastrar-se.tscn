@@ -6,6 +6,7 @@
 [ext_resource type="Theme" uid="uid://bwp2tkasans1b" path="res://front-end/components/themes/button/ButtonDourado.tres" id="2_kxkhy"]
 [ext_resource type="FontFile" uid="uid://iyvms52ed4p4" path="res://assets/fonts/Outfit/static/Outfit-Regular.ttf" id="3_fqqn3"]
 [ext_resource type="PackedScene" uid="uid://gcopp6rysbwg" path="res://front-end/components/textfield/TextField.tscn" id="3_sfeqj"]
+[ext_resource type="Script" uid="uid://cev7k2ai7hcdu" path="res://front-end/components/botao/cadastrar-se.gd" id="6_t52ek"]
 [ext_resource type="Script" uid="uid://bfu24n7h2qww0" path="res://front-end/pages/sessao/Player_Sessao/voltar.gd" id="7_fqqn3"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_t52ek"]
@@ -86,12 +87,14 @@ size_flags_horizontal = 4
 size_flags_vertical = 6
 theme = ExtResource("2_kxkhy")
 text = "Cadastrar"
+script = ExtResource("6_t52ek")
 tamanho = "Large"
 cor = "Dourado"
 
 [node name="Vector" type="TextureButton" parent="PanelContainer/MarginContainer" unique_id=1261923546]
 layout_mode = 2
 size_flags_horizontal = 0
-size_flags_vertical = 0
 texture_normal = ExtResource("1_sfeqj")
 script = ExtResource("7_fqqn3")
+
+[connection signal="pressed" from="PanelContainer/MarginContainer/VBoxContainer-Principal/BotaoDourado" to="PanelContainer/MarginContainer/VBoxContainer-Principal/BotaoDourado" method="_on_pressed"]
