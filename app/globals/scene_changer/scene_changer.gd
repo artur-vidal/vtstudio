@@ -7,6 +7,7 @@ var loading_screen: PackedScene = preload("uid://b27qm5kt2fm23")
 var loaded_resource: PackedScene
 var scene_path: String
 var cena_atual: String = ""
+var historico: Array[String] = []
 var progress: Array = []
 var _popup_layer: CanvasLayer
 
@@ -15,8 +16,16 @@ func _ready() -> void:
 	set_process(false)
 
 
-func load_scene(new_scene_path: String) -> void:
+func load_scene(new_scene_path: String, registrar: bool = true) -> void:
 	close_popup()
+
+	if registrar:
+		var origem: String = cena_atual
+		if origem == "" and get_tree().current_scene:
+			origem = get_tree().current_scene.scene_file_path
+		if origem != "" and origem != new_scene_path:
+			historico.append(origem)
+
 	scene_path = new_scene_path
 	cena_atual = new_scene_path
 
@@ -28,6 +37,13 @@ func load_scene(new_scene_path: String) -> void:
 	await new_load_screen.loading_screen_ready
 
 	start_load()
+
+
+func voltar() -> void:
+	if historico.is_empty():
+		return
+	var destino: String = historico.pop_back()
+	load_scene(destino, false)
 
 
 func start_load() -> void:
