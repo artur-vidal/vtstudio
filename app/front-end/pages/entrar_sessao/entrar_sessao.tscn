@@ -87,5 +87,7 @@ cor = "Dourado"
 
 [node name="Vector" type="TextureButton" parent="PanelContainer/MarginContainer" unique_id=141079387]
 layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
 texture_normal = ExtResource("1_emgda")
 script = ExtResource("7_k1i5v")
