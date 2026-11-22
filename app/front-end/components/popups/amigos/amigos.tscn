@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://wnxy3r5qy7mr"]
 
 [ext_resource type="Texture2D" uid="uid://455shvthh3ls" path="res://assets/images/Vector_red_Arrow.png" id="1_lbbad"]
+[ext_resource type="Script" uid="uid://bfu24n7h2qww0" path="res://front-end/pages/sessao/Player_Sessao/voltar.gd" id="2_exno4"]
 [ext_resource type="FontFile" uid="uid://dwhrhbcuu4ruw" path="res://assets/fonts/Fondamento/Fondamento-Regular.ttf" id="2_roh7w"]
 [ext_resource type="FontFile" uid="uid://duh8pcqgfmpp" path="res://assets/fonts/Outfit/static/Outfit-Medium.ttf" id="3_roh7w"]
 [ext_resource type="Texture2D" uid="uid://d1vfbvtk05oak" path="res://assets/icons/Pesquisar.png" id="4_houfe"]
@@ -58,6 +59,7 @@ theme_override_constants/margin_right = 80
 [node name="VectorRedArrow" type="Sprite2D" parent="Separação/Header/MarginContainer" unique_id=98343190]
 position = Vector2(24, 23)
 texture = ExtResource("1_lbbad")
+script = ExtResource("2_exno4")
 
 [node name="RichTextLabel" type="RichTextLabel" parent="Separação/Header/MarginContainer" unique_id=1806227300]
 layout_mode = 2
