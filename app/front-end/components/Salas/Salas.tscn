@@ -4,6 +4,7 @@
 [ext_resource type="FontFile" uid="uid://duh8pcqgfmpp" path="res://assets/fonts/Outfit/static/Outfit-Medium.ttf" id="2_6ahsb"]
 [ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://front-end/components/botao/Botao.tscn" id="3_iknby"]
 [ext_resource type="Theme" uid="uid://bwp2tkasans1b" path="res://front-end/components/themes/button/ButtonDourado.tres" id="4_fegw2"]
+[ext_resource type="Script" uid="uid://cm5aunie6ippw" path="res://front-end/components/botao/VerDono.gd" id="5_miy8x"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_f0sqa"]
 bg_color = Color(0.654902, 0.11372549, 0.19215687, 1)
@@ -90,8 +91,11 @@ vertical_alignment = 1
 autowrap_trim_flags = 0
 justification_flags = 0
 
-[node name="BotaoDourado" parent="VBoxContainer/PanelContainer/HBoxContainer/VBoxContainer" unique_id=151969610 instance=ExtResource("3_iknby")]
+[node name="Ver" parent="VBoxContainer/PanelContainer/HBoxContainer/VBoxContainer" unique_id=151969610 instance=ExtResource("3_iknby")]
 layout_mode = 2
 theme = ExtResource("4_fegw2")
 text = "Ver"
+script = ExtResource("5_miy8x")
 cor = "Dourado"
+
+[connection signal="pressed" from="VBoxContainer/PanelContainer/HBoxContainer/VBoxContainer/Ver" to="VBoxContainer/PanelContainer/HBoxContainer/VBoxContainer/Ver" method="_on_pressed"]
