@@ -20,3 +20,7 @@ func _on_gui_input(event: InputEvent) -> void:
 
 func _on_botao_premium_pressed() -> void:
 	pass # Replace with function body.
+
+
+func _on_botao_dourado_2_pressed() -> void:
+	pass # Replace with function body.
