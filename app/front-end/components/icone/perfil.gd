@@ -3,7 +3,6 @@ extends "res://front-end/components/icone/icon.gd"
 
 @export_file("*.tscn") var popup: String = "res://front-end/components/popups/perfil/perfil.tscn"
 
-
 func _ready() -> void:
 	super._ready()
 	if Engine.is_editor_hint():
@@ -15,7 +14,9 @@ func _ready() -> void:
 	if not gui_input.is_connected(_on_gui_input):
 		gui_input.connect(_on_gui_input)
 
-
 func _on_gui_input(event: InputEvent) -> void:
 	if popup != "" and event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		SceneChanger.open_popup(popup)
+
+func _on_botao_premium_pressed() -> void:
+	pass # Replace with function body.

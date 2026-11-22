@@ -3,12 +3,15 @@
 [ext_resource type="PackedScene" uid="uid://brotkrsfn8tyt" path="res://front-end/components/icone/icon.tscn" id="1_mwmg0"]
 [ext_resource type="Theme" uid="uid://c2q3rcmq2d5vv" path="res://front-end/components/themes/icone/IconeVermelho.tres" id="2_x7cqh"]
 [ext_resource type="FontFile" uid="uid://tagvraybmw0d" path="res://assets/fonts/Outfit/static/Outfit-SemiBold.ttf" id="3_d7n8f"]
-[ext_resource type="Texture2D" uid="uid://cceq6vmhp7tw8" path="res://assets/images/Portrait_Placeholder.png" id="3_w4wjy"]
 [ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://front-end/components/botao/Botao.tscn" id="4_w4wjy"]
 [ext_resource type="Theme" uid="uid://bkdw5caiuqbxt" path="res://front-end/components/themes/button/ButtonVermelho-Outline.tres" id="5_oqspu"]
+[ext_resource type="Script" uid="uid://vfxcchyp40i7" path="res://front-end/components/botao/premium.gd" id="6_vilnr"]
 [ext_resource type="Theme" uid="uid://dyfecp62utps3" path="res://front-end/components/themes/button/ButttonCinza-Outline.tres" id="6_w8t0t"]
 [ext_resource type="Texture2D" uid="uid://bvucj8altx52" path="res://assets/icons/vetores/Engrenagem.png" id="7_4jg41"]
 [ext_resource type="Texture2D" uid="uid://b5vgjtiocmcpr" path="res://assets/icons/vetores/Lapis.png" id="8_f0bvd"]
+[ext_resource type="Script" uid="uid://cjo0llx14inxo" path="res://front-end/components/botao/config.gd" id="9_ruipa"]
+[ext_resource type="Script" uid="uid://y4sf24a4mvmq" path="res://front-end/components/botao/deslogar.gd" id="10_i6ql1"]
+[ext_resource type="Script" uid="uid://dlifncc6xp8" path="res://front-end/components/botao/editar.gd" id="11_x4xsm"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i1ghu"]
 bg_color = Color(0.9882353, 0.9882353, 1, 1)
@@ -48,9 +51,7 @@ layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 theme = ExtResource("2_x7cqh")
-textura = ExtResource("3_w4wjy")
 tamanho = "Giga"
-cor = "Vermelho"
 
 [node name="RichTextLabel" type="RichTextLabel" parent="VBoxContainer" unique_id=671303974]
 layout_mode = 2
@@ -68,6 +69,7 @@ size_flags_horizontal = 4
 size_flags_vertical = 6
 theme = ExtResource("5_oqspu")
 text = "Plano Premium"
+script = ExtResource("6_vilnr")
 tamanho = "Medium"
 cor = "Vermelho-Outline"
 
@@ -79,7 +81,7 @@ theme_override_constants/h_separation = 16
 theme_override_constants/v_separation = 16
 columns = 2
 
-[node name="Botao" parent="VBoxContainer/GridContainer" unique_id=546586361 instance=ExtResource("4_w4wjy")]
+[node name="Config" parent="VBoxContainer/GridContainer" unique_id=546586361 instance=ExtResource("4_w4wjy")]
 layout_mode = 2
 theme = ExtResource("6_w8t0t")
 theme_override_constants/h_separation = -4
@@ -89,9 +91,10 @@ icon = ExtResource("7_4jg41")
 autowrap_trim_flags = 0
 icon_alignment = 2
 expand_icon = true
+script = ExtResource("9_ruipa")
 cor = "Cinza-Outline"
 
-[node name="Botao2" parent="VBoxContainer/GridContainer" unique_id=523072403 instance=ExtResource("4_w4wjy")]
+[node name="Editar" parent="VBoxContainer/GridContainer" unique_id=523072403 instance=ExtResource("4_w4wjy")]
 layout_mode = 2
 theme = ExtResource("6_w8t0t")
 theme_override_constants/h_separation = 0
@@ -100,16 +103,22 @@ text = "Editar"
 icon = ExtResource("8_f0bvd")
 icon_alignment = 2
 expand_icon = true
+script = ExtResource("11_x4xsm")
 cor = "Cinza-Outline"
 
-[node name="Botao3" parent="VBoxContainer/GridContainer" unique_id=906077075 instance=ExtResource("4_w4wjy")]
+[node name="Amigos" parent="VBoxContainer/GridContainer" unique_id=906077075 instance=ExtResource("4_w4wjy")]
 layout_mode = 2
 theme = ExtResource("6_w8t0t")
 text = "Amigos"
 cor = "Cinza-Outline"
 
-[node name="Botao4" parent="VBoxContainer/GridContainer" unique_id=942791657 instance=ExtResource("4_w4wjy")]
+[node name="Deslogar" parent="VBoxContainer/GridContainer" unique_id=942791657 instance=ExtResource("4_w4wjy")]
 layout_mode = 2
 theme = ExtResource("6_w8t0t")
 text = "Deslogar"
+script = ExtResource("10_i6ql1")
 cor = "Cinza-Outline"
+
+[connection signal="pressed" from="VBoxContainer/BotaoPremium" to="VBoxContainer/BotaoPremium" method="_on_pressed"]
+[connection signal="pressed" from="VBoxContainer/GridContainer/Editar" to="VBoxContainer/GridContainer/Editar" method="_on_pressed"]
+[connection signal="pressed" from="VBoxContainer/GridContainer/Deslogar" to="VBoxContainer/GridContainer/Deslogar" method="_on_pressed"]
