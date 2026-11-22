@@ -54,16 +54,19 @@ alignment = 1
 
 [node name="MarginContainer" type="MarginContainer" parent="PanelContainer/Separação tela/Header" unique_id=1669703691]
 layout_mode = 2
-theme_override_constants/margin_left = 100
-theme_override_constants/margin_right = 80
 
-[node name="Vector" type="Sprite2D" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=952573298]
-position = Vector2(29, 66.5)
-scale = Vector2(1.5, 1.4583334)
-texture = ExtResource("1_8pi45")
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=803276428]
+layout_mode = 2
+theme_override_constants/separation = 40
+
+[node name="Vector" type="TextureButton" parent="PanelContainer/Separação tela/Header/MarginContainer/HBoxContainer" unique_id=1036629265]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture_normal = ExtResource("1_8pi45")
 script = ExtResource("2_adqjr")
 
-[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=1734096130]
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Header/MarginContainer/HBoxContainer" unique_id=1734096130]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
