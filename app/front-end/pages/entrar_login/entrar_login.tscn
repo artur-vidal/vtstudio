@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://front-end/components/botao/Botao.tscn" id="3_qu4xp"]
 [ext_resource type="Theme" uid="uid://bwp2tkasans1b" path="res://front-end/components/themes/button/ButtonDourado.tres" id="4_uou7q"]
 [ext_resource type="Texture2D" uid="uid://1y287ilvq2xa" path="res://assets/images/Vector.png" id="6_5nj1u"]
+[ext_resource type="Script" uid="uid://bfu24n7h2qww0" path="res://front-end/pages/sessao/Player_Sessao/voltar.gd" id="6_qu4xp"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fn8xn"]
 bg_color = Color(0.6117647, 0.10980392, 0.18039216, 1)
@@ -19,9 +20,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_fn8xn")
 
 [node name="MarginContainer" type="MarginContainer" parent="PanelContainer" unique_id=1791493110]
 layout_mode = 2
-theme_override_constants/margin_left = 40
 theme_override_constants/margin_top = 0
-theme_override_constants/margin_right = 40
 
 [node name="VBoxContainer-Principal" type="VBoxContainer" parent="PanelContainer/MarginContainer" unique_id=1188332627]
 layout_mode = 2
@@ -75,9 +74,11 @@ layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 6
 theme = ExtResource("4_uou7q")
+text = "Logar"
 tamanho = "Medium"
 cor = "Dourado"
 
-[node name="Vector" type="Sprite2D" parent="PanelContainer/MarginContainer" unique_id=784198833]
-position = Vector2(23, 27)
-texture = ExtResource("6_5nj1u")
+[node name="Vector" type="TextureButton" parent="PanelContainer/MarginContainer" unique_id=695198706]
+layout_mode = 2
+texture_normal = ExtResource("6_5nj1u")
+script = ExtResource("6_qu4xp")

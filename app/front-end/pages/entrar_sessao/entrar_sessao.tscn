@@ -6,6 +6,7 @@
 [ext_resource type="FontFile" uid="uid://iyvms52ed4p4" path="res://assets/fonts/Outfit/static/Outfit-Regular.ttf" id="3_l3et1"]
 [ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://front-end/components/botao/Botao.tscn" id="4_l3et1"]
 [ext_resource type="Theme" uid="uid://bwp2tkasans1b" path="res://front-end/components/themes/button/ButtonDourado.tres" id="5_kasrk"]
+[ext_resource type="Script" uid="uid://bfu24n7h2qww0" path="res://front-end/pages/sessao/Player_Sessao/voltar.gd" id="7_k1i5v"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kasrk"]
 bg_color = Color(0.6117647, 0.10980392, 0.18039216, 1)
@@ -27,9 +28,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_kasrk")
 
 [node name="MarginContainer" type="MarginContainer" parent="PanelContainer" unique_id=837825851]
 layout_mode = 2
-theme_override_constants/margin_left = 40
 theme_override_constants/margin_top = 0
-theme_override_constants/margin_right = 40
 
 [node name="VBoxContainer-Principal" type="VBoxContainer" parent="PanelContainer/MarginContainer" unique_id=512939862]
 layout_mode = 2
@@ -86,6 +85,7 @@ text = "Enviar"
 tamanho = "Medium"
 cor = "Dourado"
 
-[node name="Vector" type="Sprite2D" parent="PanelContainer/MarginContainer" unique_id=1726026643]
-position = Vector2(23, 27)
-texture = ExtResource("1_emgda")
+[node name="Vector" type="TextureButton" parent="PanelContainer/MarginContainer" unique_id=141079387]
+layout_mode = 2
+texture_normal = ExtResource("1_emgda")
+script = ExtResource("7_k1i5v")
