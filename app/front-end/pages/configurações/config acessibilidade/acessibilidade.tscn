@@ -54,10 +54,21 @@ alignment = 1
 
 [node name="MarginContainer" type="MarginContainer" parent="PanelContainer/Separação tela/Header" unique_id=710604512]
 layout_mode = 2
-theme_override_constants/margin_left = 80
-theme_override_constants/margin_right = 80
 
-[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=1143587288]
+[node name="Separação" type="HBoxContainer" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=937744035]
+custom_minimum_size = Vector2(300, 0)
+custom_maximum_size = Vector2(300, -1)
+layout_mode = 2
+theme_override_constants/separation = 34
+
+[node name="VectorRedArrow" type="TextureButton" parent="PanelContainer/Separação tela/Header/MarginContainer/Separação" unique_id=2076706177]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture_normal = ExtResource("3_s6623")
+script = ExtResource("4_rgm3r")
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Header/MarginContainer/Separação" unique_id=1408089210]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
@@ -67,11 +78,6 @@ theme_override_font_sizes/normal_font_size = 32
 text = "Acessibilidade"
 fit_content = true
 scroll_active = false
-
-[node name="VectorRedArrow" type="Sprite2D" parent="PanelContainer/Separação tela/Header" unique_id=1142005839]
-position = Vector2(53, 73)
-texture = ExtResource("3_s6623")
-script = ExtResource("4_rgm3r")
 
 [node name="Fundo branco" type="PanelContainer" parent="PanelContainer/Separação tela" unique_id=1065961838]
 custom_minimum_size = Vector2(1152, 629)

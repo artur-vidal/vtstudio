@@ -57,10 +57,20 @@ alignment = 1
 
 [node name="MarginContainer" type="MarginContainer" parent="PanelContainer/Separação tela/Header" unique_id=964192173]
 layout_mode = 2
-theme_override_constants/margin_left = 80
 theme_override_constants/margin_right = 80
 
-[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=1392897429]
+[node name="Separação" type="HBoxContainer" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=290642523]
+layout_mode = 2
+theme_override_constants/separation = 72
+
+[node name="VectorRedArrow" type="TextureButton" parent="PanelContainer/Separação tela/Header/MarginContainer/Separação" unique_id=1780235476]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture_normal = ExtResource("3_kemfs")
+script = ExtResource("4_wxwl4")
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Header/MarginContainer/Separação" unique_id=1570653643]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
@@ -70,11 +80,6 @@ theme_override_font_sizes/normal_font_size = 32
 text = "Daltonismo"
 fit_content = true
 scroll_active = false
-
-[node name="VectorRedArrow" type="Sprite2D" parent="PanelContainer/Separação tela/Header" unique_id=482998778]
-position = Vector2(53, 73)
-texture = ExtResource("3_kemfs")
-script = ExtResource("4_wxwl4")
 
 [node name="Fundo branco" type="PanelContainer" parent="PanelContainer/Separação tela" unique_id=379996099]
 custom_minimum_size = Vector2(1152, 629)
