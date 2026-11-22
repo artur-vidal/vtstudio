@@ -1,14 +1,15 @@
 [gd_scene format=3 uid="uid://5jv1hdgw625r"]
 
 [ext_resource type="Texture2D" uid="uid://ckdhqmluadyul" path="res://assets/images/background/Background.png" id="1_8etau"]
+[ext_resource type="Texture2D" uid="uid://455shvthh3ls" path="res://assets/images/Vector_red_Arrow.png" id="2_b4moc"]
 [ext_resource type="FontFile" uid="uid://dwhrhbcuu4ruw" path="res://assets/fonts/Fondamento/Fondamento-Regular.ttf" id="2_v6nk2"]
 [ext_resource type="FontFile" uid="uid://tagvraybmw0d" path="res://assets/fonts/Outfit/static/Outfit-SemiBold.ttf" id="3_d88wr"]
+[ext_resource type="Script" uid="uid://bfu24n7h2qww0" path="res://front-end/pages/sessao/Player_Sessao/voltar.gd" id="3_tmiav"]
 [ext_resource type="PackedScene" uid="uid://gcopp6rysbwg" path="res://front-end/components/textfield/TextField.tscn" id="4_v6nk2"]
 [ext_resource type="PackedScene" uid="uid://brotkrsfn8tyt" path="res://front-end/components/icone/icon.tscn" id="5_d88wr"]
 [ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://front-end/components/botao/Botao.tscn" id="6_fp4ph"]
 [ext_resource type="Theme" uid="uid://c2q3rcmq2d5vv" path="res://front-end/components/themes/icone/IconeVermelho.tres" id="6_q37kg"]
 [ext_resource type="Theme" uid="uid://bkdw5caiuqbxt" path="res://front-end/components/themes/button/ButtonVermelho-Outline.tres" id="7_4oipt"]
-[ext_resource type="Script" uid="uid://c6ukjkdxcq3g2" path="res://front-end/components/botao/voltar.gd" id="9_kkhi4"]
 [ext_resource type="PackedScene" uid="uid://jj1hffbx4inr" path="res://front-end/components/navBar/NavBar.tscn" id="10_7280t"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_uoobx"]
@@ -52,12 +53,18 @@ alignment = 1
 
 [node name="MarginContainer" type="MarginContainer" parent="PanelContainer/Separação tela/Header" unique_id=432938247]
 layout_mode = 2
-theme_override_constants/margin_left = 90
 theme_override_constants/margin_right = 80
 
 [node name="Separação" type="HBoxContainer" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=1371642989]
 layout_mode = 2
 theme_override_constants/separation = 80
+
+[node name="VectorRedArrow" type="TextureButton" parent="PanelContainer/Separação tela/Header/MarginContainer/Separação" unique_id=399019412]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture_normal = ExtResource("2_b4moc")
+script = ExtResource("3_tmiav")
 
 [node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Header/MarginContainer/Separação" unique_id=1645505034]
 layout_mode = 2
@@ -180,6 +187,13 @@ layout_mode = 2
 size_flags_horizontal = 4
 theme_override_constants/separation = 16
 
+[node name="BotaoDourado" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opção4" unique_id=968987705 instance=ExtResource("6_fp4ph")]
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 4
+text = "Voltar"
+expand_icon = true
+
 [node name="BotaoDourado2" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opção4" unique_id=1866609625 instance=ExtResource("6_fp4ph")]
 layout_mode = 2
 size_flags_horizontal = 6
@@ -187,10 +201,7 @@ size_flags_vertical = 4
 theme = ExtResource("7_4oipt")
 text = "Sair"
 expand_icon = true
-script = ExtResource("9_kkhi4")
 cor = "Vermelho-Outline"
 
 [node name="NavBar" parent="PanelContainer/Separação tela" unique_id=1337153430 instance=ExtResource("10_7280t")]
 layout_mode = 2
-
-[connection signal="pressed" from="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opção4/BotaoDourado2" to="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opção4/BotaoDourado2" method="_on_pressed"]
