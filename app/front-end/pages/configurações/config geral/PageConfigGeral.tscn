@@ -2,12 +2,15 @@
 
 [ext_resource type="Texture2D" uid="uid://ckdhqmluadyul" path="res://assets/images/background/Background.png" id="1_j0xlm"]
 [ext_resource type="FontFile" uid="uid://dwhrhbcuu4ruw" path="res://assets/fonts/Fondamento/Fondamento-Regular.ttf" id="2_ufu7e"]
+[ext_resource type="Texture2D" uid="uid://455shvthh3ls" path="res://assets/images/Vector_red_Arrow.png" id="3_f5ko1"]
+[ext_resource type="Script" uid="uid://bfu24n7h2qww0" path="res://front-end/pages/sessao/Player_Sessao/voltar.gd" id="4_67rpq"]
 [ext_resource type="FontFile" uid="uid://tagvraybmw0d" path="res://assets/fonts/Outfit/static/Outfit-SemiBold.ttf" id="6_qd612"]
 [ext_resource type="PackedScene" uid="uid://bx6ggb3yi2rb5" path="res://front-end/components/switch/Switch.tscn" id="7_3u3m0"]
 [ext_resource type="Theme" uid="uid://c8njdcs0vkj45" path="res://front-end/components/themes/switch/Switch_Large.tres" id="8_btu53"]
 [ext_resource type="PackedScene" uid="uid://jj1hffbx4inr" path="res://front-end/components/navBar/NavBar.tscn" id="9_42a5k"]
 [ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://front-end/components/botao/Botao.tscn" id="9_in26c"]
 [ext_resource type="Theme" uid="uid://bkdw5caiuqbxt" path="res://front-end/components/themes/button/ButtonVermelho-Outline.tres" id="10_qd612"]
+[ext_resource type="Script" uid="uid://l2vxtna87u26" path="res://front-end/components/botao/acessibilidade.gd" id="10_sw71i"]
 [ext_resource type="Texture2D" uid="uid://c6n2mnmcxp6hu" path="res://assets/images/google.png" id="11_3u3m0"]
 [ext_resource type="PackedScene" uid="uid://dhdmig1wfbjjw" path="res://front-end/components/checkBox/CheckBox.tscn" id="12_btu53"]
 
@@ -65,6 +68,11 @@ theme_override_font_sizes/normal_font_size = 32
 text = "Configurações"
 fit_content = true
 scroll_active = false
+
+[node name="VectorRedArrow" type="Sprite2D" parent="PanelContainer/Separação tela/Header" unique_id=1033906664]
+position = Vector2(53, 73)
+texture = ExtResource("3_f5ko1")
+script = ExtResource("4_67rpq")
 
 [node name="Fundo branco" type="PanelContainer" parent="PanelContainer/Separação tela" unique_id=1483518809]
 custom_minimum_size = Vector2(1152, 629)
@@ -200,15 +208,18 @@ custom_maximum_size = Vector2(412, -1)
 layout_mode = 2
 theme_override_styles/separator = SubResource("StyleBoxLine_cqbs0")
 
-[node name="BotaoDourado" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=492642328 instance=ExtResource("9_in26c")]
+[node name="Acessibilidade" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=492642328 instance=ExtResource("9_in26c")]
 custom_minimum_size = Vector2(144, 42)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 6
 theme = ExtResource("10_qd612")
 text = "Acessibilidade"
+script = ExtResource("10_sw71i")
 tamanho = "Medium"
 cor = "Vermelho-Outline"
 
 [node name="NavBar" parent="PanelContainer/Separação tela" unique_id=1337153430 instance=ExtResource("9_42a5k")]
 layout_mode = 2
+
+[connection signal="pressed" from="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Acessibilidade" to="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Acessibilidade" method="_on_pressed"]

@@ -4,11 +4,9 @@
 [ext_resource type="FontFile" uid="uid://dwhrhbcuu4ruw" path="res://assets/fonts/Fondamento/Fondamento-Regular.ttf" id="2_oqpke"]
 [ext_resource type="PackedScene" uid="uid://brotkrsfn8tyt" path="res://front-end/components/icone/icon.tscn" id="3_gypal"]
 [ext_resource type="Theme" uid="uid://c2q3rcmq2d5vv" path="res://front-end/components/themes/icone/IconeVermelho.tres" id="4_wchwk"]
-[ext_resource type="Texture2D" uid="uid://cceq6vmhp7tw8" path="res://assets/images/Portrait_Placeholder.png" id="5_oevhm"]
 [ext_resource type="FontFile" uid="uid://boh5tn7ickl64" path="res://assets/fonts/Outfit/static/Outfit-Bold.ttf" id="6_sdaki"]
 [ext_resource type="PackedScene" uid="uid://jj1hffbx4inr" path="res://front-end/components/navBar/NavBar.tscn" id="7_22ene"]
 [ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://front-end/components/botao/Botao.tscn" id="7_fgqwr"]
-[ext_resource type="Theme" uid="uid://ccntfg5km537x" path="res://front-end/components/themes/button/ButtonDourado-Outline.tres" id="8_uob8s"]
 [ext_resource type="Theme" uid="uid://bkdw5caiuqbxt" path="res://front-end/components/themes/button/ButtonVermelho-Outline.tres" id="9_tg7su"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_u7bvn"]
@@ -86,8 +84,6 @@ layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 theme = ExtResource("4_wchwk")
-textura = ExtResource("5_oevhm")
-cor = "Vermelho"
 
 [node name="Fundo branco" type="PanelContainer" parent="PanelContainer/Separação tela" unique_id=980305044]
 custom_minimum_size = Vector2(1152, 629)
@@ -190,7 +186,6 @@ columns = 2
 layout_mode = 2
 size_flags_horizontal = 5
 size_flags_vertical = 5
-theme = ExtResource("8_uob8s")
 text = "Cancelar "
 
 [node name="BotaoDourado2" parent="PanelContainer/Separação tela/Fundo branco/Margem no topo/Separação/Botões" unique_id=2038329979 instance=ExtResource("7_fgqwr")]

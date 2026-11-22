@@ -2,7 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://wige0t5t1l7u" path="res://assets/images/LogoVTStudio.png" id="1_x0t4h"]
 [ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://front-end/components/botao/Botao.tscn" id="2_yfl6q"]
-[ext_resource type="Theme" uid="uid://ccntfg5km537x" path="res://front-end/components/themes/button/ButtonDourado-Outline.tres" id="3_yfl6q"]
+[ext_resource type="Theme" uid="uid://djt27qhennl0b" path="res://front-end/components/themes/button/ButtonBranco-Outline.tres" id="3_7tse2"]
 [ext_resource type="Texture2D" uid="uid://c6n2mnmcxp6hu" path="res://assets/images/google.png" id="4_7tse2"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cqbs0"]
@@ -48,7 +48,6 @@ custom_minimum_size = Vector2(144, 60)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 6
-theme = ExtResource("3_yfl6q")
 text = "Login"
 tamanho = "Large"
 
@@ -57,7 +56,6 @@ custom_minimum_size = Vector2(144, 60)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 6
-theme = ExtResource("3_yfl6q")
 text = "Cadastra-se"
 tamanho = "Large"
 
@@ -67,6 +65,7 @@ custom_maximum_size = Vector2(320, 60)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 6
+theme = ExtResource("3_7tse2")
 theme_override_constants/icon_max_width = 32
 text = "Entrar com google"
 icon = ExtResource("4_7tse2")
