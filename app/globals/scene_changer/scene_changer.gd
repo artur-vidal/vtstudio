@@ -98,6 +98,35 @@ func close_popup() -> void:
 	_popup_layer = null
 
 
+func notificar(texto: String, duracao: float = 2.0) -> void:
+	var camada := CanvasLayer.new()
+	camada.layer = 110
+	add_child(camada)
+
+	var painel := PanelContainer.new()
+	painel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	painel.modulate.a = 0.0
+
+	var label := Label.new()
+	label.text = texto
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	painel.add_child(label)
+	camada.add_child(painel)
+
+	await get_tree().process_frame
+
+	var tela := get_viewport().get_visible_rect().size
+	var y_final := tela.y - painel.size.y - 32.0
+	painel.position = Vector2((tela.x - painel.size.x) / 2.0, tela.y)
+	painel.modulate.a = 1.0
+
+	var tween := create_tween()
+	tween.tween_property(painel, "position:y", y_final, 0.3).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.tween_interval(duracao)
+	tween.tween_property(painel, "position:y", tela.y, 0.3).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tween.tween_callback(camada.queue_free)
+
+
 func _on_fundo_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		close_popup()
