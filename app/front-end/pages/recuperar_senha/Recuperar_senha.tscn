@@ -6,6 +6,8 @@
 [ext_resource type="FontFile" uid="uid://iyvms52ed4p4" path="res://assets/fonts/Outfit/static/Outfit-Regular.ttf" id="3_tm8v6"]
 [ext_resource type="Theme" uid="uid://bwp2tkasans1b" path="res://front-end/components/themes/button/ButtonDourado.tres" id="4_s4ayl"]
 [ext_resource type="Texture2D" uid="uid://1y287ilvq2xa" path="res://assets/images/Vector.png" id="6_8c1v1"]
+[ext_resource type="Script" uid="uid://y4oy26xeakc6" path="res://front-end/components/botao/recuperar.gd" id="6_gjjdn"]
+[ext_resource type="Script" uid="uid://bfu24n7h2qww0" path="res://front-end/pages/sessao/Player_Sessao/voltar.gd" id="7_s4ayl"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cqbs0"]
 bg_color = Color(0.6117647, 0.10980392, 0.18039216, 1)
@@ -27,9 +29,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_cqbs0")
 
 [node name="MarginContainer" type="MarginContainer" parent="PanelContainer" unique_id=598500929]
 layout_mode = 2
-theme_override_constants/margin_left = 40
 theme_override_constants/margin_top = 0
-theme_override_constants/margin_right = 40
 
 [node name="VBoxContainer-Principal" type="VBoxContainer" parent="PanelContainer/MarginContainer" unique_id=160295915]
 layout_mode = 2
@@ -80,9 +80,15 @@ size_flags_horizontal = 4
 size_flags_vertical = 6
 theme = ExtResource("4_s4ayl")
 text = "Recuperar senha"
+script = ExtResource("6_gjjdn")
 tamanho = "Large"
 cor = "Dourado"
 
-[node name="Vector" type="Sprite2D" parent="PanelContainer/MarginContainer" unique_id=1494812115]
-position = Vector2(23, 27)
-texture = ExtResource("6_8c1v1")
+[node name="Vector" type="TextureButton" parent="PanelContainer/MarginContainer" unique_id=101961524]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+texture_normal = ExtResource("6_8c1v1")
+script = ExtResource("7_s4ayl")
+
+[connection signal="pressed" from="PanelContainer/MarginContainer/VBoxContainer-Principal/BotaoDourado" to="PanelContainer/MarginContainer/VBoxContainer-Principal/BotaoDourado" method="_on_pressed"]

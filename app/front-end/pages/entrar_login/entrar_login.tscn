@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://gcopp6rysbwg" path="res://front-end/components/textfield/TextField.tscn" id="2_jqv75"]
 [ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://front-end/components/botao/Botao.tscn" id="3_qu4xp"]
 [ext_resource type="Theme" uid="uid://bwp2tkasans1b" path="res://front-end/components/themes/button/ButtonDourado.tres" id="4_uou7q"]
+[ext_resource type="Script" uid="uid://bs1nvlenb40fy" path="res://front-end/pages/entrar_login/recuperar_senha.gd" id="5_m70gh"]
 [ext_resource type="Script" uid="uid://iro6wr7cp3ib" path="res://front-end/components/botao/logar.gd" id="5_uou7q"]
 [ext_resource type="Texture2D" uid="uid://1y287ilvq2xa" path="res://assets/images/Vector.png" id="6_5nj1u"]
 [ext_resource type="Script" uid="uid://bfu24n7h2qww0" path="res://front-end/pages/sessao/Player_Sessao/voltar.gd" id="6_qu4xp"]
@@ -76,6 +77,7 @@ placeholder_text = "senha"
 layout_mode = 2
 text = "Esqueceu a senha ?"
 horizontal_alignment = 1
+script = ExtResource("5_m70gh")
 
 [node name="BotaoDourado2" parent="PanelContainer/MarginContainer/VBoxContainer-Principal" unique_id=151969610 instance=ExtResource("3_qu4xp")]
 custom_minimum_size = Vector2(144, 42)
