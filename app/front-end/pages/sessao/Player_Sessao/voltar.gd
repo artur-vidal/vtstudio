@@ -1,13 +1,19 @@
-extends Sprite2D
+extends TextureButton
+
+@export_file("*.tscn") var popup_anterior: String = ""
+@export var ocultar_sem_historico: bool = false
 
 
 func _ready() -> void:
-	visible = not SceneChanger.historico.is_empty()
+	if not pressed.is_connected(_on_pressed):
+		pressed.connect(_on_pressed)
+	if ocultar_sem_historico and popup_anterior == "":
+		visible = not SceneChanger.historico.is_empty()
 
 
-func _input(event: InputEvent) -> void:
-	if not visible:
-		return
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		if get_rect().has_point(to_local(get_global_mouse_position())):
-			SceneChanger.voltar()
+func _on_pressed() -> void:
+	if popup_anterior != "":
+		SceneChanger.open_popup(popup_anterior)
+	else:
+		SceneChanger.close_popup()
+		SceneChanger.voltar()

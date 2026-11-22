@@ -53,15 +53,19 @@ size_flags_vertical = 0
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
-theme_override_constants/margin_left = 110
-theme_override_constants/margin_right = 80
 
-[node name="VectorRedArrow" type="Sprite2D" parent="Separação/Header/MarginContainer" unique_id=98343190]
-position = Vector2(24, 23)
-texture = ExtResource("1_lbbad")
+[node name="Sepração" type="HBoxContainer" parent="Separação/Header/MarginContainer" unique_id=1740402622]
+layout_mode = 2
+theme_override_constants/separation = 145
+
+[node name="Voltar" type="TextureButton" parent="Separação/Header/MarginContainer/Sepração" unique_id=1806970602]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+texture_normal = ExtResource("1_lbbad")
 script = ExtResource("2_exno4")
 
-[node name="RichTextLabel" type="RichTextLabel" parent="Separação/Header/MarginContainer" unique_id=1806227300]
+[node name="RichTextLabel" type="RichTextLabel" parent="Separação/Header/MarginContainer/Sepração" unique_id=1806227300]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
