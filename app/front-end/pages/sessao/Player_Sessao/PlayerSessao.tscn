@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://wy7xigmmpa2o"]
 
 [ext_resource type="Texture2D" uid="uid://1y287ilvq2xa" path="res://assets/images/Vector.png" id="1_8pi45"]
+[ext_resource type="Script" uid="uid://bfu24n7h2qww0" path="res://front-end/pages/sessao/Player_Sessao/voltar.gd" id="2_adqjr"]
 [ext_resource type="FontFile" uid="uid://dwhrhbcuu4ruw" path="res://assets/fonts/Fondamento/Fondamento-Regular.ttf" id="2_jyr32"]
 [ext_resource type="Texture2D" uid="uid://r76kxhpnhhpu" path="res://assets/images/PlaceHolder-image.png" id="3_cgrob"]
 [ext_resource type="Texture2D" uid="uid://bpkp47igxp2om" path="res://assets/images/Faixa.png" id="4_tyw04"]
@@ -60,6 +61,7 @@ theme_override_constants/margin_right = 80
 position = Vector2(29, 66.5)
 scale = Vector2(1.5, 1.4583334)
 texture = ExtResource("1_8pi45")
+script = ExtResource("2_adqjr")
 
 [node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=1734096130]
 layout_mode = 2
@@ -250,13 +252,13 @@ disco local"
 fit_content = true
 
 [node name="BotaoDourado" parent="PanelContainer/Separação tela/Contéudo" unique_id=151969610 instance=ExtResource("7_vps2v")]
-custom_minimum_size = Vector2(320, 60)
+custom_minimum_size = Vector2(144, 60)
 custom_maximum_size = Vector2(320, 60)
 layout_mode = 2
 size_flags_horizontal = 6
 size_flags_vertical = 4
 theme = ExtResource("8_sqy7b")
-text = "Hospedar Sessão"
+text = "Entrar Sessão"
 tamanho = "Large"
 cor = "Dourado"
 
