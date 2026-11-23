@@ -4,6 +4,7 @@
 [ext_resource type="FontFile" uid="uid://duh8pcqgfmpp" path="res://assets/fonts/Outfit/static/Outfit-Medium.ttf" id="3_roh7w"]
 [ext_resource type="Texture2D" uid="uid://d1vfbvtk05oak" path="res://assets/icons/Pesquisar.png" id="4_houfe"]
 [ext_resource type="PackedScene" uid="uid://brotkrsfn8tyt" path="res://front-end/components/icone/icon.tscn" id="5_blg1d"]
+[ext_resource type="Texture2D" uid="uid://bi75fecf15vk3" path="res://assets/images/jonathan.jpg" id="6_mf4gx"]
 [ext_resource type="Theme" uid="uid://drbjfgp7t6ful" path="res://front-end/components/themes/icone/IconeDourado.tres" id="6_sge6l"]
 [ext_resource type="FontFile" uid="uid://tagvraybmw0d" path="res://assets/fonts/Outfit/static/Outfit-SemiBold.ttf" id="7_exko4"]
 [ext_resource type="Texture2D" uid="uid://d2xh63p2lfnwg" path="res://assets/images/Remover.png" id="8_xjort"]
@@ -106,6 +107,7 @@ layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 theme = ExtResource("6_sge6l")
+textura = ExtResource("6_mf4gx")
 cor = "Dourado"
 
 [node name="RichTextLabel" type="RichTextLabel" parent="Separação/Pesquisa_Perfis/MarginPerfis/Perfis/Perfil_Amigo" unique_id=1942622011]
@@ -114,91 +116,10 @@ size_flags_horizontal = 4
 size_flags_vertical = 4
 theme_override_colors/default_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
 theme_override_fonts/normal_font = ExtResource("7_exko4")
-text = "Nome de usuário"
+text = "Jonathan"
 fit_content = true
 
 [node name="Remover" type="Sprite2D" parent="Separação/Pesquisa_Perfis/MarginPerfis/Perfis/Perfil_Amigo" unique_id=891092496]
-position = Vector2(286.498, 27)
-scale = Vector2(2.214, 2)
-texture = ExtResource("8_xjort")
-
-[node name="Perfil_Amigo2" type="HBoxContainer" parent="Separação/Pesquisa_Perfis/MarginPerfis/Perfis" unique_id=878576703]
-custom_minimum_size = Vector2(330, 50)
-custom_maximum_size = Vector2(330, 50)
-layout_mode = 2
-theme_override_constants/separation = 32
-
-[node name="PanelContainer" parent="Separação/Pesquisa_Perfis/MarginPerfis/Perfis/Perfil_Amigo2" unique_id=2087752634 instance=ExtResource("5_blg1d")]
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-theme = ExtResource("6_sge6l")
-cor = "Dourado"
-
-[node name="RichTextLabel" type="RichTextLabel" parent="Separação/Pesquisa_Perfis/MarginPerfis/Perfis/Perfil_Amigo2" unique_id=1475337443]
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-theme_override_colors/default_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
-theme_override_fonts/normal_font = ExtResource("7_exko4")
-text = "Nome de usuário"
-fit_content = true
-
-[node name="Remover" type="Sprite2D" parent="Separação/Pesquisa_Perfis/MarginPerfis/Perfis/Perfil_Amigo2" unique_id=1494552747]
-position = Vector2(286.498, 27)
-scale = Vector2(2.214, 2)
-texture = ExtResource("8_xjort")
-
-[node name="Perfil_Amigo3" type="HBoxContainer" parent="Separação/Pesquisa_Perfis/MarginPerfis/Perfis" unique_id=1259198277]
-custom_minimum_size = Vector2(330, 50)
-custom_maximum_size = Vector2(330, 50)
-layout_mode = 2
-theme_override_constants/separation = 32
-
-[node name="PanelContainer" parent="Separação/Pesquisa_Perfis/MarginPerfis/Perfis/Perfil_Amigo3" unique_id=265898464 instance=ExtResource("5_blg1d")]
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-theme = ExtResource("6_sge6l")
-cor = "Dourado"
-
-[node name="RichTextLabel" type="RichTextLabel" parent="Separação/Pesquisa_Perfis/MarginPerfis/Perfis/Perfil_Amigo3" unique_id=851475271]
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-theme_override_colors/default_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
-theme_override_fonts/normal_font = ExtResource("7_exko4")
-text = "Nome de usuário"
-fit_content = true
-
-[node name="Remover" type="Sprite2D" parent="Separação/Pesquisa_Perfis/MarginPerfis/Perfis/Perfil_Amigo3" unique_id=122574645]
-position = Vector2(286.498, 27)
-scale = Vector2(2.214, 2)
-texture = ExtResource("8_xjort")
-
-[node name="Perfil_Amigo4" type="HBoxContainer" parent="Separação/Pesquisa_Perfis/MarginPerfis/Perfis" unique_id=1252150956]
-custom_minimum_size = Vector2(330, 50)
-custom_maximum_size = Vector2(330, 50)
-layout_mode = 2
-theme_override_constants/separation = 32
-
-[node name="PanelContainer" parent="Separação/Pesquisa_Perfis/MarginPerfis/Perfis/Perfil_Amigo4" unique_id=1088983102 instance=ExtResource("5_blg1d")]
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-theme = ExtResource("6_sge6l")
-cor = "Dourado"
-
-[node name="RichTextLabel" type="RichTextLabel" parent="Separação/Pesquisa_Perfis/MarginPerfis/Perfis/Perfil_Amigo4" unique_id=1106608806]
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-theme_override_colors/default_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
-theme_override_fonts/normal_font = ExtResource("7_exko4")
-text = "Nome de usuário"
-fit_content = true
-
-[node name="Remover" type="Sprite2D" parent="Separação/Pesquisa_Perfis/MarginPerfis/Perfis/Perfil_Amigo4" unique_id=767576823]
 position = Vector2(286.498, 27)
 scale = Vector2(2.214, 2)
 texture = ExtResource("8_xjort")
