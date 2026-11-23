@@ -1,0 +1,262 @@
+[gd_scene format=3 uid="uid://cd6u5hwpnm2v8"]
+
+[ext_resource type="Texture2D" uid="uid://ckdhqmluadyul" path="res://assets/images/background/Background.png" id="1_lux78"]
+[ext_resource type="FontFile" uid="uid://dwhrhbcuu4ruw" path="res://assets/fonts/Fondamento/Fondamento-Regular.ttf" id="2_n7nml"]
+[ext_resource type="PackedScene" uid="uid://brotkrsfn8tyt" path="res://front-end/components/icone/icon.tscn" id="3_guvwe"]
+[ext_resource type="Theme" uid="uid://c2q3rcmq2d5vv" path="res://front-end/components/themes/icone/IconeVermelho.tres" id="4_ttwax"]
+[ext_resource type="Texture2D" uid="uid://cceq6vmhp7tw8" path="res://assets/images/Portrait_Placeholder.png" id="5_b1pk0"]
+[ext_resource type="Texture2D" uid="uid://dftp10fngix3i" path="res://assets/images/aviso.png" id="6_guvwe"]
+[ext_resource type="PackedScene" uid="uid://jj1hffbx4inr" path="res://front-end/components/navBar/NavBar.tscn" id="6_qq2x3"]
+[ext_resource type="FontFile" uid="uid://tagvraybmw0d" path="res://assets/fonts/Outfit/static/Outfit-SemiBold.ttf" id="7_ttwax"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_18qng"]
+texture = ExtResource("1_lux78")
+axis_stretch_vertical = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cqbs0"]
+bg_color = Color(0.9764706, 0.9411765, 0.7019608, 1)
+border_width_left = 4
+border_width_top = 52
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.6117647, 0.10980392, 0.18039216, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_207kn"]
+bg_color = Color(0.9764706, 0.9411765, 0.7019608, 1)
+border_width_bottom = 4
+border_color = Color(0.6117647, 0.10980392, 0.18039216, 1)
+
+[node name="Mensagens" type="Control" unique_id=2083217808]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=687227216]
+custom_minimum_size = Vector2(412, 917)
+custom_maximum_size = Vector2(412, 917)
+layout_mode = 0
+offset_right = 412.0
+offset_bottom = 917.0
+theme_override_styles/panel = SubResource("StyleBoxTexture_18qng")
+
+[node name="Separação tela" type="VBoxContainer" parent="PanelContainer" unique_id=1326905070]
+layout_mode = 2
+theme_override_constants/separation = 60
+
+[node name="Header" type="HBoxContainer" parent="PanelContainer/Separação tela" unique_id=1139124238]
+custom_minimum_size = Vector2(412, 140)
+custom_maximum_size = Vector2(412, 140)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/Separação tela/Header" unique_id=1583171208]
+layout_mode = 2
+theme_override_constants/margin_left = 120
+theme_override_constants/margin_right = 80
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=166744153]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_colors/default_color = Color(0.007843138, 0.007843138, 0.007843138, 1)
+theme_override_fonts/normal_font = ExtResource("2_n7nml")
+theme_override_font_sizes/normal_font_size = 32
+text = "Início"
+fit_content = true
+scroll_active = false
+
+[node name="PanelContainer" parent="PanelContainer/Separação tela/Header" unique_id=1726400785 instance=ExtResource("3_guvwe")]
+clip_children = 2
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = ExtResource("4_ttwax")
+textura = ExtResource("5_b1pk0")
+cor = "Vermelho"
+
+[node name="Mensagens" type="VBoxContainer" parent="PanelContainer/Separação tela" unique_id=1956599614]
+custom_minimum_size = Vector2(380, 516)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+
+[node name="fundo" type="PanelContainer" parent="PanelContainer/Separação tela/Mensagens" unique_id=418571005]
+custom_minimum_size = Vector2(380, 516)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_cqbs0")
+
+[node name="notificacoes" type="VBoxContainer" parent="PanelContainer/Separação tela/Mensagens/fundo" unique_id=2114734470]
+layout_mode = 2
+
+[node name="notificacao" type="PanelContainer" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes" unique_id=1296467042]
+custom_minimum_size = Vector2(380, 80)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_207kn")
+
+[node name="margem" type="MarginContainer" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao" unique_id=781669703]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+
+[node name="separacao" type="HBoxContainer" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao/margem" unique_id=243920747]
+layout_mode = 2
+theme_override_constants/separation = 29
+
+[node name="TextureRect" type="TextureRect" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao/margem/separacao" unique_id=988058586]
+custom_minimum_size = Vector2(48, 48)
+custom_maximum_size = Vector2(48, 48)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture = ExtResource("6_guvwe")
+expand_mode = 1
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao/margem/separacao" unique_id=1576066442]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+theme_override_fonts/normal_font = ExtResource("7_ttwax")
+text = "Mensagem de notificação"
+fit_content = true
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PanelContainer" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao/margem/separacao" unique_id=1562776022 instance=ExtResource("3_guvwe")]
+clip_children = 1
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = ExtResource("4_ttwax")
+textura = ExtResource("5_b1pk0")
+cor = "Vermelho"
+
+[node name="notificacao2" type="PanelContainer" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes" unique_id=1911759327]
+custom_minimum_size = Vector2(380, 80)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_207kn")
+
+[node name="margem" type="MarginContainer" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao2" unique_id=1860544529]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+
+[node name="separacao" type="HBoxContainer" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao2/margem" unique_id=1076918862]
+layout_mode = 2
+theme_override_constants/separation = 29
+
+[node name="TextureRect" type="TextureRect" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao2/margem/separacao" unique_id=17847013]
+custom_minimum_size = Vector2(48, 48)
+custom_maximum_size = Vector2(48, 48)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture = ExtResource("6_guvwe")
+expand_mode = 1
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao2/margem/separacao" unique_id=1032515605]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+theme_override_fonts/normal_font = ExtResource("7_ttwax")
+text = "Mensagem de notificação"
+fit_content = true
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PanelContainer" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao2/margem/separacao" unique_id=2072936679 instance=ExtResource("3_guvwe")]
+clip_children = 1
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = ExtResource("4_ttwax")
+textura = ExtResource("5_b1pk0")
+cor = "Vermelho"
+
+[node name="notificacao3" type="PanelContainer" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes" unique_id=2107417270]
+custom_minimum_size = Vector2(380, 80)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_207kn")
+
+[node name="margem" type="MarginContainer" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao3" unique_id=300732550]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+
+[node name="separacao" type="HBoxContainer" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao3/margem" unique_id=2018552276]
+layout_mode = 2
+theme_override_constants/separation = 29
+
+[node name="TextureRect" type="TextureRect" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao3/margem/separacao" unique_id=1372164368]
+custom_minimum_size = Vector2(48, 48)
+custom_maximum_size = Vector2(48, 48)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture = ExtResource("6_guvwe")
+expand_mode = 1
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao3/margem/separacao" unique_id=78056417]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+theme_override_fonts/normal_font = ExtResource("7_ttwax")
+text = "Mensagem de notificação"
+fit_content = true
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PanelContainer" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao3/margem/separacao" unique_id=1657976132 instance=ExtResource("3_guvwe")]
+clip_children = 1
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = ExtResource("4_ttwax")
+textura = ExtResource("5_b1pk0")
+cor = "Vermelho"
+
+[node name="notificacao4" type="PanelContainer" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes" unique_id=89153345]
+custom_minimum_size = Vector2(380, 80)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_207kn")
+
+[node name="margem" type="MarginContainer" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao4" unique_id=2121259797]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+
+[node name="separacao" type="HBoxContainer" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao4/margem" unique_id=17999854]
+layout_mode = 2
+theme_override_constants/separation = 29
+
+[node name="TextureRect" type="TextureRect" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao4/margem/separacao" unique_id=431212420]
+custom_minimum_size = Vector2(48, 48)
+custom_maximum_size = Vector2(48, 48)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture = ExtResource("6_guvwe")
+expand_mode = 1
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao4/margem/separacao" unique_id=132041270]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+theme_override_fonts/normal_font = ExtResource("7_ttwax")
+text = "Mensagem de notificação"
+fit_content = true
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PanelContainer" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao4/margem/separacao" unique_id=316487777 instance=ExtResource("3_guvwe")]
+clip_children = 1
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = ExtResource("4_ttwax")
+textura = ExtResource("5_b1pk0")
+cor = "Vermelho"
+
+[node name="NavBar" parent="PanelContainer/Separação tela" unique_id=1337153430 instance=ExtResource("6_qq2x3")]
+layout_mode = 2

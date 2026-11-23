@@ -4,7 +4,6 @@
 [ext_resource type="Texture2D" uid="uid://cxnfln70qhsq3" path="res://front-end/components/radio/Imagem/Radio_Small.png" id="2_y31k8"]
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_yvvgv"]
-load_path = "res://.godot/imported/Arrow down-circle.png-dc2d6ada541802a7774a81e2d853b277.ctex"
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_royqa"]
 bg_color = Color(0.8352941, 0.7490196, 0.5254902, 1)

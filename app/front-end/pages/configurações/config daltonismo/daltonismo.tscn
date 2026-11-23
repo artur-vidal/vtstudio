@@ -2,8 +2,10 @@
 
 [ext_resource type="Texture2D" uid="uid://ckdhqmluadyul" path="res://assets/images/background/Background.png" id="1_05kc0"]
 [ext_resource type="FontFile" uid="uid://dwhrhbcuu4ruw" path="res://assets/fonts/Fondamento/Fondamento-Regular.ttf" id="2_fejsg"]
+[ext_resource type="Texture2D" uid="uid://455shvthh3ls" path="res://assets/images/Vector_red_Arrow.png" id="3_kemfs"]
 [ext_resource type="FontFile" uid="uid://boh5tn7ickl64" path="res://assets/fonts/Outfit/static/Outfit-Bold.ttf" id="3_m051g"]
 [ext_resource type="PackedScene" uid="uid://dgiyf8adwj63m" path="res://front-end/components/dropdown/Dropdown.tscn" id="4_2k2s5"]
+[ext_resource type="Script" uid="uid://bfu24n7h2qww0" path="res://front-end/pages/sessao/Player_Sessao/voltar.gd" id="4_wxwl4"]
 [ext_resource type="PackedScene" uid="uid://jj1hffbx4inr" path="res://front-end/components/navBar/NavBar.tscn" id="5_2hc00"]
 [ext_resource type="Texture2D" uid="uid://wige0t5t1l7u" path="res://assets/images/LogoVTStudio.png" id="5_fejsg"]
 
@@ -55,10 +57,20 @@ alignment = 1
 
 [node name="MarginContainer" type="MarginContainer" parent="PanelContainer/Separação tela/Header" unique_id=964192173]
 layout_mode = 2
-theme_override_constants/margin_left = 80
 theme_override_constants/margin_right = 80
 
-[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=1392897429]
+[node name="Separação" type="HBoxContainer" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=290642523]
+layout_mode = 2
+theme_override_constants/separation = 72
+
+[node name="VectorRedArrow" type="TextureButton" parent="PanelContainer/Separação tela/Header/MarginContainer/Separação" unique_id=1780235476]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture_normal = ExtResource("3_kemfs")
+script = ExtResource("4_wxwl4")
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Header/MarginContainer/Separação" unique_id=1570653643]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4

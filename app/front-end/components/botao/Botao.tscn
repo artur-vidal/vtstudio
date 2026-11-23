@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bibap5kc4ibb2"]
 
-[ext_resource type="Theme" uid="uid://djt27qhennl0b" path="res://front-end/components/themes/button/ButtonBranco-Outline.tres" id="1_dhiux"]
+[ext_resource type="Theme" uid="uid://ccntfg5km537x" path="res://front-end/components/themes/button/ButtonDourado-Outline.tres" id="1_oxj8h"]
 [ext_resource type="Script" uid="uid://dj635ovtnaopo" path="res://front-end/components/botao/button.gd" id="2_mhv5s"]
 
 [node name="BotaoDourado" type="Button" unique_id=151969610]
@@ -10,7 +10,7 @@ offset_right = 96.0
 offset_bottom = 42.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme = ExtResource("1_dhiux")
+theme = ExtResource("1_oxj8h")
 text = "Botão"
 script = ExtResource("2_mhv5s")
 cor = "Dourado-Outline"

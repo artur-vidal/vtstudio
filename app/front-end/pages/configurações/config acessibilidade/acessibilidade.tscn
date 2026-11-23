@@ -3,12 +3,15 @@
 [ext_resource type="Texture2D" uid="uid://ckdhqmluadyul" path="res://assets/images/background/Background.png" id="1_f7evt"]
 [ext_resource type="FontFile" uid="uid://dwhrhbcuu4ruw" path="res://assets/fonts/Fondamento/Fondamento-Regular.ttf" id="2_1ku80"]
 [ext_resource type="FontFile" uid="uid://boh5tn7ickl64" path="res://assets/fonts/Outfit/static/Outfit-Bold.ttf" id="3_c8e58"]
+[ext_resource type="Texture2D" uid="uid://455shvthh3ls" path="res://assets/images/Vector_red_Arrow.png" id="3_s6623"]
 [ext_resource type="PackedScene" uid="uid://dgiyf8adwj63m" path="res://front-end/components/dropdown/Dropdown.tscn" id="4_gsjpb"]
+[ext_resource type="Script" uid="uid://bfu24n7h2qww0" path="res://front-end/pages/sessao/Player_Sessao/voltar.gd" id="4_rgm3r"]
 [ext_resource type="PackedScene" uid="uid://bx6ggb3yi2rb5" path="res://front-end/components/switch/Switch.tscn" id="5_7h1sl"]
 [ext_resource type="PackedScene" uid="uid://jj1hffbx4inr" path="res://front-end/components/navBar/NavBar.tscn" id="5_7ubof"]
 [ext_resource type="Theme" uid="uid://c8njdcs0vkj45" path="res://front-end/components/themes/switch/Switch_Large.tres" id="6_rm1ml"]
 [ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://front-end/components/botao/Botao.tscn" id="7_m0450"]
 [ext_resource type="Theme" uid="uid://bkdw5caiuqbxt" path="res://front-end/components/themes/button/ButtonVermelho-Outline.tres" id="8_j1jir"]
+[ext_resource type="Script" uid="uid://753olbqldfn0" path="res://front-end/components/botao/daltonismo.gd" id="9_1d0sf"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_7h1sl"]
 texture = ExtResource("1_f7evt")
@@ -51,10 +54,21 @@ alignment = 1
 
 [node name="MarginContainer" type="MarginContainer" parent="PanelContainer/Separação tela/Header" unique_id=710604512]
 layout_mode = 2
-theme_override_constants/margin_left = 80
-theme_override_constants/margin_right = 80
 
-[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=1143587288]
+[node name="Separação" type="HBoxContainer" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=937744035]
+custom_minimum_size = Vector2(300, 0)
+custom_maximum_size = Vector2(300, -1)
+layout_mode = 2
+theme_override_constants/separation = 34
+
+[node name="VectorRedArrow" type="TextureButton" parent="PanelContainer/Separação tela/Header/MarginContainer/Separação" unique_id=2076706177]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture_normal = ExtResource("3_s6623")
+script = ExtResource("4_rgm3r")
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Header/MarginContainer/Separação" unique_id=1408089210]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
@@ -163,12 +177,13 @@ theme_override_font_sizes/normal_font_size = 22
 text = "Modo daltonismo"
 fit_content = true
 
-[node name="BotaoDourado" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opcao3" unique_id=151969610 instance=ExtResource("7_m0450")]
+[node name="Daltonismo" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opcao3" unique_id=151969610 instance=ExtResource("7_m0450")]
 layout_mode = 2
 size_flags_horizontal = 6
 size_flags_vertical = 4
 theme = ExtResource("8_j1jir")
 text = "Mudar"
+script = ExtResource("9_1d0sf")
 cor = "Vermelho-Outline"
 
 [node name="HSeparator4" type="HSeparator" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=1653326986]
@@ -179,3 +194,5 @@ theme_override_styles/separator = SubResource("StyleBoxLine_m0450")
 
 [node name="NavBar" parent="PanelContainer/Separação tela" unique_id=1337153430 instance=ExtResource("5_7ubof")]
 layout_mode = 2
+
+[connection signal="pressed" from="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opcao3/Daltonismo" to="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opcao3/Daltonismo" method="_on_pressed"]

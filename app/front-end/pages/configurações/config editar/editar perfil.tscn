@@ -1,16 +1,16 @@
 [gd_scene format=3 uid="uid://5jv1hdgw625r"]
 
 [ext_resource type="Texture2D" uid="uid://ckdhqmluadyul" path="res://assets/images/background/Background.png" id="1_8etau"]
+[ext_resource type="Texture2D" uid="uid://455shvthh3ls" path="res://assets/images/Vector_red_Arrow.png" id="2_b4moc"]
 [ext_resource type="FontFile" uid="uid://dwhrhbcuu4ruw" path="res://assets/fonts/Fondamento/Fondamento-Regular.ttf" id="2_v6nk2"]
 [ext_resource type="FontFile" uid="uid://tagvraybmw0d" path="res://assets/fonts/Outfit/static/Outfit-SemiBold.ttf" id="3_d88wr"]
+[ext_resource type="Script" uid="uid://bfu24n7h2qww0" path="res://front-end/pages/sessao/Player_Sessao/voltar.gd" id="3_tmiav"]
 [ext_resource type="PackedScene" uid="uid://gcopp6rysbwg" path="res://front-end/components/textfield/TextField.tscn" id="4_v6nk2"]
 [ext_resource type="PackedScene" uid="uid://brotkrsfn8tyt" path="res://front-end/components/icone/icon.tscn" id="5_d88wr"]
 [ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://front-end/components/botao/Botao.tscn" id="6_fp4ph"]
 [ext_resource type="Theme" uid="uid://c2q3rcmq2d5vv" path="res://front-end/components/themes/icone/IconeVermelho.tres" id="6_q37kg"]
 [ext_resource type="Theme" uid="uid://bkdw5caiuqbxt" path="res://front-end/components/themes/button/ButtonVermelho-Outline.tres" id="7_4oipt"]
-[ext_resource type="Texture2D" uid="uid://cceq6vmhp7tw8" path="res://assets/images/Portrait_Placeholder.png" id="7_n2u4j"]
 [ext_resource type="PackedScene" uid="uid://jj1hffbx4inr" path="res://front-end/components/navBar/NavBar.tscn" id="10_7280t"]
-[ext_resource type="Theme" uid="uid://ccntfg5km537x" path="res://front-end/components/themes/button/ButtonDourado-Outline.tres" id="10_fp4ph"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_uoobx"]
 texture = ExtResource("1_8etau")
@@ -53,10 +53,20 @@ alignment = 1
 
 [node name="MarginContainer" type="MarginContainer" parent="PanelContainer/Separação tela/Header" unique_id=432938247]
 layout_mode = 2
-theme_override_constants/margin_left = 100
 theme_override_constants/margin_right = 80
 
-[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=776058191]
+[node name="Separação" type="HBoxContainer" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=1371642989]
+layout_mode = 2
+theme_override_constants/separation = 80
+
+[node name="VectorRedArrow" type="TextureButton" parent="PanelContainer/Separação tela/Header/MarginContainer/Separação" unique_id=399019412]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture_normal = ExtResource("2_b4moc")
+script = ExtResource("3_tmiav")
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Header/MarginContainer/Separação" unique_id=1645505034]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
@@ -132,13 +142,10 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="PanelContainer" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções/Opção2" unique_id=1726400785 instance=ExtResource("5_d88wr")]
-clip_children = 1
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 theme = ExtResource("6_q37kg")
-textura = ExtResource("7_n2u4j")
 tamanho = "Medium"
-cor = "Vermelho"
 
 [node name="HSeparator3" type="HSeparator" parent="PanelContainer/Separação tela/Fundo branco/Separação/Margem/Opções" unique_id=108473732]
 custom_minimum_size = Vector2(412, 0)
@@ -184,7 +191,6 @@ theme_override_constants/separation = 16
 layout_mode = 2
 size_flags_horizontal = 6
 size_flags_vertical = 4
-theme = ExtResource("10_fp4ph")
 text = "Voltar"
 expand_icon = true
 

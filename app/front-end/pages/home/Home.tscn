@@ -4,7 +4,6 @@
 [ext_resource type="FontFile" uid="uid://dwhrhbcuu4ruw" path="res://assets/fonts/Fondamento/Fondamento-Regular.ttf" id="2_u3v86"]
 [ext_resource type="PackedScene" uid="uid://brotkrsfn8tyt" path="res://front-end/components/icone/icon.tscn" id="3_mptai"]
 [ext_resource type="Theme" uid="uid://c2q3rcmq2d5vv" path="res://front-end/components/themes/icone/IconeVermelho.tres" id="4_1tb7j"]
-[ext_resource type="Texture2D" uid="uid://cceq6vmhp7tw8" path="res://assets/images/Portrait_Placeholder.png" id="5_xjq7b"]
 [ext_resource type="PackedScene" uid="uid://dffalfludannm" path="res://front-end/components/carrossel/Carrossel.tscn" id="6_mkilh"]
 [ext_resource type="PackedScene" uid="uid://jj1hffbx4inr" path="res://front-end/components/navBar/NavBar.tscn" id="7_38xtv"]
 
@@ -63,8 +62,6 @@ layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 theme = ExtResource("4_1tb7j")
-textura = ExtResource("5_xjq7b")
-cor = "Vermelho"
 
 [node name="Carrossel" parent="PanelContainer/Separação tela" unique_id=1793015799 instance=ExtResource("6_mkilh")]
 layout_mode = 2

@@ -2,6 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://1y287ilvq2xa" path="res://assets/images/Vector.png" id="1_ft7ul"]
 [ext_resource type="FontFile" uid="uid://dwhrhbcuu4ruw" path="res://assets/fonts/Fondamento/Fondamento-Regular.ttf" id="2_bpd8g"]
+[ext_resource type="Script" uid="uid://bfu24n7h2qww0" path="res://front-end/pages/sessao/Player_Sessao/voltar.gd" id="2_dew66"]
 [ext_resource type="Texture2D" uid="uid://r76kxhpnhhpu" path="res://assets/images/PlaceHolder-image.png" id="3_n4y52"]
 [ext_resource type="Texture2D" uid="uid://bpkp47igxp2om" path="res://assets/images/Faixa.png" id="4_4twww"]
 [ext_resource type="FontFile" uid="uid://boh5tn7ickl64" path="res://assets/fonts/Outfit/static/Outfit-Bold.ttf" id="5_s3r8d"]
@@ -9,6 +10,7 @@
 [ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://front-end/components/botao/Botao.tscn" id="7_oe1xp"]
 [ext_resource type="Theme" uid="uid://bwp2tkasans1b" path="res://front-end/components/themes/button/ButtonDourado.tres" id="8_rs7yg"]
 [ext_resource type="Theme" uid="uid://bbubev3ycaqjc" path="res://front-end/components/themes/button/ButtonVermelho.tres" id="9_wkbrv"]
+[ext_resource type="Script" uid="uid://cq6skgr3ahnlq" path="res://front-end/components/botao/hospedar.gd" id="10_bbgop"]
 [ext_resource type="PackedScene" uid="uid://jj1hffbx4inr" path="res://front-end/components/navBar/NavBar.tscn" id="10_tw7nx"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yn1r1"]
@@ -57,12 +59,18 @@ layout_mode = 2
 theme_override_constants/margin_left = 100
 theme_override_constants/margin_right = 80
 
-[node name="Vector" type="Sprite2D" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=392304978]
-position = Vector2(29, 66.5)
-scale = Vector2(1.5, 1.4583334)
-texture = ExtResource("1_ft7ul")
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=69213242]
+layout_mode = 2
+theme_override_constants/separation = 40
 
-[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Header/MarginContainer" unique_id=1778323439]
+[node name="Vector" type="TextureButton" parent="PanelContainer/Separação tela/Header/MarginContainer/HBoxContainer" unique_id=1379241766]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture_normal = ExtResource("1_ft7ul")
+script = ExtResource("2_dew66")
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Header/MarginContainer/HBoxContainer" unique_id=1837303168]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
@@ -261,6 +269,9 @@ custom_minimum_size = Vector2(144, 60)
 layout_mode = 2
 theme = ExtResource("8_rs7yg")
 text = "Hospedar Sessão"
+script = ExtResource("10_bbgop")
+mensagem = "Sessão Hospedada"
+duracao = 2.0
 tamanho = "Large"
 cor = "Dourado"
 
