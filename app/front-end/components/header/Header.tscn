@@ -2,7 +2,7 @@
 
 [ext_resource type="FontFile" uid="uid://dwhrhbcuu4ruw" path="res://assets/fonts/Fondamento/Fondamento-Regular.ttf" id="1_5n03m"]
 [ext_resource type="PackedScene" uid="uid://brotkrsfn8tyt" path="res://front-end/components/icone/icon.tscn" id="2_atucb"]
-[ext_resource type="Theme" uid="uid://c2q3rcmq2d5vv" path="res://front-end/components/themes/icone/IconeVermelho.tres" id="3_wvlia"]
+[ext_resource type="Texture2D" uid="uid://ysgb8lkjn6i7" path="res://assets/images/Sophia.jpg" id="3_5e73e"]
 
 [node name="Header" type="HBoxContainer" unique_id=1395886438]
 custom_minimum_size = Vector2(412, 140)
@@ -30,8 +30,8 @@ scroll_active = false
 
 [node name="PanelContainer" parent="." unique_id=1726400785 instance=ExtResource("2_atucb")]
 layout_mode = 2
-size_flags_horizontal = 4
+size_flags_horizontal = 6
 size_flags_vertical = 4
-theme = ExtResource("3_wvlia")
+textura = ExtResource("3_5e73e")
 
 [connection signal="gui_input" from="PanelContainer" to="PanelContainer" method="_on_gui_input"]
