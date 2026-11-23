@@ -3,8 +3,8 @@
 [ext_resource type="Texture2D" uid="uid://1y287ilvq2xa" path="res://assets/images/Vector.png" id="1_ft7ul"]
 [ext_resource type="FontFile" uid="uid://dwhrhbcuu4ruw" path="res://assets/fonts/Fondamento/Fondamento-Regular.ttf" id="2_bpd8g"]
 [ext_resource type="Script" uid="uid://bfu24n7h2qww0" path="res://front-end/pages/sessao/Player_Sessao/voltar.gd" id="2_dew66"]
-[ext_resource type="Texture2D" uid="uid://r76kxhpnhhpu" path="res://assets/images/PlaceHolder-image.png" id="3_n4y52"]
 [ext_resource type="Texture2D" uid="uid://bpkp47igxp2om" path="res://assets/images/Faixa.png" id="4_4twww"]
+[ext_resource type="Texture2D" uid="uid://bhswrock051tm" path="res://assets/images/neve.jpg" id="4_bbgop"]
 [ext_resource type="FontFile" uid="uid://boh5tn7ickl64" path="res://assets/fonts/Outfit/static/Outfit-Bold.ttf" id="5_s3r8d"]
 [ext_resource type="FontFile" uid="uid://iyvms52ed4p4" path="res://assets/fonts/Outfit/static/Outfit-Regular.ttf" id="6_qkxn6"]
 [ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://front-end/components/botao/Botao.tscn" id="7_oe1xp"]
@@ -96,7 +96,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_cqbs0")
 
 [node name="TextureRect" type="TextureRect" parent="PanelContainer/Separação tela/Contéudo/Foto" unique_id=912648732]
 layout_mode = 2
-texture = ExtResource("3_n4y52")
+texture = ExtResource("4_bbgop")
 expand_mode = 3
 stretch_mode = 4
 
@@ -118,7 +118,7 @@ size_flags_vertical = 4
 theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
 theme_override_fonts/normal_font = ExtResource("2_bpd8g")
 theme_override_font_sizes/normal_font_size = 32
-text = "Nome sessão"
+text = "Ponto Gélido"
 fit_content = true
 
 [node name="Informações" type="GridContainer" parent="PanelContainer/Separação tela/Contéudo" unique_id=292594442]
@@ -150,7 +150,7 @@ layout_mode = 2
 theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
 theme_override_fonts/normal_font = ExtResource("6_qkxn6")
 theme_override_font_sizes/normal_font_size = 20
-text = "Insira Nome"
+text = "Sophia Lange"
 fit_content = true
 
 [node name="Players" type="VBoxContainer" parent="PanelContainer/Separação tela/Contéudo/Informações/Pessoas" unique_id=1531774065]
@@ -169,7 +169,7 @@ layout_mode = 2
 theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
 theme_override_fonts/normal_font = ExtResource("6_qkxn6")
 theme_override_font_sizes/normal_font_size = 20
-text = "Insira Nome"
+text = "Natan Nunes"
 fit_content = true
 
 [node name="Nome2" type="RichTextLabel" parent="PanelContainer/Separação tela/Contéudo/Informações/Pessoas/Players" unique_id=302114329]
@@ -177,7 +177,7 @@ layout_mode = 2
 theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
 theme_override_fonts/normal_font = ExtResource("6_qkxn6")
 theme_override_font_sizes/normal_font_size = 20
-text = "Insira Nome"
+text = "Artur Vidal"
 fit_content = true
 
 [node name="Nome3" type="RichTextLabel" parent="PanelContainer/Separação tela/Contéudo/Informações/Pessoas/Players" unique_id=727781854]
@@ -185,7 +185,7 @@ layout_mode = 2
 theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
 theme_override_fonts/normal_font = ExtResource("6_qkxn6")
 theme_override_font_sizes/normal_font_size = 20
-text = "Insira Nome"
+text = "Augusto"
 fit_content = true
 
 [node name="Nome4" type="RichTextLabel" parent="PanelContainer/Separação tela/Contéudo/Informações/Pessoas/Players" unique_id=662951637]
@@ -193,7 +193,7 @@ layout_mode = 2
 theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
 theme_override_fonts/normal_font = ExtResource("6_qkxn6")
 theme_override_font_sizes/normal_font_size = 20
-text = "Insira Nome"
+text = "David"
 fit_content = true
 
 [node name="Infos" type="VBoxContainer" parent="PanelContainer/Separação tela/Contéudo/Informações" unique_id=173683535]
@@ -216,7 +216,7 @@ layout_mode = 2
 theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
 theme_override_fonts/normal_font = ExtResource("6_qkxn6")
 theme_override_font_sizes/normal_font_size = 20
-text = "dd/mm/yyyy"
+text = "25/09/2026"
 fit_content = true
 
 [node name="Edicao" type="VBoxContainer" parent="PanelContainer/Separação tela/Contéudo/Informações/Infos" unique_id=1886199966]
@@ -235,7 +235,7 @@ layout_mode = 2
 theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
 theme_override_fonts/normal_font = ExtResource("6_qkxn6")
 theme_override_font_sizes/normal_font_size = 20
-text = "dd/mm/yyyy"
+text = "18/11/2026"
 fit_content = true
 
 [node name="Armazenamento" type="VBoxContainer" parent="PanelContainer/Separação tela/Contéudo/Informações/Infos" unique_id=1847595101]
@@ -254,7 +254,7 @@ layout_mode = 2
 theme_override_colors/default_color = Color(0.9882353, 0.9882353, 1, 1)
 theme_override_fonts/normal_font = ExtResource("6_qkxn6")
 theme_override_font_sizes/normal_font_size = 20
-text = "XXgb - X% do 
+text = "23gb - 8% do 
 disco local"
 fit_content = true
 
