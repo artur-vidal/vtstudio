@@ -7,6 +7,12 @@ const Stage = preload("res://editor/dice/dice_stage.gd")
 const Rules = preload("res://editor/dice/dice_roll.gd")
 const Palette = preload("res://editor/dice/dice_palette.gd")
 const ButtonScene = preload("res://front-end/components/botao/Botao.tscn")
+## Cor do botão de dados no canto superior direito, usando os temas do front-end.
+@export_enum('Vermelho', 'Dourado', 'Cinza-Outline', 'Vermelho-Outline', 'Dourado-Outline', 'Branco-Outline') var launcher_color: String = 'Vermelho':
+	set(value):
+		launcher_color = value
+		if is_instance_valid(launcher):
+			launcher.set('cor', value)
 var rng := RandomNumberGenerator.new()
 var screen: Control
 var panel: Control
@@ -35,11 +41,22 @@ const RESULT_PAUSE := 1.0
 func _ready() -> void:
 	layer = 20
 	rng.randomize()
-	launcher = _button("Rolar dados", "Dourado")
-	launcher.position = Vector2(20, 20)
+	launcher = _button('', launcher_color)
+	launcher.icon = preload('res://assets/images/dadinho.png')
+	launcher.expand_icon = true
+	launcher.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	launcher.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
+	launcher.add_theme_constant_override('icon_max_width', 30)
+	launcher.tooltip_text = 'Rolar dados'
 	launcher.focus_mode = Control.FOCUS_NONE
 	launcher.pressed.connect(open)
 	add_child(launcher)
+	launcher.custom_minimum_size = Vector2(48, 48)
+	launcher.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	launcher.offset_left = -60
+	launcher.offset_right = -12
+	launcher.offset_top = 12
+	launcher.offset_bottom = 60
 	screen = Control.new()
 	screen.name = "DiceScreen"
 	add_child(screen)
@@ -143,7 +160,7 @@ func _layout() -> void:
 	stage.set_aspect(available.x / maxf(available.y, 1))
 
 func open() -> void:
-	if screen.visible:
+	if screen.visible or not get_tree().get_nodes_in_group('editor_import_modal').is_empty():
 		return
 	_suspend_editor(get_tree().current_scene)
 	screen.show()

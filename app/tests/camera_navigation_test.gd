@@ -60,13 +60,16 @@ func _run() -> void:
 	for yaw in [0.0, PI * 0.5, PI, -PI * 0.5]:
 		for degrees in [-30.0, 20.0, 45.0, 80.0]:
 			for roll in [0.0, 1.1]:
+				var held_height := object.global_position.y
+				var held_in_view := camera.to_local(object.global_position)
 				var pitch := deg_to_rad(degrees)
 				camera.position = object.global_position + Vector3(sin(yaw) * cos(pitch), sin(pitch), cos(yaw) * cos(pitch)) * 10.0
 				camera.look_at(object.global_position)
 				camera.rotate_object_local(Vector3.BACK, roll)
-				var stationary := object.global_position
+				var expected := camera.to_global(held_in_view)
+				expected.y = held_height
 				object._process(0.1)
-				check(object.global_position.is_equal_approx(stationary), 'Camera motion moved the miniature without input')
+				check(object.global_position.is_equal_approx(expected), 'Held miniature did not follow camera rotation on XZ')
 				for pixels in [Vector2(3, 0), Vector2(0, 3), Vector2(-3, -3)]:
 					var before := camera.unproject_position(object.global_position)
 					object._apply_drag_motion(pixels)
@@ -77,6 +80,7 @@ func _run() -> void:
 	camera.look_at(object.global_position + Vector3(3.0, 2.0, 0.0))
 	for zoom in [1.0, 0.5]:
 		camera.position = object.global_position + (camera.position - object.global_position) * zoom
+		object._process(0.1)
 		var before := camera.unproject_position(object.global_position)
 		var pixels := Vector2(3.0, -3.0)
 		object._apply_drag_motion(pixels)

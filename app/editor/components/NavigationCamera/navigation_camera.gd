@@ -36,6 +36,9 @@ func _ready() -> void:
 	camera.position.z = distance
 
 func _process(delta: float) -> void:
+	if not get_tree().get_nodes_in_group('editor_import_modal').is_empty():
+		velocity = Vector3.ZERO
+		return
 	var real_delta := delta  # usado nas suavizações, sem o efeito do cam_slow
 	var speed_scale := 1.0
 
@@ -83,6 +86,8 @@ func _apply_view_rotation(delta: float) -> void:
 	global_position += eye_position - camera.global_position
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not get_tree().get_nodes_in_group('editor_import_modal').is_empty():
+		return
 	if event.is_action_pressed("cam_zoom_in"):
 		distance = clampf(distance - zoom_step, min_distance, max_distance)
 	elif event.is_action_pressed("cam_zoom_out"):

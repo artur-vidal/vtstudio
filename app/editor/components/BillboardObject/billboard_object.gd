@@ -1,16 +1,12 @@
 class_name BillboardObject
 extends MapObject
-## Miniatura de imagem (inclusive GIF animado): um quadro que gira só em torno do eixo Y
-## para sempre encarar a câmera. Herda o arrasto e o estado visual do MapObject.
-##
-## O visual é um Sprite3D com billboard fixo no Y. A caixa de colisão gira em torno do Y
-## a cada quadro de física, seguindo a MESMA regra do billboard (veja billboard_normal),
-## para continuar cobrindo a imagem. Ao passar o mouse ou arrastar, a imagem ganha um
-## outline que segue o formato dela.
+## Miniatura de imagem ou GIF em um plano fixo no mundo.
+## Herda movimento, rotação e elevação de MapObject.
+## O nome da classe é preservado para compatibilidade com cenas existentes.
 
 ## Altura da imagem no mundo, em unidades. A largura segue a proporção original.
 @export var world_height: float = 2.0
-## Espessura da caixa de colisão. Pode ser fina, pois ela sempre fica de frente para a câmera.
+## Espessura da caixa de colisão, que acompanha a rotação do objeto.
 @export var collision_thickness: float = 0.1
 
 var _sprite: Sprite3D
@@ -25,22 +21,6 @@ var _textures: Array[ImageTexture] = []
 var _delays: PackedFloat32Array = PackedFloat32Array()
 var _frame: int = 0
 var _world_size: Vector2 = Vector2.ONE
-
-
-## Direção horizontal para onde a imagem aponta, IGUAL à do Sprite3D com BILLBOARD_FIXED_Y:
-## a projeção horizontal do vetor "para trás" da câmera. A imagem fica em pé no mundo e o
-## plano dela é perpendicular a essa direção, onde quer que o objeto esteja na tela.
-## Dois erros já aconteceram aqui, e a shader do outline (outline_sprite.gdshader) usa a
-## mesma conta:
-##  - apontar para a POSIÇÃO da câmera desalinha tudo que está fora do centro da tela;
-##  - usar o vetor "direita" da câmera faz o plano rolar junto com o roll (Q/E), enquanto a
-##    imagem continua em pé. O "para trás" não muda com o roll.
-static func billboard_normal(camera: Camera3D) -> Vector3:
-	var back := camera.global_basis.z
-	back.y = 0.0
-	if back.length() < 0.0001:
-		return Vector3.BACK # câmera olhando reto para baixo: sem direção horizontal
-	return back.normalized()
 
 
 ## Monta o objeto a partir da imagem carregada. Pode ser chamado antes de entrar na
@@ -60,7 +40,7 @@ func setup(image: MiniatureImage) -> bool:
 	_sprite.name = 'Imagem'
 	_sprite.texture = first
 	_sprite.pixel_size = pixel_size
-	_sprite.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
+	_sprite.billboard = BaseMaterial3D.BILLBOARD_DISABLED
 	# Base da imagem na origem do objeto: ela fica "de pé" sobre o chão
 	_sprite.position = Vector3(0.0, world_height / 2.0, 0.0)
 	add_child(_sprite)
@@ -89,15 +69,8 @@ func _ready() -> void:
 		_timer.start(maxf(_delays[0], 0.02))
 
 
-## A colisão é atualizada na física, que é quem usa a caixa para achar o objeto sob o mouse
-func _physics_process(_delta: float) -> void:
-	if _collision == null:
-		return
-	var camera := get_viewport().get_camera_3d()
-	if camera == null:
-		return
-	var normal := billboard_normal(camera)
-	_collision.rotation.y = atan2(normal.x, normal.z) - global_rotation.y
+func _get_rotation_radius() -> float:
+	return maxf(0.25, _world_size.x * absf(global_basis.get_scale().x) * 0.5 + 0.15)
 
 
 func _on_visual_state_changed(state: VisualState) -> void:

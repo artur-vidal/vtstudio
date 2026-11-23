@@ -26,7 +26,7 @@ signal load_progress(path: String, fraction: float)
 ## Qualidade das miniaturas externas; o original nunca é sobrescrito.
 @export var optimize_models: bool = true
 @export_range(1000, 2000000, 1000) var model_triangle_budget: int = 100000
-## Altura de uma imagem billboard, em unidades do mundo
+## Altura de uma miniatura de imagem, em unidades do mundo
 @export var image_height: float = 2.0
 ## Distância entre miniaturas criadas de uma vez (vários arquivos escolhidos juntos)
 @export var batch_spacing: float = 3.0
@@ -164,7 +164,22 @@ func _place(miniature: MapObject, path: String, point: Vector3) -> void:
 	miniature.name = path.get_file().get_basename().validate_node_name()
 	container.add_child(miniature)
 	miniature.global_position = point
+	if miniature is BillboardObject:
+		_face_camera(miniature)
 	miniature_spawned.emit(miniature, path)
+
+
+## Orientação inicial apenas: usa a câmera atual ao concluir a carga, sem billboard.
+## O Sprite3D aponta para +Z. Gira só em Y para manter a imagem em pé no chão.
+func _face_camera(miniature: MapObject) -> void:
+	var camera := get_viewport().get_camera_3d()
+	if camera == null:
+		return
+	var direction := camera.global_position - miniature.global_position
+	direction.y = 0.0
+	if direction.length_squared() < 0.000001:
+		return
+	miniature.global_rotation = Vector3(0.0, atan2(direction.x, direction.z), 0.0)
 
 
 ## Ponto no chão diante do centro da tela, a no máximo `max_spawn_distance` da câmera

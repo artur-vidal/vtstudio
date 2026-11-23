@@ -14,10 +14,14 @@ var _hovering: bool = false
 var _dragging: bool = false
 var _visual_state: VisualState = VisualState.IDLE
 
-enum DragMode { MOVE, ROTATE, ELEVATE }
+enum DragMode { MOVE, ROTATE, ELEVATE, SCALE }
 
 ## Radians por pixel horizontal ao girar com R.
 @export var rotation_sensitivity: float = 0.01
+## Variação proporcional da escala por pixel vertical ao segurar T.
+@export_range(0.001, 0.05, 0.001) var scale_sensitivity: float = 0.01
+const MIN_SCALE: float = 0.05
+const MAX_SCALE: float = 100.0
 ## Compensa o encurtamento aparente dos eixos sem explodir no horizonte.
 @export_range(1.0, 8.0, 0.25) var max_drag_angle_compensation: float = 4.0
 
@@ -26,6 +30,7 @@ var _drag_target := Vector3.ZERO
 var _drag_units_per_pixel: float = 0.01
 var _drag_height_compensation: float = 1.0
 var _drag_camera: Camera3D
+var _drag_camera_transform := Transform3D.IDENTITY
 var _drag_local_hit := Vector3.ZERO
 var _rotation_start_yaw: float = 0.0
 var _rotation_angle: float = 0.0
@@ -34,6 +39,8 @@ var _rotation_indicator: MiniatureRotationIndicator
 
 
 func _ready() -> void:
+	# Acompanha a câmera depois da navegação e de suas suavizações.
+	process_priority = 100
 	input_ray_pickable = true
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
@@ -74,6 +81,7 @@ func _begin_drag(camera: Camera3D, hit_position: Vector3) -> void:
 	_drag_target = global_position
 	_drag_mode = DragMode.MOVE
 	_drag_camera = camera
+	_drag_camera_transform = camera.global_transform
 	_drag_local_hit = to_local(hit_position)
 	_update_drag_projection(camera, hit_position)
 	add_to_group('miniature_dragging')
@@ -114,13 +122,33 @@ func _input(event: InputEvent) -> void:
 func _process(_delta: float) -> void:
 	if not _dragging:
 		return
+	_follow_drag_camera()
 	_update_drag_mode()
 	_update_rotation_indicator()
 
 
+func _follow_drag_camera() -> void:
+	if not _dragging or not is_instance_valid(_drag_camera):
+		return
+	var current := _drag_camera.global_transform
+	if current == _drag_camera_transform:
+		return
+	# Projeta o acompanhamento da câmera no plano XZ do arraste.
+	# A altura e a orientação da miniatura continuam sob controle do usuário.
+	var hit := to_global(_drag_local_hit)
+	var followed_hit := current * (_drag_camera_transform.affine_inverse() * hit)
+	var displacement := followed_hit - hit
+	displacement.y = 0.0
+	global_position += displacement
+	_drag_target += displacement
+	_drag_camera_transform = current
+
+
 func _update_drag_mode() -> void:
 	var next_mode := DragMode.MOVE
-	if Input.is_physical_key_pressed(KEY_R):
+	if Input.is_action_pressed('scale_miniature'):
+		next_mode = DragMode.SCALE
+	elif Input.is_physical_key_pressed(KEY_R):
 		next_mode = DragMode.ROTATE
 	elif Input.is_physical_key_pressed(KEY_SHIFT):
 		next_mode = DragMode.ELEVATE
@@ -147,6 +175,16 @@ func _set_drag_mode(mode: DragMode) -> void:
 
 
 func _apply_drag_motion(pixels: Vector2) -> void:
+	_follow_drag_camera()
+	if _drag_mode == DragMode.SCALE:
+		# Escala ao redor da base, preservando as proporções e a posição.
+		# Limita no espaço logarítmico para não zerar ou estourar com deltas grandes.
+		var size := scale.abs().max_axis_index()
+		var magnitude := absf(scale[size])
+		if magnitude > 0.0 and not is_zero_approx(pixels.y):
+			var next_magnitude := exp(clampf(log(magnitude) - pixels.y * scale_sensitivity, log(MIN_SCALE), log(MAX_SCALE)))
+			scale *= next_magnitude / magnitude
+		return
 	if _drag_mode == DragMode.ROTATE:
 		var angle := -pixels.x * rotation_sensitivity
 		global_rotate(Vector3.UP, angle)
@@ -211,6 +249,7 @@ func _get_rotation_radius() -> float:
 
 
 func _end_drag() -> void:
+	_follow_drag_camera()
 	_dragging = false
 	remove_from_group('miniature_dragging')
 	set_process(false)

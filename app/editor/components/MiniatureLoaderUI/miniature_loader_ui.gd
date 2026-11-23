@@ -12,6 +12,9 @@ extends CanvasLayer
 ## Emitido quando o usuário escolhe (ou arrasta para a janela) arquivos suportados
 signal files_chosen(paths: PackedStringArray)
 
+const PALETTE = preload('res://front-end/pallete.tres')
+const FONT = preload('res://assets/fonts/Outfit/static/Outfit-Regular.ttf')
+
 @export var button_text: String = 'Carregar miniatura...'
 ## Aceita também arquivos arrastados para a janela do jogo
 @export var accept_dropped_files: bool = true
@@ -33,6 +36,8 @@ var _warning_serial: int = 0
 var _warning_lines: PackedStringArray = PackedStringArray()
 ## caminho do arquivo -> { 'row': HBoxContainer, 'bar': ProgressBar }
 var _progress_rows: Dictionary = {}
+var _drop_card: Control
+var _choosing := false
 
 
 func _ready() -> void:
@@ -71,16 +76,20 @@ func _build_ui() -> void:
 	add_child(margin)
 
 	var box := VBoxContainer.new()
+	box.add_theme_font_override('font', FONT)
+	box.add_theme_constant_override('separation', 10)
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	margin.add_child(box)
 
 	var button := Button.new()
+	button.theme = preload('res://front-end/components/themes/button/ButtonDourado.tres')
+	button.custom_minimum_size = Vector2(224, 42)
 	button.text = button_text
 	# Sem foco: senão, depois do primeiro clique, espaço e Enter acionariam o botão de novo
 	button.focus_mode = Control.FOCUS_NONE
 	# Largura natural do texto, em vez de esticar até a largura das mensagens
 	button.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	button.pressed.connect(_open_dialog)
+	button.pressed.connect(func() -> void: _drop_card.present())
 	box.add_child(button)
 
 	_progress_box = VBoxContainer.new()
@@ -90,7 +99,11 @@ func _build_ui() -> void:
 	_status = _create_label()
 	box.add_child(_status)
 	_warnings = _create_label()
-	_warnings.add_theme_color_override('font_color', Color(1.0, 0.8, 0.3))
+	_warnings.add_theme_color_override('font_color', PALETTE.colors[6])
+	var warning_style := _surface()
+	warning_style.border_color = PALETTE.colors[0]
+	warning_style.border_width_left = 3
+	_warnings.add_theme_stylebox_override('normal', warning_style)
 	box.add_child(_warnings)
 
 	_dialog = FileDialog.new()
@@ -103,6 +116,12 @@ func _build_ui() -> void:
 	_dialog.add_filter(_pattern(ImageLoader.supported_extensions()), 'Imagens')
 	_dialog.files_selected.connect(_on_files_selected)
 	add_child(_dialog)
+	_drop_card = preload('res://editor/components/MiniatureLoaderUI/import_drop_card.gd').new()
+	var modal_layer := CanvasLayer.new()
+	modal_layer.layer = 30
+	add_child(modal_layer)
+	modal_layer.add_child(_drop_card)
+	_drop_card.browse_requested.connect(_open_dialog)
 
 
 ## Rótulo que quebra linha, escondido até ter o que mostrar
@@ -110,19 +129,33 @@ func _create_label() -> Label:
 	var label := Label.new()
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	label.custom_minimum_size = Vector2(message_width, 0.0)
+	label.custom_minimum_size = Vector2(_message_width(), 0.0)
+	get_viewport().size_changed.connect(func() -> void: label.custom_minimum_size.x = _message_width())
+	label.add_theme_color_override('font_color', PALETTE.colors[10])
+	label.add_theme_font_size_override('font_size', 16)
+	label.add_theme_stylebox_override('normal', _surface())
 	label.visible = false
 	return label
 
 
 func _create_progress_row(path: String) -> Dictionary:
-	var row := HBoxContainer.new()
+	var row := PanelContainer.new()
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_theme_stylebox_override('panel', _surface())
+	var column := VBoxContainer.new()
+	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	column.add_theme_constant_override('separation', 8)
+	row.add_child(column)
 
 	var label := Label.new()
 	label.text = path.get_file()
+	label.add_theme_color_override('font_color', PALETTE.colors[6])
+	label.add_theme_font_size_override('font_size', 16)
+	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	label.custom_minimum_size.x = _message_width() - 24.0
+	get_viewport().size_changed.connect(func() -> void: label.custom_minimum_size.x = _message_width() - 24.0)
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_child(label)
+	column.add_child(label)
 
 	var bar := ProgressBar.new()
 	bar.min_value = 0.0
@@ -131,10 +164,34 @@ func _create_progress_row(path: String) -> Dictionary:
 	bar.custom_minimum_size = Vector2(180, 18)
 	bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_child(bar)
+	var background := StyleBoxFlat.new()
+	background.bg_color = PALETTE.colors[9]
+	background.set_corner_radius_all(6)
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = PALETTE.colors[3]
+	fill.set_corner_radius_all(6)
+	bar.add_theme_stylebox_override('background', background)
+	bar.add_theme_stylebox_override('fill', fill)
+	bar.show_percentage = false
+	column.add_child(bar)
 
 	_progress_box.add_child(row)
 	return {'row': row, 'bar': bar}
+
+
+func _message_width() -> float:
+	return minf(message_width, maxf(240.0, get_viewport().get_visible_rect().size.x - 24.0))
+
+
+func _surface() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = PALETTE.colors[8]
+	style.set_corner_radius_all(8)
+	style.content_margin_left = 12
+	style.content_margin_right = 12
+	style.content_margin_top = 10
+	style.content_margin_bottom = 10
+	return style
 
 
 func _remove_progress(path: String) -> void:
@@ -158,14 +215,22 @@ func _on_files_dropped(paths: PackedStringArray) -> void:
 		if ModelLoader.is_supported(path) or ImageLoader.is_supported(path):
 			supported.append(path)
 	if supported.is_empty():
+		_drop_card.show_unsupported()
 		_show_status('Nenhum arquivo suportado foi solto na janela')
 		return
 	_choose(supported)
 
 
 func _choose(paths: PackedStringArray) -> void:
+	if _choosing or paths.is_empty():
+		return
+	_choosing = true
+	await _drop_card.dismiss()
 	_show_status('Carregando %d arquivo(s)...' % paths.size())
+	# Mostra o status antes do carregamento síncrono de modelos 3D.
+	await get_tree().process_frame
 	files_chosen.emit(paths)
+	_choosing = false
 
 
 ## Filtro do FileDialog, ex.: '*.glb, *.gltf'

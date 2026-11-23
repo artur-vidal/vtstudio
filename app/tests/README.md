@@ -99,7 +99,10 @@ do not update it each frame. Texture transparency is not a geometric hole.
 
 Hold left mouse on a miniature to move it on XZ. While holding it, hold R and
 move horizontally to rotate around world Y, or hold Shift and move vertically
-to change its height. R takes priority when both modifiers are held. Switching
+to change its height. Hold the `scale_miniature` action (T by default) and drag
+up to enlarge or down to shrink all three axes proportionally around the base.
+The largest scale component is limited to 0.05–100. T takes priority over R,
+and R over Shift. Releasing T restores the other held modifier or normal movement. Switching
 modes reanchors the movement target. Releasing the mouse or losing window focus
 ends capture. The rotation guide shows the signed sweep since entering R and
 the current forward direction, and hides when R or the mouse is released.
@@ -109,10 +112,12 @@ point. The X/Z mapping inverts the local screen projection, including perspectiv
 camera roll and off-center hits. Its gain is bounded by
 `max_drag_angle_compensation` (default 4); directions that become invisible near
 the horizon smoothly lose response instead of producing huge displacements.
-It never intersects a grazing horizontal plane, does not move without mouse
-motion, and is independent of frame rate. Moving, turning or zooming the camera
-refreshes the mapping on the next mouse motion without moving the object by
-itself. While RMB controls the camera, mouse motion does not drag the miniature.
+It never intersects a grazing horizontal plane and is independent of frame rate.
+While captured, the grabbed point follows camera translation, rotation and dolly
+zoom projected onto the XZ drag plane every frame, in every drag mode.
+Camera movement never changes miniature height; Shift-drag controls elevation.
+The miniature keeps its own orientation, and the movement target follows with it.
+While RMB controls the camera, mouse motion does not add a separate drag movement.
 The guide is an editor overlay so it remains readable over map floors.
 Cursor shape changes have been removed from miniature and camera controls.
 
