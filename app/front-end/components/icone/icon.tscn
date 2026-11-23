@@ -1,16 +1,17 @@
 [gd_scene format=3 uid="uid://brotkrsfn8tyt"]
 
-[ext_resource type="Theme" uid="uid://mnrtuqist27d" path="res://front-end/components/themes/icone/IconeCinza-Outline.tres" id="1_i7wvb"]
+[ext_resource type="Theme" uid="uid://c2q3rcmq2d5vv" path="res://front-end/components/themes/icone/IconeVermelho.tres" id="1_bs76p"]
 [ext_resource type="Script" uid="uid://bwuvooxlhuwyi" path="res://front-end/components/icone/perfil.gd" id="2_v4juy"]
 [ext_resource type="Texture2D" uid="uid://cceq6vmhp7tw8" path="res://assets/images/Portrait_Placeholder.png" id="3_67lj5"]
+[ext_resource type="Texture2D" uid="uid://ysgb8lkjn6i7" path="res://assets/images/Sophia.jpg" id="4_cwf4a"]
 
 [node name="PanelContainer" type="PanelContainer" unique_id=1726400785]
 clip_children = 1
 custom_minimum_size = Vector2(48, 48)
 custom_maximum_size = Vector2(80, 80)
-offset_right = 52.0
-offset_bottom = 52.0
-theme = ExtResource("1_i7wvb")
+offset_right = 48.0
+offset_bottom = 48.0
+theme = ExtResource("1_bs76p")
 script = ExtResource("2_v4juy")
 textura = ExtResource("3_67lj5")
 
@@ -18,5 +19,5 @@ textura = ExtResource("3_67lj5")
 custom_minimum_size = Vector2(48, 48)
 custom_maximum_size = Vector2(160, 160)
 layout_mode = 2
+texture = ExtResource("4_cwf4a")
 expand_mode = 1
-stretch_mode = 5

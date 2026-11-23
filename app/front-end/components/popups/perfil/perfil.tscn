@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://sld3q6geqf6d"]
 
 [ext_resource type="PackedScene" uid="uid://brotkrsfn8tyt" path="res://front-end/components/icone/icon.tscn" id="1_mwmg0"]
-[ext_resource type="Theme" uid="uid://c2q3rcmq2d5vv" path="res://front-end/components/themes/icone/IconeVermelho.tres" id="2_x7cqh"]
+[ext_resource type="Texture2D" uid="uid://ysgb8lkjn6i7" path="res://assets/images/Sophia.jpg" id="2_i8xip"]
 [ext_resource type="FontFile" uid="uid://tagvraybmw0d" path="res://assets/fonts/Outfit/static/Outfit-SemiBold.ttf" id="3_d7n8f"]
 [ext_resource type="PackedScene" uid="uid://bibap5kc4ibb2" path="res://front-end/components/botao/Botao.tscn" id="4_w4wjy"]
 [ext_resource type="Theme" uid="uid://bkdw5caiuqbxt" path="res://front-end/components/themes/button/ButtonVermelho-Outline.tres" id="5_oqspu"]
@@ -51,7 +51,7 @@ custom_maximum_size = Vector2(160, 160)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
-theme = ExtResource("2_x7cqh")
+textura = ExtResource("2_i8xip")
 tamanho = "Giga"
 
 [node name="RichTextLabel" type="RichTextLabel" parent="VBoxContainer" unique_id=671303974]
@@ -59,7 +59,7 @@ layout_mode = 2
 theme_override_colors/default_color = Color(0.007843138, 0.007843138, 0.007843138, 1)
 theme_override_fonts/normal_font = ExtResource("3_d7n8f")
 theme_override_font_sizes/normal_font_size = 32
-text = "Nome de usuário"
+text = "Sophia Lange"
 fit_content = true
 horizontal_alignment = 1
 

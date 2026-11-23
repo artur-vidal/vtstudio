@@ -3,11 +3,12 @@
 [ext_resource type="Texture2D" uid="uid://ckdhqmluadyul" path="res://assets/images/background/Background.png" id="1_lux78"]
 [ext_resource type="FontFile" uid="uid://dwhrhbcuu4ruw" path="res://assets/fonts/Fondamento/Fondamento-Regular.ttf" id="2_n7nml"]
 [ext_resource type="PackedScene" uid="uid://brotkrsfn8tyt" path="res://front-end/components/icone/icon.tscn" id="3_guvwe"]
-[ext_resource type="Theme" uid="uid://c2q3rcmq2d5vv" path="res://front-end/components/themes/icone/IconeVermelho.tres" id="4_ttwax"]
-[ext_resource type="Texture2D" uid="uid://cceq6vmhp7tw8" path="res://assets/images/Portrait_Placeholder.png" id="5_b1pk0"]
-[ext_resource type="Texture2D" uid="uid://dftp10fngix3i" path="res://assets/images/aviso.png" id="6_guvwe"]
+[ext_resource type="Texture2D" uid="uid://ysgb8lkjn6i7" path="res://assets/images/Sophia.jpg" id="4_ttwax"]
+[ext_resource type="Texture2D" uid="uid://cp1h3sgxkkmmj" path="res://assets/images/notificacao.png" id="5_b1pk0"]
 [ext_resource type="PackedScene" uid="uid://jj1hffbx4inr" path="res://front-end/components/navBar/NavBar.tscn" id="6_qq2x3"]
+[ext_resource type="Texture2D" uid="uid://bi75fecf15vk3" path="res://assets/images/jonathan.jpg" id="7_qq2x3"]
 [ext_resource type="FontFile" uid="uid://tagvraybmw0d" path="res://assets/fonts/Outfit/static/Outfit-SemiBold.ttf" id="7_ttwax"]
+[ext_resource type="Texture2D" uid="uid://c7ibi12nr3kvy" path="res://assets/images/amigo.png" id="8_18qng"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_18qng"]
 texture = ExtResource("1_lux78")
@@ -80,9 +81,7 @@ clip_children = 2
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
-theme = ExtResource("4_ttwax")
-textura = ExtResource("5_b1pk0")
-cor = "Vermelho"
+textura = ExtResource("4_ttwax")
 
 [node name="Mensagens" type="VBoxContainer" parent="PanelContainer/Separação tela" unique_id=1956599614]
 custom_minimum_size = Vector2(380, 516)
@@ -117,26 +116,23 @@ custom_maximum_size = Vector2(48, 48)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
-texture = ExtResource("6_guvwe")
+texture = ExtResource("5_b1pk0")
 expand_mode = 1
 
 [node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao/margem/separacao" unique_id=1576066442]
 layout_mode = 2
 theme_override_colors/default_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
 theme_override_fonts/normal_font = ExtResource("7_ttwax")
-text = "Mensagem de notificação"
+text = "Jonathan chamou pra sala"
 fit_content = true
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="PanelContainer" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao/margem/separacao" unique_id=1562776022 instance=ExtResource("3_guvwe")]
-clip_children = 1
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
-theme = ExtResource("4_ttwax")
-textura = ExtResource("5_b1pk0")
-cor = "Vermelho"
+textura = ExtResource("7_qq2x3")
 
 [node name="notificacao2" type="PanelContainer" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes" unique_id=1911759327]
 custom_minimum_size = Vector2(380, 80)
@@ -157,106 +153,23 @@ custom_maximum_size = Vector2(48, 48)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
-texture = ExtResource("6_guvwe")
+texture = ExtResource("8_18qng")
 expand_mode = 1
 
 [node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao2/margem/separacao" unique_id=1032515605]
 layout_mode = 2
 theme_override_colors/default_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
 theme_override_fonts/normal_font = ExtResource("7_ttwax")
-text = "Mensagem de notificação"
+text = "Jonathan te adicionou          "
 fit_content = true
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="PanelContainer" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao2/margem/separacao" unique_id=2072936679 instance=ExtResource("3_guvwe")]
-clip_children = 1
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
-theme = ExtResource("4_ttwax")
-textura = ExtResource("5_b1pk0")
-cor = "Vermelho"
-
-[node name="notificacao3" type="PanelContainer" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes" unique_id=2107417270]
-custom_minimum_size = Vector2(380, 80)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_207kn")
-
-[node name="margem" type="MarginContainer" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao3" unique_id=300732550]
-layout_mode = 2
-theme_override_constants/margin_left = 18
-
-[node name="separacao" type="HBoxContainer" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao3/margem" unique_id=2018552276]
-layout_mode = 2
-theme_override_constants/separation = 29
-
-[node name="TextureRect" type="TextureRect" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao3/margem/separacao" unique_id=1372164368]
-custom_minimum_size = Vector2(48, 48)
-custom_maximum_size = Vector2(48, 48)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-texture = ExtResource("6_guvwe")
-expand_mode = 1
-
-[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao3/margem/separacao" unique_id=78056417]
-layout_mode = 2
-theme_override_colors/default_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
-theme_override_fonts/normal_font = ExtResource("7_ttwax")
-text = "Mensagem de notificação"
-fit_content = true
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="PanelContainer" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao3/margem/separacao" unique_id=1657976132 instance=ExtResource("3_guvwe")]
-clip_children = 1
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-theme = ExtResource("4_ttwax")
-textura = ExtResource("5_b1pk0")
-cor = "Vermelho"
-
-[node name="notificacao4" type="PanelContainer" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes" unique_id=89153345]
-custom_minimum_size = Vector2(380, 80)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_207kn")
-
-[node name="margem" type="MarginContainer" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao4" unique_id=2121259797]
-layout_mode = 2
-theme_override_constants/margin_left = 18
-
-[node name="separacao" type="HBoxContainer" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao4/margem" unique_id=17999854]
-layout_mode = 2
-theme_override_constants/separation = 29
-
-[node name="TextureRect" type="TextureRect" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao4/margem/separacao" unique_id=431212420]
-custom_minimum_size = Vector2(48, 48)
-custom_maximum_size = Vector2(48, 48)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-texture = ExtResource("6_guvwe")
-expand_mode = 1
-
-[node name="RichTextLabel" type="RichTextLabel" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao4/margem/separacao" unique_id=132041270]
-layout_mode = 2
-theme_override_colors/default_color = Color(0.1254902, 0.1254902, 0.1254902, 1)
-theme_override_fonts/normal_font = ExtResource("7_ttwax")
-text = "Mensagem de notificação"
-fit_content = true
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="PanelContainer" parent="PanelContainer/Separação tela/Mensagens/fundo/notificacoes/notificacao4/margem/separacao" unique_id=316487777 instance=ExtResource("3_guvwe")]
-clip_children = 1
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-theme = ExtResource("4_ttwax")
-textura = ExtResource("5_b1pk0")
-cor = "Vermelho"
+textura = ExtResource("7_qq2x3")
 
 [node name="NavBar" parent="PanelContainer/Separação tela" unique_id=1337153430 instance=ExtResource("6_qq2x3")]
 layout_mode = 2
